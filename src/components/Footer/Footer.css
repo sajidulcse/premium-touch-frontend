@@ -1,0 +1,113 @@
+.footer {
+  background-color: #1a1a1a;
+  color: #fff;
+  padding: 20px 20px; /* reduced padding top/bottom */
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center horizontally */
+  justify-content: center; /* center vertically */
+  text-align: center; /* center text */
+}
+
+.footer-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center; /* center sections horizontally */
+}
+
+.footer-section {
+  flex: 1 1 200px;
+  text-align: center; /* center each section content */
+}
+
+.footer-section-title {
+  font-weight: 700;
+  margin-bottom: 10px; /* reduced spacing */
+}
+
+.footer-text {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;             /* make links in a row */
+  flex-wrap: wrap;           /* wrap to next line if needed */
+  justify-content: center;   /* center horizontally */
+  gap: 20px;                 /* spacing between links */
+}
+
+.footer-links li {
+  margin: 0;                 /* remove vertical margin */
+}
+
+.footer-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.footer-links a:hover {
+  color: #f0a500;
+}
+
+.footer-social {
+  display: flex;
+  gap: 12px;
+  justify-content: center; /* center social icons */
+  margin: 10px 0; /* spacing from other content */
+}
+
+.social-link {
+  color: #fff;
+  font-size: 1.2rem;
+  transition: 0.3s;
+}
+
+.social-link:hover {
+  color: #f0a500;
+}
+
+.footer-newsletter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.newsletter-input {
+  flex: 1;
+  padding: 6px 10px; /* smaller padding */
+  border-radius: 3px;
+  border: none;
+  width: 200px; /* fixed width */
+}
+
+.newsletter-btn {
+  background-color: #f0a500;
+  color: #000;
+  border: none;
+  padding: 6px 12px; /* smaller button */
+  cursor: pointer;
+  border-radius: 3px;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.newsletter-btn:hover {
+  background-color: #d18c00;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 15px; /* reduced margin */
+  font-size: 0.85rem;
+  color: #aaa;
+}

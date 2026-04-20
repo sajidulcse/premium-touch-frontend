@@ -1,0 +1,339 @@
+/*
+ * ContactCTA.css - Professional, smart, and attractive light-themed styling for the ContactCTA component.
+ * Theme: Modern, light-themed CTA with high contrast, clean, responsive grid layout, and full-width section.
+ *
+ * FIXES:
+ * 1. Logo is now positioned to the left of the site name/text block.
+ * 2. Heading underline is slimmer (2px) and strictly limited to the text content.
+ * 3. Main container (.contact-cta) is now full-width (no max-width, no margin, no shadow/border).
+ */
+
+/* --- Variables --- */
+:root {
+  --color-light-bg: #ffffff; /* Background of contact box */
+  --color-text: #000000;     /* Black text */
+  --color-dark-text: #000000; /* Black for headings & general text */
+  --color-secondary-text: #000000; /* Black for paragraphs/links */
+  --color-primary: #007bff; /* Blue for hover only */
+  --color-primary-hover: #0056b3;
+  --color-border: #e9ecef;
+  --spacing-unit: 20px; 
+  --content-padding: 40px;
+}
+
+
+
+/* --- Main Container (Full Width Section) --- */
+.contact-cta {
+  background-color: var(--color-light-bg);
+  color: var(--color-dark-text);
+  width: 100%;
+  box-sizing: border-box; /* ensures padding doesn't add extra width */
+  padding: 40px var(--content-padding); /* Use padding instead of margin for spacing */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: none; /* FIX 3: Remove max-width for full size */
+  margin: 0; /* FIX 3: Remove margin */
+  border-radius: 0; /* Remove card styling */
+  box-shadow: none; /* Remove card styling */
+}
+
+/* Grid Layout for Desktop */
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-light-bg); /* Same as contact box */
+}
+
+
+.contact-cta {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr; /* desktop: 4 columns */
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--color-light-bg);
+  color: var(--color-text);
+  padding: 40px var(--content-padding);
+  box-sizing: border-box;
+}
+
+/* --- Section Headings --- */
+.contact-cta h4 {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--color-dark-text);
+  margin-bottom: var(--spacing-unit);
+  display: inline-block;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.contact-cta h4::after {
+  content: none;
+}
+
+
+/* --- General Text and Links --- */
+.contact-cta p {
+  font-size: 1em;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  color: var(--color-secondary-text);
+}
+
+.contact-cta a {
+  color: var(--color-dark-text);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contact-cta a:hover {
+  color: var(--color-primary);
+}
+
+/* --- 1. Site Info Section --- */
+.cta-section.site-info {
+  display: flex;
+  align-items: flex-start;
+  grid-template-columns: auto 1fr;
+  column-gap: 15px;
+  margin-top: 30px;
+}
+
+.site-info .logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  margin-bottom: 0; /* No margin-bottom in row layout */
+  flex-shrink: 0; /* Prevent logo from shrinking */
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+}
+
+.site-info .site-text {
+  /* Container for the text block */
+  flex-grow: 1;
+}
+
+.site-info .site-text h3 {
+  font-size: 1.5em;
+  margin: 0 0 5px 0;
+  color: var(--color-text);
+}
+
+.site-info .tagline {
+  font-style: italic;
+  color: var(--color-primary);
+  margin-bottom: 15px;
+  font-size: 1.1em;
+}
+
+.site-info .short-desc {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+  color: var(--color-text);
+  font-weight: 400;
+}
+
+/* --- 2. Services Section --- */
+.cta-section.services ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cta-section.services li {
+  margin-bottom: 8px;
+}
+
+.cta-section.services li a {
+  font-size: 1em;
+  display: block;
+  padding: 2px 0;
+  color: var(--color-secondary-text);
+  font-weight: 600;
+}
+
+.cta-section.services li a:hover {
+  color: var(--color-primary);
+  padding-left: 5px;
+}
+
+/* --- 3. Social Links Section --- */
+.cta-section.social-links .social-icons {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.social-icons a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: var(--color-border);
+  color: var(--color-dark-text);
+  font-size: 1.3em;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.social-icons a:hover {
+  background-color: var(--color-primary);
+  color: var(--color-light-bg);
+  transform: scale(1.1);
+}
+
+/* --- 4. Contact Info Section --- */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-info p {
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  color: var(--color-dark-text);
+}
+
+/* Button Styling */
+.contact-info button {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 25px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+  margin-top: 15px;
+  align-self: flex-start;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+
+.contact-info button:hover {
+  background-color: var(--color-primary-hover);
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+}
+
+.contact-info button:active {
+  transform: scale(0.98);
+}
+
+
+/* === Map Preview === */
+.map-preview {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 180px;
+  margin-top: 15px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.map-preview iframe {
+  pointer-events: none; /* 👈 allows click to pass through */
+}
+
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.map-preview:hover .map-overlay {
+  opacity: 1;
+}
+
+
+/* --- Responsiveness (Mobile First) --- */
+
+/* Default: Stacked layout for smaller screens (e.g., mobile) */
+@media (max-width: 768px) {
+  .contact-cta {
+    padding: 30px 20px; /* Adjust padding for mobile */
+  }
+  
+  .contact-cta {
+    grid-template-columns: 1fr; /* Single column layout */
+    gap: 30px;
+    /* FIX: Remove text-align: center from main container to allow left alignment */
+    text-align: left;
+  }
+
+  .cta-section.site-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* centers the logo horizontally */
+    gap: 10px;
+    text-align: center; /* center site name and tagline */
+  }
+
+  .site-info .logo {
+    margin-bottom: 10px;
+    /* remove display:flex or flex-direction here — it's just an image */
+  }
+
+  .site-info .site-text h3,
+  .site-info .tagline {
+    margin: 0;
+  }
+
+  .site-info .short-desc {
+    width: 100%;
+    text-align: left; /* short description left-aligned */
+    margin-top: 10px;
+  }
+  
+  /* Center social icons */
+  .cta-section.social-links .social-icons {
+    justify-content: flex-start;
+  }
+  
+  /* Align contact info items left */
+  .contact-info {
+    align-items: flex-start;
+  }
+  
+  .contact-info button {
+    width: auto; /* Revert to auto width */
+    align-self: flex-start;
+  }
+
+  /* Remove the border-bottom from the last section on mobile */
+  .cta-section:not(:last-child) {
+    padding-bottom: 20px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+/* Tablet/Medium screens: 2-column layout */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .contact-cta {
+    grid-template-columns: 1.5fr 1fr 1fr; /* 3 columns: Site Info, Services, Social/Contact */
+    grid-template-areas:
+      "site services contact"
+      "site social contact";
+  }
+
+  .site-info { grid-area: site; }
+  .services { grid-area: services; }
+  .social-links { grid-area: social; }
+  .contact-info { grid-area: contact; }
+}
+
+/* Desktop: 4-column layout (as defined in the main .contact-cta block) */

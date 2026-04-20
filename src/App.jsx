@@ -1,0 +1,88 @@
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import Navbar from './components/Navbar/Navbar'
+import ContactCTA from "./components/ContactCTA/ContactCTA";
+import Footer from "./components/Footer/Footer";
+import BlogList from './pages/Blog/BlogList';
+import BlogDetail from './pages/Blog/BlogDetail';
+import CategoryBlogList from './pages/Blog/CategoryBlogList';
+import ProjectList from './pages/Project/ProjectList';
+import ProjectDetail from './pages/Project/ProjectDetail';
+import PortfolioList from './pages/Portfolio/PortfolioList';
+import PortfolioDetail from './pages/Portfolio/PortfolioDetail';
+
+// Admin Components
+import AdminLayout from './pages/Admin/AdminLayout';
+import Dashboard from './pages/Admin/Dashboard';
+import BlogManager from './pages/Admin/BlogManager';
+import BlogEditor from './pages/Admin/BlogEditor';
+import BlogCategoryManager from './pages/Admin/BlogCategoryManager';
+import CommentManager from './pages/Admin/CommentManager';
+import Login from './pages/Admin/Login';
+import Profile from './pages/Admin/Profile';
+import SettingsManager from './pages/Admin/SettingsManager';
+import ProjectManager from './pages/Admin/ProjectManager';
+import ProjectEditor from './pages/Admin/ProjectEditor';
+import PortfolioManager from './pages/Admin/PortfolioManager';
+import PortfolioEditor from './pages/Admin/PortfolioEditor';
+import CategoryManager from './pages/Admin/CategoryManager';
+
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
+const AppContent = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.includes('/admin');
+
+  return (
+    <>
+      {!isAdminRoute && <Navbar />}
+      <main style={{ minHeight: '80vh' }}>
+        <Routes>
+          <Route path="/" element={<div>Home Page (Existing)</div>} />
+          <Route path="/blogs" element={<BlogList />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:slug" element={<BlogDetail />} />
+          <Route path="/blogs/category/:slug" element={<CategoryBlogList />} />
+          <Route path="/projects" element={<ProjectList />} />
+          <Route path="/projects/:slug" element={<ProjectDetail />} />
+          <Route path="/portfolio" element={<PortfolioList />} />
+          <Route path="/portfolio/:categorySlug" element={<PortfolioList />} />
+          <Route path="/portfolio/:parentSlug/:categorySlug" element={<PortfolioList />} />
+          <Route path="/portfolio/view/:slug" element={<PortfolioDetail />} />
+          <Route path="/portfolio/:parentSlug/:categorySlug/:slug" element={<PortfolioDetail />} />
+          <Route path="/:categorySlug" element={<ProjectList />} />
+
+          {/* Admin Routes with Layout */}
+          <Route path="/admin-login" element={<Login />} />
+          <Route path="/admin/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />
+          <Route path="/admin/blogs" element={<AdminLayout><BlogManager /></AdminLayout>} />
+          <Route path="/admin/blogs/new" element={<AdminLayout><BlogEditor /></AdminLayout>} />
+          <Route path="/admin/blogs/edit/:id" element={<AdminLayout><BlogEditor /></AdminLayout>} />
+          <Route path="/admin/blog-categories" element={<AdminLayout><BlogCategoryManager /></AdminLayout>} />
+          <Route path="/admin/comments" element={<AdminLayout><CommentManager /></AdminLayout>} />
+          <Route path="/admin/projects" element={<AdminLayout><ProjectManager /></AdminLayout>} />
+          <Route path="/admin/projects/new" element={<AdminLayout><ProjectEditor /></AdminLayout>} />
+          <Route path="/admin/projects/edit/:id" element={<AdminLayout><ProjectEditor /></AdminLayout>} />
+          <Route path="/admin/portfolios" element={<AdminLayout><PortfolioManager /></AdminLayout>} />
+          <Route path="/admin/portfolios/new" element={<AdminLayout><PortfolioEditor /></AdminLayout>} />
+          <Route path="/admin/portfolios/edit/:id" element={<AdminLayout><PortfolioEditor /></AdminLayout>} />
+          <Route path="/admin/categories" element={<AdminLayout><CategoryManager /></AdminLayout>} />
+          <Route path="/admin/profile" element={<AdminLayout><Profile /></AdminLayout>} />
+          <Route path="/admin/settings" element={<AdminLayout><SettingsManager /></AdminLayout>} />
+        </Routes>
+      </main>
+      {!isAdminRoute && <ContactCTA />}
+      {!isAdminRoute && <Footer />}
+    </>
+  );
+};
+
+const App = () => {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  )
+}
+
+export default App
