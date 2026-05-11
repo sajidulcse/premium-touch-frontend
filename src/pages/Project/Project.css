@@ -128,42 +128,29 @@
 }
 
 .pl-filter-item {
-    background: none;
+    background: #E85D25;
     border: none;
-    padding: 10px 5px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #999;
+    padding: 10px 20px;
+    font-size: 14px;
+    text-transform: capitalize;
+    letter-spacing: 0.5px;
+    color: #fff;
     cursor: pointer;
-    position: relative;
-    transition: 0.3s;
-    font-family: 'Outfit', sans-serif;
-}
-
-.pl-filter-item::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 5px;
-    right: 5px;
-    width: 0;
-    height: 1px;
-    background: #c5a880;
-    transition: 0.4s;
-}
-
-.pl-filter-item:hover,
-.pl-filter-item.active {
-    color: #1a1a1a;
-}
-
-.pl-filter-item.active {
+    border-radius: 6px;
+    transition: background 0.3s ease;
+    font-family: inherit;
     font-weight: 500;
+    text-decoration: none;
 }
 
-.pl-filter-item.active::after {
-    width: calc(100% - 10px);
+.pl-filter-item:hover {
+    background: #d44d18;
+    color: #fff;
+}
+
+.pl-filter-item.active {
+    background: #333;
+    color: #fff;
 }
 
 /* Secondary/Area Filters */
@@ -173,41 +160,26 @@
 
 .pl-filter-item.mini {
     font-size: 12px;
-    padding: 10px 5px;
-    background: none;
+    padding: 6px 16px;
+    background: #f4f4f4;
     border: none;
-    border-radius: 0;
-    letter-spacing: 1.5px;
-}
-
-.pl-filter-item.mini::after {
-    display: block;
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 5px;
-    right: 5px;
-    width: 0;
-    height: 1px;
-    background: #c5a880;
-    transition: 0.4s;
+    border-radius: 6px;
+    letter-spacing: 1px;
+    color: #555;
+    transition: 0.3s ease;
+    cursor: pointer;
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
 .pl-filter-item.mini:hover {
-    background: none;
-    border-color: transparent;
+    background: #e0e0e0;
     color: #1a1a1a;
 }
 
 .pl-filter-item.mini.active {
-    background: none;
-    color: #1a1a1a;
-    border-color: transparent;
-    font-weight: 500;
-}
-
-.pl-filter-item.mini.active::after {
-    width: calc(100% - 10px);
+    background: #333;
+    color: #fff;
 }
 
 /* 4. Small Projects Grid */
@@ -785,8 +757,40 @@
         height: 350px;
     }
 
+    .pd-hero {
+        height: 55vh;
+        min-height: 400px;
+    }
+
+    .pd-hero-content {
+        padding: 0 15px;
+    }
+
+    .pd-breadcrumb {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 12px 15px;
+        gap: 6px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+    }
+
+    .pd-breadcrumb a {
+        font-size: 11px;
+    }
+    
+    .bc-current {
+        font-size: 11px;
+        text-align: center;
+    }
+
+    .bc-sep {
+        margin: 0 4px;
+        font-size: 11px;
+    }
+
     .pd-title-main {
-        font-size: 42px;
+        font-size: 32px;
     }
 
     .pd-gallery-masonry {

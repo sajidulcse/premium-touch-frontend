@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
 
 const ProjectEditor = () => {
@@ -37,6 +39,16 @@ const ProjectEditor = () => {
         try {
             const res = await api.get('/categories');
             setCategories(res.data);
+            
+            const targetCat = res.data.find(c => c.slug === 'projects' || c.slug === 'project' || c.name.toLowerCase() === 'projects' || c.name.toLowerCase() === 'project');
+            if (targetCat) {
+                setProject(prev => {
+                    if (!prev.category_id) {
+                        return { ...prev, category_id: targetCat.id.toString() };
+                    }
+                    return prev;
+                });
+            }
         } catch (err) {
             console.error(err);
         }
@@ -83,6 +95,16 @@ const ProjectEditor = () => {
         const subCat = subCategoryOptions.find(c => c.id.toString() === project.sub_category_id);
         return subCat?.children || [];
     }, [project.sub_category_id, subCategoryOptions]);
+
+    const modules = useMemo(() => ({
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            ['link', 'blockquote'],
+            ['clean']
+        ]
+    }), []);
 
     const handleFileChange = (e) => {
         setImages([...images, ...e.target.files]);
@@ -203,15 +225,15 @@ const ProjectEditor = () => {
                             />
                         </div>
 
-                        <div className="form-group">
+                        <div className="form-group quill-container">
                             <label>Description</label>
-                            <textarea
-                                className="admin-input"
-                                rows="8"
-                                placeholder="Describe the project's vision, materials, and challenges..."
+                            <ReactQuill
+                                theme="snow"
                                 value={project.description}
-                                onChange={(e) => setProject({ ...project, description: e.target.value })}
-                            ></textarea>
+                                onChange={(content) => setProject({ ...project, description: content })}
+                                modules={modules}
+                                placeholder="Describe the project's vision, materials, and challenges..."
+                            />
                         </div>
 
                         <div className="form-group" style={{ marginTop: '30px' }}>
@@ -257,7 +279,7 @@ const ProjectEditor = () => {
                     <aside className="editor-sidebar-card">
                         <h3>Project Classification</h3>
 
-                        <div className="form-group">
+                        <div className="form-group" style={{ display: 'none' }}>
                             <label>Main Category</label>
                             <select
                                 className="admin-input"

@@ -196,7 +196,11 @@ const ProjectDetail = () => {
                                 <h2 className="pd-section-title">The Design Narrative</h2>
                             </div>
                             <div className="pd-vision-content-wrap">
-                                <p className="pd-description-text">{project.description}</p>
+                                <div
+                                    className="pd-description-text ql-editor-content"
+                                    style={{ textAlign: 'justify' }}
+                                    dangerouslySetInnerHTML={{ __html: project.description }}
+                                />
                             </div>
                         </div>
                     </div>

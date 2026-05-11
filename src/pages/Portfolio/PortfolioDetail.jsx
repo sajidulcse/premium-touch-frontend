@@ -18,6 +18,9 @@ const PortfolioDetail = ({ explicitSlug }) => {
     const [viewerOpen, setViewerOpen] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [zoom, setZoom] = useState(1);
+    
+    // FAQ State
+    const [activeFaqIndex, setActiveFaqIndex] = useState(null);
 
     useEffect(() => {
         if (project && project.slug === projectSlug && location.state?.initialProject) {
@@ -188,11 +191,50 @@ const PortfolioDetail = ({ explicitSlug }) => {
                     <section className="pd-vision-container" style={{ paddingBottom: '30px', paddingTop: '0' }}>
                         <div className="container-inner">
                             <div className="pd-vision-content-wrap">
-                                <p className="pd-description-text" style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>{project.description}</p>
+                                <div 
+                                    className="pd-description-text ql-editor-content" 
+                                    style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'justify' }}
+                                    dangerouslySetInnerHTML={{ __html: project.description }}
+                                />
                             </div>
                         </div>
                     </section>
                 )}
+
+                {(() => {
+                    let faqs = [];
+                    if (project.faqs) {
+                        try { faqs = JSON.parse(project.faqs); } catch(e) {}
+                    }
+                    if (faqs.length > 0) {
+                        return (
+                            <section className="pd-faq-container" style={{ boxSizing: 'border-box', maxWidth: '800px', margin: '0 auto', width: '100%', padding: '0 20px 60px' }}>
+                                <div className="container-inner">
+                                    <h3 style={{ textAlign: 'center', marginBottom: '30px', fontFamily: '"Playfair Display", serif', fontSize: '28px', color: '#1a1a1a' }}>Frequently Asked Questions</h3>
+                                    <div className="pd-accordion">
+                                        {faqs.map((faq, index) => (
+                                            <div key={index} className="pd-accordion-item" style={{ marginBottom: '10px', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
+                                                <button 
+                                                    onClick={() => setActiveFaqIndex(activeFaqIndex === index ? null : index)}
+                                                    style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: '18px 0', fontSize: '18px', fontFamily: '"Outfit", sans-serif', fontWeight: '500', cursor: 'pointer', color: activeFaqIndex === index ? '#E85D25' : '#1a1a1a', textAlign: 'left', transition: 'all 0.3s ease' }}
+                                                >
+                                                    <span style={{ paddingRight: '20px', flex: 1, lineHeight: '1.4' }}>{faq.question}</span>
+                                                    <i className={`fas fa-chevron-${activeFaqIndex === index ? 'up' : 'down'}`} style={{ color: activeFaqIndex === index ? '#E85D25' : '#999', transition: '0.3s', fontSize: '14px', flexShrink: 0 }}></i>
+                                                </button>
+                                                {activeFaqIndex === index && (
+                                                    <div style={{ padding: '0 20px 20px 0', color: '#666', lineHeight: '1.7', textAlign: 'justify', fontSize: '15px' }}>
+                                                        {faq.answer}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        );
+                    }
+                    return null;
+                })()}
 
                 <footer className="pd-footer-nav">
                     <div className="container-inner">
