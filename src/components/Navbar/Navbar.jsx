@@ -51,6 +51,9 @@ const Navbar = () => {
       if (slug2) return `/portfolio/${slug1}/${slug2}`;
       return `/portfolio/${slug1}`;
     }
+    if (rootSlug === 'services') {
+      return `/services/${slug2 || slug1}`;
+    }
     if (rootSlug === 'blogs' || rootSlug === 'blog') return `/blogs/category/${slug2 || slug1}`;
     return `/${slug2 || slug1}`;
   };

@@ -5,16 +5,13 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
 
-const PortfolioEditor = () => {
+const ServiceEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [portfolio, setPortfolio] = useState({
-        title: '',
+    const [service, setService] = useState({
         description: '',
         status: 'published',
-        category_id: '',
-        sub_category_id: '',
-        child_category_id: ''
+        sub_category_id: ''
     });
     const [categories, setCategories] = useState([]);
     const [images, setImages] = useState([]);
@@ -23,11 +20,12 @@ const PortfolioEditor = () => {
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(!!id);
     const [alert, setAlert] = useState(null);
+    const [mainCategoryId, setMainCategoryId] = useState('');
 
     useEffect(() => {
         fetchCategories();
         if (id) {
-            fetchPortfolioDetail();
+            fetchServiceDetail();
         }
     }, [id]);
 
@@ -36,33 +34,25 @@ const PortfolioEditor = () => {
             const res = await api.get('/categories');
             setCategories(res.data);
             
-            const targetCat = res.data.find(c => c.slug === 'portfolio' || c.name.toLowerCase() === 'portfolio');
+            const targetCat = res.data.find(c => c.slug === 'services' || c.name.toLowerCase() === 'services' || c.slug === 'service' || c.name.toLowerCase() === 'service');
             if (targetCat) {
-                setPortfolio(prev => {
-                    if (!prev.category_id) {
-                        return { ...prev, category_id: targetCat.id.toString() };
-                    }
-                    return prev;
-                });
+                setMainCategoryId(targetCat.id.toString());
             }
         } catch (err) {
             console.error(err);
         }
     };
 
-    const fetchPortfolioDetail = async () => {
+    const fetchServiceDetail = async () => {
         setDataLoading(true);
         try {
-            const res = await api.get(`/admin-portfolios/${id}`);
+            const res = await api.get(`/admin-services/${id}`);
             const data = res.data;
             if (data) {
-                setPortfolio({
-                    title: data.title || '',
+                setService({
                     description: data.description || '',
                     status: data.status || 'published',
-                    category_id: data.category_id ? data.category_id.toString() : '',
-                    sub_category_id: data.sub_category_id ? data.sub_category_id.toString() : '',
-                    child_category_id: data.child_category_id ? data.child_category_id.toString() : ''
+                    sub_category_id: data.sub_category_id ? data.sub_category_id.toString() : ''
                 });
                 setExistingImages(data.images || []);
                 try {
@@ -70,25 +60,19 @@ const PortfolioEditor = () => {
                 } catch { setFaqs([]); }
             }
         } catch (err) {
-            console.error("Error fetching portfolio:", err);
-            setAlert({ type: 'error', msg: 'Portfolio not found.' });
+            console.error("Error fetching service:", err);
+            setAlert({ type: 'error', msg: 'Service not found.' });
         } finally {
             setDataLoading(false);
         }
     };
 
-    // Derived options for sub and child categories
+    // Derived options for sub categories based on main service category
     const subCategoryOptions = useMemo(() => {
-        if (!portfolio.category_id) return [];
-        const mainCat = categories.find(c => c.id.toString() === portfolio.category_id);
+        if (!mainCategoryId) return [];
+        const mainCat = categories.find(c => c.id.toString() === mainCategoryId);
         return mainCat?.children || [];
-    }, [portfolio.category_id, categories]);
-
-    const childCategoryOptions = useMemo(() => {
-        if (!portfolio.sub_category_id) return [];
-        const subCat = subCategoryOptions.find(c => c.id.toString() === portfolio.sub_category_id);
-        return subCat?.children || [];
-    }, [portfolio.sub_category_id, subCategoryOptions]);
+    }, [mainCategoryId, categories]);
 
     const modules = useMemo(() => ({
         toolbar: [
@@ -133,9 +117,9 @@ const PortfolioEditor = () => {
     const handleDeleteExistingImage = async (imgId) => {
         if (!window.confirm("Delete this image permanently?")) return;
         try {
-            await api.delete(`/portfolios/images/${imgId}`);
+            await api.delete(`/admin-services/images/${imgId}`);
             setExistingImages(existingImages.filter(img => img.id !== imgId));
-            setAlert({ type: 'success', msg: 'Image removed from portfolio.' });
+            setAlert({ type: 'success', msg: 'Image removed from service.' });
         } catch (err) {
             console.error(err);
             setAlert({ type: 'error', msg: 'Failed to delete image.' });
@@ -147,7 +131,7 @@ const PortfolioEditor = () => {
             const formData = new FormData();
             formData.append('_method', 'PUT');
             formData.append('thumbnail_id', imgId);
-            await api.post(`/portfolios/${id}`, formData);
+            await api.post(`/services/${id}`, formData);
 
             setExistingImages(existingImages.map(img => ({
                 ...img,
@@ -165,8 +149,8 @@ const PortfolioEditor = () => {
         setLoading(true);
 
         const formData = new FormData();
-        Object.keys(portfolio).forEach(key => {
-            formData.append(key, portfolio[key]);
+        Object.keys(service).forEach(key => {
+            formData.append(key, service[key]);
         });
 
         // Append new images
@@ -178,17 +162,17 @@ const PortfolioEditor = () => {
         try {
             if (id) {
                 formData.append('_method', 'PUT');
-                await api.post(`/portfolios/${id}`, formData);
-                setAlert({ type: 'success', msg: 'Portfolio updated successfully!' });
-                setTimeout(() => navigate('/admin/portfolios'), 1500);
+                await api.post(`/services/${id}`, formData);
+                setAlert({ type: 'success', msg: 'Service updated successfully!' });
+                setTimeout(() => navigate('/admin/services'), 1500);
             } else {
-                await api.post('/portfolios', formData);
-                setAlert({ type: 'success', msg: 'Portfolio created successfully!' });
-                setTimeout(() => navigate('/admin/portfolios'), 1500);
+                await api.post('/services', formData);
+                setAlert({ type: 'success', msg: 'Service created successfully!' });
+                setTimeout(() => navigate('/admin/services'), 1500);
             }
         } catch (err) {
             console.error(err);
-            const errorMsg = err.response?.data?.message || 'Failed to save portfolio.';
+            const errorMsg = err.response?.data?.message || 'Failed to save service.';
             const validationErrors = err.response?.data?.errors;
             let finalMsg = errorMsg;
 
@@ -208,10 +192,10 @@ const PortfolioEditor = () => {
         <div className="admin-page-container">
             <div className="admin-page-header">
                 <div>
-                    <h1>{id ? 'Edit Portfolio' : 'New Design Portfolio'}</h1>
-                    <p>Document your architectural vision and design process.</p>
+                    <h1>{id ? 'Edit Service' : 'New Service'}</h1>
+                    <p>Create and manage premium services.</p>
                 </div>
-                <button className="admin-btn-secondary" onClick={() => navigate('/admin/portfolios')}>
+                <button className="admin-btn-secondary" onClick={() => navigate('/admin/services')}>
                     Cancel
                 </button>
             </div>
@@ -225,37 +209,25 @@ const PortfolioEditor = () => {
 
             {dataLoading ? (
                 <div className="admin-loading-screen">
-                    <p>Fetching portfolio details...</p>
+                    <p>Fetching service details...</p>
                 </div>
             ) : (
                 <form onSubmit={handleSubmit} className="admin-editor-layout">
                     <div className="editor-main-card">
-                        <div className="form-group">
-                            <label>Portfolio Title</label>
-                            <input
-                                type="text"
-                                className="admin-input-large"
-                                placeholder="e.g. Minimalist Urban Loft"
-                                value={portfolio.title}
-                                onChange={(e) => setPortfolio({ ...portfolio, title: e.target.value })}
-                                required
-                            />
-                        </div>
-
                         <div className="form-group quill-container">
                             <label>Description</label>
                             <ReactQuill
                                 theme="snow"
-                                value={portfolio.description}
-                                onChange={(content) => setPortfolio({ ...portfolio, description: content })}
+                                value={service.description}
+                                onChange={(content) => setService({ ...service, description: content })}
                                 modules={modules}
-                                placeholder="Describe the portfolio's vision, materials, and challenges..."
+                                placeholder="Describe the service details..."
                             />
                         </div>
 
                         <div className="form-group" style={{ marginTop: '30px' }}>
                             <label>FAQ Section (Accordions)</label>
-                            <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>Add frequently asked questions about this design or implementation.</p>
+                            <p style={{ fontSize: '13px', color: '#666', marginBottom: '15px' }}>Add frequently asked questions about this service.</p>
                             
                             {faqs.map((faq, index) => (
                                 <div key={index} style={{ background: '#f9f9f9', padding: '15px', borderRadius: '8px', marginBottom: '15px', position: 'relative' }}>
@@ -332,30 +304,14 @@ const PortfolioEditor = () => {
                     </div>
 
                     <aside className="editor-sidebar-card">
-                        <h3>Portfolio Classification</h3>
-
-                        <div className="form-group" style={{ display: 'none' }}>
-                            <label>Main Category</label>
-                            <select
-                                className="admin-input"
-                                value={portfolio.category_id}
-                                onChange={(e) => setPortfolio({ ...portfolio, category_id: e.target.value, sub_category_id: '', child_category_id: '' })}
-                                required
-                            >
-                                <option value="">Select Category</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <h3>Service Classification</h3>
 
                         <div className="form-group">
                             <label>Sub Category</label>
                             <select
                                 className="admin-input"
-                                value={portfolio.sub_category_id}
-                                onChange={(e) => setPortfolio({ ...portfolio, sub_category_id: e.target.value, child_category_id: '' })}
-                                disabled={!portfolio.category_id}
+                                value={service.sub_category_id}
+                                onChange={(e) => setService({ ...service, sub_category_id: e.target.value })}
                             >
                                 <option value="">Select Sub Category</option>
                                 {subCategoryOptions.map(cat => (
@@ -364,35 +320,16 @@ const PortfolioEditor = () => {
                             </select>
                         </div>
 
-                        <div className="form-group">
-                            <label>Child Category</label>
-                            <select
-                                className="admin-input"
-                                value={portfolio.child_category_id}
-                                onChange={(e) => setPortfolio({ ...portfolio, child_category_id: e.target.value })}
-                                disabled={!portfolio.sub_category_id}
-                            >
-                                <option value="">Select Child Category</option>
-                                {childCategoryOptions.map(cat => (
-                                    <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
                         <hr style={{ margin: '20px 0', border: '0', borderTop: '1px solid #eee' }} />
 
-                        <h3>Portfolio Details</h3>
-
-
-
-
+                        <h3>Service Details</h3>
 
                         <div className="form-group">
                             <label>Status</label>
                             <select
                                 className="admin-input"
-                                value={portfolio.status}
-                                onChange={(e) => setPortfolio({ ...portfolio, status: e.target.value })}
+                                value={service.status}
+                                onChange={(e) => setService({ ...service, status: e.target.value })}
                             >
                                 <option value="published">Live</option>
                                 <option value="draft">Draft</option>
@@ -400,7 +337,7 @@ const PortfolioEditor = () => {
                         </div>
 
                         <button type="submit" className="admin-btn-primary full-width" disabled={loading}>
-                            {loading ? 'Saving Masterpiece...' : id ? 'Update Portfolio' : 'Publish Portfolio'}
+                            {loading ? 'Saving Service...' : id ? 'Update Service' : 'Publish Service'}
                         </button>
                     </aside>
                 </form>
@@ -409,4 +346,4 @@ const PortfolioEditor = () => {
     );
 };
 
-export default PortfolioEditor;
+export default ServiceEditor;

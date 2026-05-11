@@ -131,6 +131,13 @@ const AdminLayout = ({ children }) => {
                         </li>
 
                         <li>
+                            <NavLink to="/admin/services" className={({ isActive }) => isActive ? 'active' : ''}>
+                                <i className="fas fa-concierge-bell"></i>
+                                <span>Manage Services</span>
+                            </NavLink>
+                        </li>
+
+                        <li>
                             <NavLink to="/admin/profile" className={({ isActive }) => isActive ? 'active' : ''}>
                                 <i className="fas fa-user-circle"></i>
                                 <span>My Profile</span>
