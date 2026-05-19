@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const CategoryManager = () => {
     const [categories, setCategories] = useState([]);
@@ -8,6 +9,8 @@ const CategoryManager = () => {
     const [alert, setAlert] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ name: '', parent_id: 0, status: 1, position: 0 });
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
 
     useEffect(() => {
         fetchCategories();
@@ -36,15 +39,22 @@ const CategoryManager = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Delete this category? Subcategories will also be removed.')) {
-            try {
-                await api.delete(`/admin/categories/${id}`);
-                setAlert({ type: 'success', msg: 'Category removed.' });
-                fetchCategories();
-            } catch (err) {
-                setAlert({ type: 'error', msg: 'Failed to delete.' });
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteTargetId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setConfirmOpen(false);
+        if (!deleteTargetId) return;
+        try {
+            await api.delete(`/admin/categories/${deleteTargetId}`);
+            setAlert({ type: 'success', msg: 'Category removed.' });
+            fetchCategories();
+        } catch (err) {
+            setAlert({ type: 'error', msg: 'Failed to delete.' });
+        } finally {
+            setDeleteTargetId(null);
         }
     };
 
@@ -102,7 +112,7 @@ const CategoryManager = () => {
                             <button onClick={() => handleEdit(cat)} className="action-btn edit-btn" title="Edit">
                                 <i className="fas fa-edit"></i>
                             </button>
-                            <button onClick={() => handleDelete(cat.id)} className="action-btn delete-btn" title="Delete">
+                            <button onClick={() => handleDeleteClick(cat.id)} className="action-btn delete-btn" title="Delete">
                                 <i className="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -229,6 +239,17 @@ const CategoryManager = () => {
                     </table>
                 </div>
             </div>
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Category"
+                message="Are you sure you want to delete this category? Subcategories will also be removed."
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

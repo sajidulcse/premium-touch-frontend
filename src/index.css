@@ -1,0 +1,13 @@
+/* ==============================================================
+   GLOBAL RICH TEXT STYLING (.ql-editor-content)
+   ============================================================== */
+
+.ql-editor-content p {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+}
+
+.ql-editor-content p:last-child {
+    margin-bottom: 0;
+}

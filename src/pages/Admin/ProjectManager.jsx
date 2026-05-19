@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const ProjectManager = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,15 +28,22 @@ const ProjectManager = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Delete this project? All associated images will be removed.')) {
-            try {
-                await api.delete(`/projects/${id}`);
-                setAlert({ type: 'success', msg: 'Project archived successfully.' });
-                fetchProjects();
-            } catch (err) {
-                setAlert({ type: 'error', msg: 'Failed to delete project.' });
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteTargetId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setConfirmOpen(false);
+        if (!deleteTargetId) return;
+        try {
+            await api.delete(`/projects/${deleteTargetId}`);
+            setAlert({ type: 'success', msg: 'Project archived successfully.' });
+            fetchProjects();
+        } catch (err) {
+            setAlert({ type: 'error', msg: 'Failed to delete project.' });
+        } finally {
+            setDeleteTargetId(null);
         }
     };
 
@@ -105,7 +115,7 @@ const ProjectManager = () => {
                                             <button onClick={() => navigate(`/admin/projects/edit/${project.id}`)} className="action-btn edit-btn" title="Edit">
                                                 <i className="fas fa-edit"></i>
                                             </button>
-                                            <button onClick={() => handleDelete(project.id)} className="action-btn delete-btn" title="Delete">
+                                            <button onClick={() => handleDeleteClick(project.id)} className="action-btn delete-btn" title="Delete">
                                                 <i className="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
@@ -116,6 +126,17 @@ const ProjectManager = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Project"
+                message="Are you sure you want to delete this project? All associated images will be permanently removed."
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

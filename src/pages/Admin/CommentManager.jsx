@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const CommentManager = () => {
     const [comments, setComments] = useState([]);
     const [replyingTo, setReplyingTo] = useState(null);
     const [replyContent, setReplyContent] = useState('');
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
 
     useEffect(() => {
         fetchComments();
@@ -41,15 +44,22 @@ const CommentManager = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Delete this comment permanently?')) {
-            try {
-                await api.delete(`/comments/${id}`);
-                setAlert({ type: 'success', msg: 'Comment deleted!' });
-                fetchComments();
-            } catch (err) {
-                setAlert({ type: 'error', msg: 'Failed to delete.' });
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteTargetId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setConfirmOpen(false);
+        if (!deleteTargetId) return;
+        try {
+            await api.delete(`/comments/${deleteTargetId}`);
+            setAlert({ type: 'success', msg: 'Comment deleted!' });
+            fetchComments();
+        } catch (err) {
+            setAlert({ type: 'error', msg: 'Failed to delete.' });
+        } finally {
+            setDeleteTargetId(null);
         }
     };
 
@@ -152,7 +162,7 @@ const CommentManager = () => {
                                             <button onClick={() => setReplyingTo(comment.id)} className="action-btn edit-btn" title="Reply">
                                                 <i className="fas fa-reply"></i>
                                             </button>
-                                            <button onClick={() => handleDelete(comment.id)} className="action-btn delete-btn" title="Delete">
+                                            <button onClick={() => handleDeleteClick(comment.id)} className="action-btn delete-btn" title="Delete">
                                                 <i className="fas fa-trash"></i>
                                             </button>
                                         </div>
@@ -179,6 +189,17 @@ const CommentManager = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Comment"
+                message="Are you sure you want to permanently delete this comment?"
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

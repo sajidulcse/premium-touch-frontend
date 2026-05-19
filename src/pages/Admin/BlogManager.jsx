@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const BlogManager = () => {
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,15 +28,22 @@ const BlogManager = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Delete this story? This cannot be undone.')) {
-            try {
-                await api.delete(`/blogs/${id}`);
-                setAlert({ type: 'success', msg: 'Story removed from archives.' });
-                fetchBlogs();
-            } catch (err) {
-                setAlert({ type: 'error', msg: 'Could not delete.' });
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteTargetId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setConfirmOpen(false);
+        if (!deleteTargetId) return;
+        try {
+            await api.delete(`/blogs/${deleteTargetId}`);
+            setAlert({ type: 'success', msg: 'Story removed from archives.' });
+            fetchBlogs();
+        } catch (err) {
+            setAlert({ type: 'error', msg: 'Could not delete.' });
+        } finally {
+            setDeleteTargetId(null);
         }
     };
 
@@ -112,7 +122,7 @@ const BlogManager = () => {
                                             <button onClick={() => navigate(`/admin/blogs/edit/${blog.id}`)} className="action-btn edit-btn" title="Edit">
                                                 <i className="fas fa-edit"></i>
                                             </button>
-                                            <button onClick={() => handleDelete(blog.id)} className="action-btn delete-btn" title="Delete">
+                                            <button onClick={() => handleDeleteClick(blog.id)} className="action-btn delete-btn" title="Delete">
                                                 <i className="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
@@ -123,6 +133,17 @@ const BlogManager = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Blog Post"
+                message="Are you sure you want to delete this blog post? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

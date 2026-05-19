@@ -586,6 +586,15 @@ html.admin-html {
     line-height: 1.8;
 }
 
+.ql-editor p {
+    margin-top: 0;
+    margin-bottom: 1.5rem !important;
+}
+
+.ql-editor p:last-child {
+    margin-bottom: 0 !important;
+}
+
 .multi-image-uploader .upload-box {
     display: flex;
     flex-direction: column;

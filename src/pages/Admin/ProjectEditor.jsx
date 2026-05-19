@@ -4,6 +4,17 @@ import api, { getStorageUrl } from '../../api/axios';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+
+// Utility to clean HTML - removes newlines and whitespace between tags.
+const cleanHtml = (html) => {
+    if (!html) return '';
+    return html
+        .replace(/\r?\n|\r/g, '')
+        .replace(/>\s+</g, '><')
+        .replace(/(<p><br><\/p>)+/g, '<p><br></p>')
+        .replace(/^<p><br><\/p>|<p><br><\/p>$/g, '');
+};
 
 const ProjectEditor = () => {
     const { id } = useParams();
@@ -27,6 +38,8 @@ const ProjectEditor = () => {
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(!!id);
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteImgId, setDeleteImgId] = useState(null);
 
     useEffect(() => {
         fetchCategories();
@@ -62,7 +75,7 @@ const ProjectEditor = () => {
             if (data) {
                 setProject({
                     title: data.title || '',
-                    description: data.description || '',
+                    description: cleanHtml(data.description || ''),
                     location: data.location || '',
                     client_name: data.client_name || '',
                     completion_date: data.completion_date || '',
@@ -103,7 +116,10 @@ const ProjectEditor = () => {
             [{ 'list': 'ordered' }, { 'list': 'bullet' }],
             ['link', 'blockquote'],
             ['clean']
-        ]
+        ],
+        clipboard: {
+            matchVisual: false
+        }
     }), []);
 
     const handleFileChange = (e) => {
@@ -114,15 +130,23 @@ const ProjectEditor = () => {
         setImages(images.filter((_, i) => i !== index));
     };
 
-    const handleDeleteExistingImage = async (imgId) => {
-        if (!window.confirm("Delete this image permanently?")) return;
+    const handleDeleteExistingImage = (imgId) => {
+        setDeleteImgId(imgId);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDeleteImage = async () => {
+        setConfirmOpen(false);
+        if (!deleteImgId) return;
         try {
-            await api.delete(`/projects/images/${imgId}`);
-            setExistingImages(existingImages.filter(img => img.id !== imgId));
+            await api.delete(`/projects/images/${deleteImgId}`);
+            setExistingImages(existingImages.filter(img => img.id !== deleteImgId));
             setAlert({ type: 'success', msg: 'Image removed from project.' });
         } catch (err) {
             console.error(err);
             setAlert({ type: 'error', msg: 'Failed to delete image.' });
+        } finally {
+            setDeleteImgId(null);
         }
     };
 
@@ -148,9 +172,11 @@ const ProjectEditor = () => {
         e.preventDefault();
         setLoading(true);
 
+        const cleanedProject = { ...project, description: cleanHtml(project.description) };
+
         const formData = new FormData();
-        Object.keys(project).forEach(key => {
-            formData.append(key, project[key]);
+        Object.keys(cleanedProject).forEach(key => {
+            formData.append(key, cleanedProject[key]);
         });
 
         // Append new images
@@ -401,6 +427,17 @@ const ProjectEditor = () => {
                     </aside>
                 </form>
             )}
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Image"
+                message="Are you sure you want to permanently delete this image?"
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDeleteImage}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };
