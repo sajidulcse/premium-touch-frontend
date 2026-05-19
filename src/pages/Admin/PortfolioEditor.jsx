@@ -4,6 +4,17 @@ import api, { getStorageUrl } from '../../api/axios';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+
+// Utility to clean HTML - removes newlines and whitespace between tags.
+const cleanHtml = (html) => {
+    if (!html) return '';
+    return html
+        .replace(/\r?\n|\r/g, '')
+        .replace(/>\s+</g, '><')
+        .replace(/(<p><br><\/p>)+/g, '<p><br></p>')
+        .replace(/^<p><br><\/p>|<p><br><\/p>$/g, '');
+};
 
 const PortfolioEditor = () => {
     const { id } = useParams();
@@ -23,6 +34,8 @@ const PortfolioEditor = () => {
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(!!id);
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteImgId, setDeleteImgId] = useState(null);
 
     useEffect(() => {
         fetchCategories();
@@ -58,7 +71,7 @@ const PortfolioEditor = () => {
             if (data) {
                 setPortfolio({
                     title: data.title || '',
-                    description: data.description || '',
+                    description: cleanHtml(data.description || ''),
                     status: data.status || 'published',
                     category_id: data.category_id ? data.category_id.toString() : '',
                     sub_category_id: data.sub_category_id ? data.sub_category_id.toString() : '',
@@ -97,7 +110,10 @@ const PortfolioEditor = () => {
             [{ 'list': 'ordered' }, { 'list': 'bullet' }],
             ['link', 'blockquote'],
             ['clean']
-        ]
+        ],
+        clipboard: {
+            matchVisual: false
+        }
     }), []);
 
     const handleAddFaq = () => {
@@ -130,15 +146,23 @@ const PortfolioEditor = () => {
         setImages(images.filter((_, i) => i !== index));
     };
 
-    const handleDeleteExistingImage = async (imgId) => {
-        if (!window.confirm("Delete this image permanently?")) return;
+    const handleDeleteExistingImage = (imgId) => {
+        setDeleteImgId(imgId);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDeleteImage = async () => {
+        setConfirmOpen(false);
+        if (!deleteImgId) return;
         try {
-            await api.delete(`/portfolios/images/${imgId}`);
-            setExistingImages(existingImages.filter(img => img.id !== imgId));
+            await api.delete(`/portfolios/images/${deleteImgId}`);
+            setExistingImages(existingImages.filter(img => img.id !== deleteImgId));
             setAlert({ type: 'success', msg: 'Image removed from portfolio.' });
         } catch (err) {
             console.error(err);
             setAlert({ type: 'error', msg: 'Failed to delete image.' });
+        } finally {
+            setDeleteImgId(null);
         }
     };
 
@@ -162,11 +186,48 @@ const PortfolioEditor = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Required validation checks
+        if (!portfolio.title || portfolio.title.trim() === '') {
+            setAlert({ type: 'error', msg: 'Portfolio Title is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        const cleanedDescription = cleanHtml(portfolio.description);
+        if (!cleanedDescription || cleanedDescription === '<p><br></p>' || cleanedDescription.replace(/<[^>]*>/g, '').trim() === '') {
+            setAlert({ type: 'error', msg: 'Description is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!portfolio.sub_category_id || portfolio.sub_category_id === '') {
+            setAlert({ type: 'error', msg: 'Sub Category is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (id) {
+            if (existingImages.length + images.length === 0) {
+                setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
+                window.scrollTo(0, 0);
+                return;
+            }
+        } else {
+            if (images.length === 0) {
+                setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
+                window.scrollTo(0, 0);
+                return;
+            }
+        }
+
         setLoading(true);
 
+        const cleanedPortfolio = { ...portfolio, description: cleanedDescription };
+
         const formData = new FormData();
-        Object.keys(portfolio).forEach(key => {
-            formData.append(key, portfolio[key]);
+        Object.keys(cleanedPortfolio).forEach(key => {
+            formData.append(key, cleanedPortfolio[key]);
         });
 
         // Append new images
@@ -231,7 +292,7 @@ const PortfolioEditor = () => {
                 <form onSubmit={handleSubmit} className="admin-editor-layout">
                     <div className="editor-main-card">
                         <div className="form-group">
-                            <label>Portfolio Title</label>
+                            <label>Portfolio Title <span style={{ color: '#ef4444' }}>*</span></label>
                             <input
                                 type="text"
                                 className="admin-input-large"
@@ -243,7 +304,7 @@ const PortfolioEditor = () => {
                         </div>
 
                         <div className="form-group quill-container">
-                            <label>Description</label>
+                            <label>Description <span style={{ color: '#ef4444' }}>*</span></label>
                             <ReactQuill
                                 theme="snow"
                                 value={portfolio.description}
@@ -292,7 +353,7 @@ const PortfolioEditor = () => {
                         </div>
 
                         <div className="form-group" style={{ marginTop: '40px' }}>
-                            <label>Gallery Images</label>
+                            <label>Gallery Images <span style={{ color: '#ef4444' }}>*</span></label>
                             <div className="multi-image-uploader">
                                 <label className="upload-box">
                                     <i className="fas fa-camera"></i>
@@ -350,7 +411,7 @@ const PortfolioEditor = () => {
                         </div>
 
                         <div className="form-group">
-                            <label>Sub Category</label>
+                            <label>Sub Category <span style={{ color: '#ef4444' }}>*</span></label>
                             <select
                                 className="admin-input"
                                 value={portfolio.sub_category_id}
@@ -405,6 +466,17 @@ const PortfolioEditor = () => {
                     </aside>
                 </form>
             )}
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Image"
+                message="Are you sure you want to permanently delete this image?"
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDeleteImage}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

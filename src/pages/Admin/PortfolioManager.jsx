@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const PortfolioManager = () => {
     const [portfolios, setPortfolios] = useState([]);
     const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,15 +28,22 @@ const PortfolioManager = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Delete this portfolio? All associated images will be removed.')) {
-            try {
-                await api.delete(`/portfolios/${id}`);
-                setAlert({ type: 'success', msg: 'Portfolio archived successfully.' });
-                fetchPortfolios();
-            } catch (err) {
-                setAlert({ type: 'error', msg: 'Failed to delete portfolio.' });
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteTargetId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setConfirmOpen(false);
+        if (!deleteTargetId) return;
+        try {
+            await api.delete(`/portfolios/${deleteTargetId}`);
+            setAlert({ type: 'success', msg: 'Portfolio archived successfully.' });
+            fetchPortfolios();
+        } catch (err) {
+            setAlert({ type: 'error', msg: 'Failed to delete portfolio.' });
+        } finally {
+            setDeleteTargetId(null);
         }
     };
 
@@ -101,7 +111,7 @@ const PortfolioManager = () => {
                                             <button onClick={() => navigate(`/admin/portfolios/edit/${portfolio.id}`)} className="action-btn edit-btn" title="Edit">
                                                 <i className="fas fa-edit"></i>
                                             </button>
-                                            <button onClick={() => handleDelete(portfolio.id)} className="action-btn delete-btn" title="Delete">
+                                            <button onClick={() => handleDeleteClick(portfolio.id)} className="action-btn delete-btn" title="Delete">
                                                 <i className="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
@@ -112,6 +122,17 @@ const PortfolioManager = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Portfolio"
+                message="Are you sure you want to delete this portfolio? All associated images will be permanently removed."
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

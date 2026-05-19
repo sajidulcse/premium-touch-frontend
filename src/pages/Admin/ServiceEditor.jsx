@@ -4,6 +4,19 @@ import api, { getStorageUrl } from '../../api/axios';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+
+// Utility to clean HTML - removes newlines and whitespace between tags.
+// This prevents ReactQuill from interpreting HTML source formatting 
+// as extra line gaps, while allowing intentional gaps to be saved.
+const cleanHtml = (html) => {
+    if (!html) return '';
+    return html
+        .replace(/\r?\n|\r/g, '')
+        .replace(/>\s+</g, '><')
+        .replace(/(<p><br><\/p>)+/g, '<p><br></p>')
+        .replace(/^<p><br><\/p>|<p><br><\/p>$/g, '');
+};
 
 const ServiceEditor = () => {
     const { id } = useParams();
@@ -21,6 +34,8 @@ const ServiceEditor = () => {
     const [dataLoading, setDataLoading] = useState(!!id);
     const [alert, setAlert] = useState(null);
     const [mainCategoryId, setMainCategoryId] = useState('');
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteImgId, setDeleteImgId] = useState(null);
 
     useEffect(() => {
         fetchCategories();
@@ -50,7 +65,7 @@ const ServiceEditor = () => {
             const data = res.data;
             if (data) {
                 setService({
-                    description: data.description || '',
+                    description: cleanHtml(data.description || ''),
                     status: data.status || 'published',
                     sub_category_id: data.sub_category_id ? data.sub_category_id.toString() : ''
                 });
@@ -81,7 +96,10 @@ const ServiceEditor = () => {
             [{ 'list': 'ordered' }, { 'list': 'bullet' }],
             ['link', 'blockquote'],
             ['clean']
-        ]
+        ],
+        clipboard: {
+            matchVisual: false
+        }
     }), []);
 
     const handleAddFaq = () => {
@@ -114,15 +132,28 @@ const ServiceEditor = () => {
         setImages(images.filter((_, i) => i !== index));
     };
 
-    const handleDeleteExistingImage = async (imgId) => {
-        if (!window.confirm("Delete this image permanently?")) return;
+    const handleDeleteExistingImage = (imgId) => {
+        if (existingImages.length + images.length <= 1) {
+            setAlert({ type: 'error', msg: 'A service must have at least one gallery image.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+        setDeleteImgId(imgId);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDeleteImage = async () => {
+        setConfirmOpen(false);
+        if (!deleteImgId) return;
         try {
-            await api.delete(`/admin-services/images/${imgId}`);
-            setExistingImages(existingImages.filter(img => img.id !== imgId));
+            await api.delete(`/admin-services/images/${deleteImgId}`);
+            setExistingImages(existingImages.filter(img => img.id !== deleteImgId));
             setAlert({ type: 'success', msg: 'Image removed from service.' });
         } catch (err) {
             console.error(err);
             setAlert({ type: 'error', msg: 'Failed to delete image.' });
+        } finally {
+            setDeleteImgId(null);
         }
     };
 
@@ -148,9 +179,35 @@ const ServiceEditor = () => {
         e.preventDefault();
         setLoading(true);
 
+        // Clean description HTML before saving to prevent line gap accumulation
+        const cleanedDescription = cleanHtml(service.description);
+
+        // Required validation checks
+        if (!cleanedDescription || cleanedDescription === '<p><br></p>' || cleanedDescription.replace(/<[^>]*>/g, '').trim() === '') {
+            setAlert({ type: 'error', msg: 'Description is required.' });
+            setLoading(false);
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!service.sub_category_id) {
+            setAlert({ type: 'error', msg: 'Sub Category is required.' });
+            setLoading(false);
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (existingImages.length + images.length === 0) {
+            setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
+            setLoading(false);
+            window.scrollTo(0, 0);
+            return;
+        }
+
         const formData = new FormData();
-        Object.keys(service).forEach(key => {
-            formData.append(key, service[key]);
+        const cleanedService = { ...service, description: cleanedDescription };
+        Object.keys(cleanedService).forEach(key => {
+            formData.append(key, cleanedService[key]);
         });
 
         // Append new images
@@ -215,7 +272,7 @@ const ServiceEditor = () => {
                 <form onSubmit={handleSubmit} className="admin-editor-layout">
                     <div className="editor-main-card">
                         <div className="form-group quill-container">
-                            <label>Description</label>
+                            <label>Description <span style={{ color: '#ef4444' }}>*</span></label>
                             <ReactQuill
                                 theme="snow"
                                 value={service.description}
@@ -264,7 +321,7 @@ const ServiceEditor = () => {
                         </div>
 
                         <div className="form-group" style={{ marginTop: '40px' }}>
-                            <label>Gallery Images</label>
+                            <label>Gallery Images <span style={{ color: '#ef4444' }}>*</span></label>
                             <div className="multi-image-uploader">
                                 <label className="upload-box">
                                     <i className="fas fa-camera"></i>
@@ -307,7 +364,7 @@ const ServiceEditor = () => {
                         <h3>Service Classification</h3>
 
                         <div className="form-group">
-                            <label>Sub Category</label>
+                            <label>Sub Category <span style={{ color: '#ef4444' }}>*</span></label>
                             <select
                                 className="admin-input"
                                 value={service.sub_category_id}
@@ -342,6 +399,17 @@ const ServiceEditor = () => {
                     </aside>
                 </form>
             )}
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Image"
+                message="Are you sure you want to permanently delete this image?"
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDeleteImage}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

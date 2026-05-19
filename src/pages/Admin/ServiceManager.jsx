@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
-
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 const ServiceManager = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -25,15 +27,22 @@ const ServiceManager = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Delete this service? All associated images will be removed.')) {
-            try {
-                await api.delete(`/services/${id}`);
-                setAlert({ type: 'success', msg: 'Service archived successfully.' });
-                fetchServices();
-            } catch (err) {
-                setAlert({ type: 'error', msg: 'Failed to delete service.' });
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteTargetId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setConfirmOpen(false);
+        if (!deleteTargetId) return;
+        try {
+            await api.delete(`/services/${deleteTargetId}`);
+            setAlert({ type: 'success', msg: 'Service archived successfully.' });
+            fetchServices();
+        } catch (err) {
+            setAlert({ type: 'error', msg: 'Failed to delete service.' });
+        } finally {
+            setDeleteTargetId(null);
         }
     };
 
@@ -86,7 +95,7 @@ const ServiceManager = () => {
                                         </div>
                                     </td>
                                     <td>
-                                        <Link to={`/admin/services/edit/${service.id}`} className="table-title-link">
+                                        <Link to={`/admin/services/edit/${service.sub_category?.slug || service.id}`} className="table-title-link">
                                             <strong>{service.sub_category?.name || 'Uncategorized Service'}</strong>
                                         </Link>
                                     </td>
@@ -97,10 +106,10 @@ const ServiceManager = () => {
                                     </td>
                                     <td>
                                         <div className="action-row">
-                                            <button onClick={() => navigate(`/admin/services/edit/${service.id}`)} className="action-btn edit-btn" title="Edit">
+                                            <button onClick={() => navigate(`/admin/services/edit/${service.sub_category?.slug || service.id}`)} className="action-btn edit-btn" title="Edit">
                                                 <i className="fas fa-edit"></i>
                                             </button>
-                                            <button onClick={() => handleDelete(service.id)} className="action-btn delete-btn" title="Delete">
+                                            <button onClick={() => handleDeleteClick(service.id)} className="action-btn delete-btn" title="Delete">
                                                 <i className="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
@@ -111,6 +120,17 @@ const ServiceManager = () => {
                     </tbody>
                 </table>
             </div>
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Service"
+                message="Are you sure you want to delete this service? All associated images will be permanently removed."
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

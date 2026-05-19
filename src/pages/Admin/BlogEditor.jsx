@@ -4,6 +4,17 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+
+// Utility to clean HTML - removes newlines and whitespace between tags.
+const cleanHtml = (html) => {
+    if (!html) return '';
+    return html
+        .replace(/\r?\n|\r/g, '')
+        .replace(/>\s+</g, '><')
+        .replace(/(<p><br><\/p>)+/g, '<p><br></p>')
+        .replace(/^<p><br><\/p>|<p><br><\/p>$/g, '');
+};
 
 const BlogEditor = () => {
     const { id } = useParams();
@@ -21,6 +32,8 @@ const BlogEditor = () => {
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(!!id); // Separate state for data fetching
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmConfig, setConfirmConfig] = useState({ title: '', message: '', type: 'danger', confirmText: 'Delete', onConfirm: () => {} });
     const quillRef = React.useRef(null);
 
     useEffect(() => {
@@ -48,7 +61,7 @@ const BlogEditor = () => {
                 // Set the main blog data
                 setBlog({
                     title: currentBlog.title || '',
-                    content: currentBlog.content || '',
+                    content: cleanHtml(currentBlog.content || ''),
                     status: currentBlog.status || 'published',
                     author: currentBlog.author || 'Admin',
                     blog_category_id: currentBlog.blog_category_id ? currentBlog.blog_category_id.toString() : ''
@@ -158,6 +171,9 @@ const BlogEditor = () => {
             handlers: {
                 image: imageHandler
             }
+        },
+        clipboard: {
+            matchVisual: false
         }
     }), []);
 
@@ -169,10 +185,21 @@ const BlogEditor = () => {
         setImages(images.filter((_, i) => i !== index));
     };
 
-    const handleDeleteExistingImage = async (imgId) => {
-        if (!window.confirm("Delete this image permanently?")) return;
+    const handleDeleteExistingImage = (imgId) => {
+        setConfirmConfig({
+            title: "Delete Image",
+            message: "Are you sure you want to permanently delete this image?",
+            type: "danger",
+            confirmText: "Delete",
+            onConfirm: () => handleConfirmDeleteImage(imgId)
+        });
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDeleteImage = async (imgId) => {
+        setConfirmOpen(false);
         try {
-            await api.delete(`/blogs/images/${imgId}`); // Fixed: plural 'images'
+            await api.delete(`/blogs/images/${imgId}`);
             setExistingImages(existingImages.filter(img => img.id !== imgId));
             setAlert({ type: 'success', msg: 'Image removed from gallery.' });
         } catch (err) {
@@ -181,31 +208,20 @@ const BlogEditor = () => {
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const proceedSubmit = async () => {
         setLoading(true);
-
+        const cleanedBlog = { ...blog, content: cleanHtml(blog.content) };
         const formData = new FormData();
-        Object.keys(blog).forEach(key => {
-            formData.append(key, blog[key]);
+        Object.keys(cleanedBlog).forEach(key => {
+            formData.append(key, cleanedBlog[key]);
         });
 
-        // Append new images
         for (let i = 0; i < images.length; i++) {
             formData.append('images[]', images[i]);
         }
 
         try {
             if (id) {
-                // Check for 'blob:' URLs in content and warn user
-                if (blog.content.includes('src="blob:')) {
-                    if (!window.confirm("Notice: Some images in your Story Content were added via copy-paste and might not show up for others. Do you want to save anyway? (We recommend re-uploading them using the new Image button)")) {
-                        setLoading(false);
-                        return;
-                    }
-                }
-
-                // Laravel Multi-part PUT workaround
                 formData.append('_method', 'PUT');
                 await api.post(`/blogs/${id}`, formData);
                 setAlert({ type: 'success', msg: 'Blog updated successfully!' });
@@ -222,14 +238,31 @@ const BlogEditor = () => {
             let finalMsg = errorMsg;
 
             if (validationErrors) {
-                const details = Object.values(validationErrors).flat().join(' ');
-                finalMsg += ` ${details}`;
+                finalMsg = Object.values(validationErrors).flat().join(' ');
             }
-
             setAlert({ type: 'error', msg: finalMsg });
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (blog.content.includes('src="blob:')) {
+            setConfirmConfig({
+                title: "Warning: Copy-Pasted Images",
+                message: "Some images in your Story Content were added via copy-paste and might not show up for others. Do you want to save anyway? (We recommend re-uploading them using the Image button)",
+                type: "warning",
+                confirmText: "Save Anyway",
+                onConfirm: () => {
+                    setConfirmOpen(false);
+                    proceedSubmit();
+                }
+            });
+            setConfirmOpen(true);
+        } else {
+            proceedSubmit();
         }
     };
 
@@ -363,6 +396,17 @@ const BlogEditor = () => {
                     </aside>
                 </form>
             )}
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title={confirmConfig.title}
+                message={confirmConfig.message}
+                confirmText={confirmConfig.confirmText}
+                cancelText="Cancel"
+                type={confirmConfig.type}
+                onConfirm={confirmConfig.onConfirm}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };

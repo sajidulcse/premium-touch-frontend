@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import './Admin.css';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const BlogCategoryManager = () => {
     const [categories, setCategories] = useState([]);
@@ -8,6 +9,8 @@ const BlogCategoryManager = () => {
     const [newCat, setNewCat] = useState({ name: '' });
     const [editing, setEditing] = useState(null);
     const [alert, setAlert] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
 
     useEffect(() => {
         fetchCategories();
@@ -42,14 +45,22 @@ const BlogCategoryManager = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this category?')) return;
+    const handleDeleteClick = (id) => {
+        setDeleteTargetId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setConfirmOpen(false);
+        if (!deleteTargetId) return;
         try {
-            await api.delete(`/blog-categories/${id}`);
+            await api.delete(`/blog-categories/${deleteTargetId}`);
             setAlert({ type: 'success', msg: 'Category removed.' });
             fetchCategories();
         } catch (err) {
             setAlert({ type: 'error', msg: 'Delete failed.' });
+        } finally {
+            setDeleteTargetId(null);
         }
     };
 
@@ -116,7 +127,7 @@ const BlogCategoryManager = () => {
                                             <button className="action-btn edit" onClick={() => { setEditing(cat); setNewCat({ name: cat.name }); }}>
                                                 <i className="fas fa-edit"></i>
                                             </button>
-                                            <button className="action-btn delete" onClick={() => handleDelete(cat.id)}>
+                                            <button className="action-btn delete" onClick={() => handleDeleteClick(cat.id)}>
                                                 <i className="fas fa-trash"></i>
                                             </button>
                                         </div>
@@ -127,6 +138,17 @@ const BlogCategoryManager = () => {
                     </table>
                 </div>
             </div>
+
+            <ConfirmModal 
+                isOpen={confirmOpen}
+                title="Delete Blog Category"
+                message="Are you sure you want to delete this blog category?"
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="danger"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setConfirmOpen(false)}
+            />
         </div>
     );
 };
