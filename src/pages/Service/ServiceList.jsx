@@ -177,15 +177,52 @@ const ServiceList = () => {
                             <div className="loader-text">Loading Services...</div>
                         </div>
                     ) : services.length === 0 ? (
-                        <div className="pl-empty-state">
-                            <div className="empty-icon">
-                                <i className="fas fa-drafting-compass"></i>
+                        <div className="pl-empty-state" style={{ 
+                            gridColumn: '1 / -1',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                            margin: '40px auto'
+                        }}>
+                            <div style={{ 
+                                textAlign: 'center', 
+                                padding: '60px 40px', 
+                                background: '#ffffff', 
+                                borderRadius: '8px', 
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
+                                maxWidth: '500px', 
+                                width: '100%'
+                            }}>
+                                <div style={{ fontSize: '48px', color: '#c5a880', marginBottom: '20px' }}>
+                                    <i className="fas fa-drafting-compass"></i>
+                                </div>
+                                <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: '28px', color: '#1a1a1a', marginBottom: '15px' }}>No Services Found</h2>
+                                <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                                    We couldn't find any services matching your selection. Please try exploring our blog or checking back later.
+                                </p>
+                                <button 
+                                    onClick={() => navigate('/blog')}
+                                    style={{
+                                        background: '#E85D25',
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        padding: '14px 28px',
+                                        borderRadius: '4px',
+                                        fontSize: '13px',
+                                        fontFamily: 'inherit',
+                                        fontWeight: '600',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1px',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => e.target.style.background = '#d1501c'}
+                                    onMouseLeave={(e) => e.target.style.background = '#E85D25'}
+                                >
+                                    Explore Blog
+                                </button>
                             </div>
-                            <h3>No Services Found</h3>
-                            <p>We couldn't find any services matching your selection.</p>
-                            <button onClick={() => {
-                                handleFilterClick('all');
-                            }} className="pl-btn-return">Explore All Services</button>
                         </div>
                     ) : (
                         services.map((service) => (

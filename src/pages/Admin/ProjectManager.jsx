@@ -51,8 +51,8 @@ const ProjectManager = () => {
         <div className="admin-page-container">
             <div className="admin-page-header">
                 <div>
-                    <h1>Portfolio Management</h1>
-                    <p>Showcase your finest architectural and interior masterpieces.</p>
+                    <h1>Projects Management</h1>
+                    <p>Manage your architectural and interior design projects.</p>
                 </div>
                 <button className="admin-btn-primary" onClick={() => navigate('/admin/projects/new')}>
                     <i className="fas fa-plus"></i> New Project
@@ -96,7 +96,7 @@ const ProjectManager = () => {
                                         </div>
                                     </td>
                                     <td>
-                                        <Link to={`/admin/projects/edit/${project.id}`} className="table-title-link">
+                                        <Link to={`/admin/projects/edit/${project.slug || project.id}`} className="table-title-link">
                                             <strong>{project.title}</strong>
                                         </Link>
                                         <div className="table-small-info">
@@ -112,7 +112,7 @@ const ProjectManager = () => {
                                     </td>
                                     <td>
                                         <div className="action-row">
-                                            <button onClick={() => navigate(`/admin/projects/edit/${project.id}`)} className="action-btn edit-btn" title="Edit">
+                                            <button onClick={() => navigate(`/admin/projects/edit/${project.slug || project.id}`)} className="action-btn edit-btn" title="Edit">
                                                 <i className="fas fa-edit"></i>
                                             </button>
                                             <button onClick={() => handleDeleteClick(project.id)} className="action-btn delete-btn" title="Delete">

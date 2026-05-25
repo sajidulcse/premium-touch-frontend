@@ -14,7 +14,9 @@ const ProjectList = () => {
     const [loading, setLoading] = useState(true);
 
     // Get filters from searchParams or URL Params
-    const activeFilter = categorySlug || searchParams.get('category') || 'all';
+    const activeFilter = searchParams.get('category') || categorySlug || 'all';
+    const activeChildFilter = searchParams.get('category') || 'all';
+    const apiCategoryFilter = categorySlug || 'all';
     const activeArea = searchParams.get('area') || 'all';
 
     const isMainProjectsPage = !categorySlug || categorySlug === 'projects';
@@ -40,7 +42,8 @@ const ProjectList = () => {
         const fetchProjects = async () => {
             setLoading(true);
             try {
-                const res = await api.get(`/projects?category=${activeFilter}&area=${activeArea}`);
+                const targetCat = categorySlug && categorySlug !== 'projects' ? categorySlug : 'all';
+                const res = await api.get(`/projects?category=${targetCat}&area=all`);
                 setProjects(res.data);
             } catch (error) {
                 console.error("Error fetching projects:", error);
@@ -49,36 +52,35 @@ const ProjectList = () => {
             }
         };
         fetchProjects();
-    }, [activeFilter, activeArea]);
+    }, [categorySlug]);
+
+    const isResidentialOrChild = (slug) => {
+        if (!slug) return false;
+        if (slug === 'residential') return true;
+        const resCat = categories.find(c => c.slug === 'residential');
+        if (resCat && resCat.children) {
+            return resCat.children.some(child => child.slug === slug);
+        }
+        return false;
+    };
 
     const handleFilterClick = (slug) => {
-        // Reset Area filter when choosing a category to ensure "single filter" behavior
         const newParams = new URLSearchParams(searchParams);
-        newParams.delete('area');
 
-        if (isMainProjectsPage) {
-            if (slug === 'all' || slug === 'projects') {
-                newParams.delete('category');
-            } else {
-                newParams.set('category', slug);
-            }
-            setSearchParams(newParams);
+        if (slug === 'all' || slug === 'projects' || slug === categorySlug) {
+            newParams.delete('category');
+            newParams.delete('area');
         } else {
-            if (slug === 'all' || slug === 'projects') {
-                navigate('/projects');
-            } else {
-                navigate(`/${slug}`);
+            newParams.set('category', slug);
+            if (!isResidentialOrChild(slug)) {
+                newParams.delete('area');
             }
         }
+        setSearchParams(newParams);
     };
 
     const handleAreaClick = (range) => {
         const newParams = new URLSearchParams(searchParams);
-
-        // If on the main projects page, reset category when choosing an area
-        if (isMainProjectsPage) {
-            newParams.delete('category');
-        }
 
         if (range === 'all') {
             newParams.delete('area');
@@ -88,20 +90,74 @@ const ProjectList = () => {
         setSearchParams(newParams);
     };
 
-    // Helper to flatten categories
-    const getAllCategories = (cats) => {
-        let flat = [];
-        cats.forEach(cat => {
-            flat.push({ id: cat.id, name: cat.name, slug: cat.slug });
-            if (cat.children && cat.children.length > 0) {
-                flat = [...flat, ...getAllCategories(cat.children)];
-            }
-        });
-        return flat;
+    const resetAllFilters = () => {
+        if (isMainProjectsPage) {
+            setSearchParams(new URLSearchParams());
+        } else {
+            navigate('/projects');
+        }
     };
 
-    const projectCategory = categories.find(c => c.slug === 'projects');
-    const displayCategories = projectCategory ? getAllCategories(projectCategory.children) : [];
+    // Helper to find a category node in the tree
+    const findCategoryNode = (slug, cats) => {
+        if (!slug || !cats) return null;
+        for (const cat of cats) {
+            if (cat.slug === slug) return cat;
+            if (cat.children && cat.children.length > 0) {
+                const found = findCategoryNode(slug, cat.children);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    const projectCategory = categories.find(c => c.slug === 'projects') || categories.find(c => c.name?.toLowerCase() === 'projects');
+    const subCategories = projectCategory ? (projectCategory.children || []) : [];
+
+    const currentCategoryNode = categorySlug ? findCategoryNode(categorySlug, categories) : null;
+    const displayCategories = currentCategoryNode 
+        ? (currentCategoryNode.children || []) 
+        : subCategories;
+
+    const showAreaFilter = isResidentialPage || isResidentialOrChild(activeFilter);
+
+    const displayedProjects = projects.filter(project => {
+        // 1. Category Filter
+        if (activeChildFilter !== 'all') {
+            const matchesCategory = 
+                project.category?.slug === activeChildFilter ||
+                project.sub_category?.slug === activeChildFilter ||
+                project.subCategory?.slug === activeChildFilter ||
+                project.child_category?.slug === activeChildFilter ||
+                project.childCategory?.slug === activeChildFilter;
+            if (!matchesCategory) return false;
+        }
+
+        // 2. Area Filter
+        if (showAreaFilter && activeArea !== 'all') {
+            const floorArea = project.floor_area;
+            if (!floorArea) return false;
+
+            // Extract all digits from floor_area string (e.g. "1,500 sft" -> 1500)
+            const numericArea = parseInt(floorArea.replace(/[^0-9]/g, ''), 10);
+            if (isNaN(numericArea) || numericArea === 0) return false;
+
+            const isPlus = activeArea.includes('+') || activeArea.includes('500000');
+            if (isPlus) {
+                const min = parseInt(activeArea.replace(/[^\d]/g, ''), 10);
+                return numericArea >= min;
+            } else {
+                const parts = activeArea.split('-');
+                if (parts.length === 2) {
+                    const min = parseInt(parts[0], 10);
+                    const max = parseInt(parts[1], 10);
+                    return numericArea >= min && numericArea <= max;
+                }
+            }
+        }
+
+        return true;
+    });
 
     const findCategoryPath = (slug, cats, path = []) => {
         for (const cat of cats) {
@@ -141,8 +197,7 @@ const ProjectList = () => {
         { label: '2500+ sft', value: '2500-500000' },
     ];
 
-    const showCategoryFilter = isMainProjectsPage;
-    const showAreaFilter = isMainProjectsPage || isResidentialPage;
+    const showCategoryFilter = isMainProjectsPage || (currentCategoryNode && currentCategoryNode.children && currentCategoryNode.children.length > 0);
 
     return (
         <div className="projects-page-wrapper">
@@ -175,13 +230,13 @@ const ProjectList = () => {
             </header>
 
             <div className="pl-main-container">
-                {(showCategoryFilter || showAreaFilter) && (
+                {(showCategoryFilter || showAreaFilter) && (projects.length > 0 || searchParams.get('category') || searchParams.get('area')) && (
                     <div className="pl-filters-section compact">
                         {showCategoryFilter && (
                             <div className="pl-filter-row">
                                 <div className="pl-filters-inner">
                                     <button
-                                        className={`pl-filter-item ${activeFilter === 'all' || activeFilter === 'projects' ? 'active' : ''}`}
+                                        className={`pl-filter-item ${activeChildFilter === 'all' || activeChildFilter === 'projects' ? 'active' : ''}`}
                                         onClick={() => handleFilterClick('all')}
                                     >
                                         All Works
@@ -189,7 +244,7 @@ const ProjectList = () => {
                                     {displayCategories.map(cat => (
                                         <button
                                             key={cat.id}
-                                            className={`pl-filter-item ${activeFilter === cat.slug ? 'active' : ''}`}
+                                            className={`pl-filter-item ${activeChildFilter === cat.slug ? 'active' : ''}`}
                                             onClick={() => handleFilterClick(cat.slug)}
                                         >
                                             {cat.name}
@@ -225,20 +280,87 @@ const ProjectList = () => {
                             <div className="loader"></div>
                             <div className="loader-text">Filtering Narrative...</div>
                         </div>
-                    ) : projects.length === 0 ? (
-                        <div className="pl-empty-state">
-                            <div className="empty-icon">
-                                <i className="fas fa-drafting-compass"></i>
+                    ) : displayedProjects.length === 0 ? (
+                        <div className="pl-empty-state" style={{ 
+                            gridColumn: '1 / -1',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                            margin: '40px auto'
+                        }}>
+                            <div style={{ 
+                                textAlign: 'center', 
+                                padding: '60px 40px', 
+                                background: '#ffffff', 
+                                borderRadius: '8px', 
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
+                                maxWidth: '500px', 
+                                width: '100%'
+                            }}>
+                                <div style={{ fontSize: '48px', color: '#c5a880', marginBottom: '20px' }}>
+                                    <i className="fas fa-drafting-compass"></i>
+                                </div>
+                                <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: '28px', color: '#1a1a1a', marginBottom: '15px' }}>No Projects Found</h2>
+                                {projects.length === 0 ? (
+                                    <>
+                                        <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                                            We couldn't find any projects matching your selection. Please try exploring our portfolio instead.
+                                        </p>
+                                        <button 
+                                            onClick={() => navigate('/portfolio')}
+                                            style={{
+                                                background: '#E85D25',
+                                                color: '#ffffff',
+                                                border: 'none',
+                                                padding: '14px 28px',
+                                                borderRadius: '4px',
+                                                fontSize: '13px',
+                                                fontFamily: 'inherit',
+                                                fontWeight: '600',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '1px',
+                                                cursor: 'pointer',
+                                                transition: 'background 0.3s ease'
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.background = '#d1501c'}
+                                            onMouseLeave={(e) => e.target.style.background = '#E85D25'}
+                                        >
+                                            Explore All Portfolio
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                                            We couldn't find any projects matching your selection. Please try another filter or explore all works.
+                                        </p>
+                                        <button 
+                                            onClick={() => setSearchParams(new URLSearchParams())}
+                                            style={{
+                                                background: '#E85D25',
+                                                color: '#ffffff',
+                                                border: 'none',
+                                                padding: '14px 28px',
+                                                borderRadius: '4px',
+                                                fontSize: '13px',
+                                                fontFamily: 'inherit',
+                                                fontWeight: '600',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '1px',
+                                                cursor: 'pointer',
+                                                transition: 'background 0.3s ease'
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.background = '#d1501c'}
+                                            onMouseLeave={(e) => e.target.style.background = '#E85D25'}
+                                        >
+                                            Explore All Works
+                                        </button>
+                                    </>
+                                )}
                             </div>
-                            <h3>No Projects Found</h3>
-                            <p>We couldn't find any projects matching your selection. Please try another filter or explore all works.</p>
-                            <button onClick={() => {
-                                handleFilterClick('all');
-                                handleAreaClick('all');
-                            }} className="pl-btn-return">Explore All Works</button>
                         </div>
                     ) : (
-                        projects.map((project) => (
+                        displayedProjects.map((project) => (
                             <Link
                                 to={`/projects/${project.slug}`}
                                 key={project.id}

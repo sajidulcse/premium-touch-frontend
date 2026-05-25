@@ -16,11 +16,22 @@ const PortfolioList = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [subFilters, setSubFilters] = useState({});
+    const [catLoading, setCatLoading] = useState(true);
 
-    const activeFilter = categorySlug || searchParams.get('category') || 'all';
+    const [selectedChildCategory, setSelectedChildCategory] = useState(parentSlug ? categorySlug : 'all');
+
+    const activeFilter = parentSlug || categorySlug || searchParams.get('category') || 'all';
     const activeArea = searchParams.get('area') || 'all';
 
     const isMainPortfolioPage = !categorySlug || categorySlug === 'portfolio';
+
+    useEffect(() => {
+        if (parentSlug && categorySlug) {
+            setSelectedChildCategory(categorySlug);
+        } else {
+            setSelectedChildCategory('all');
+        }
+    }, [parentSlug, categorySlug]);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -33,6 +44,8 @@ const PortfolioList = () => {
                 setSettings(setRes.data);
             } catch (error) {
                 console.error("Error fetching initial data:", error);
+            } finally {
+                setCatLoading(false);
             }
         };
         fetchInitialData();
@@ -88,6 +101,15 @@ const PortfolioList = () => {
         setSearchParams(newParams);
     };
 
+    const resetAllFilters = () => {
+        setSearchQuery('');
+        if (isMainPortfolioPage) {
+            setSearchParams(new URLSearchParams());
+        } else {
+            navigate('/portfolio');
+        }
+    };
+
     const getAllCategories = (cats) => {
         let flat = [];
         cats.forEach(cat => {
@@ -138,23 +160,13 @@ const PortfolioList = () => {
         p.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    useEffect(() => {
-        if (!loading && !isMainPortfolioPage && filteredProjects.length > 0) {
-            if (filteredProjects.length === 1) {
-                let redirPath = `/portfolio/view/${filteredProjects[0].slug}`;
-                if (parentSlug && categorySlug) {
-                    redirPath = `/portfolio/${parentSlug}/${categorySlug}/${filteredProjects[0].slug}`;
-                }
-                navigate(redirPath, { replace: true, state: { initialProject: filteredProjects[0] } });
-                return;
-            }
+    const displayedProjects = filteredProjects.filter(p => {
+        if (p.child_category_id === null) return false;
+        if (selectedChildCategory === 'all') return true;
+        return p.child_category?.slug === selectedChildCategory || p.childCategory?.slug === selectedChildCategory;
+    });
 
-            const childProjects = filteredProjects.filter(p => p.child_category_id !== null);
-            if (childProjects.length === 0) {
-                navigate(`/portfolio/view/${filteredProjects[0].slug}`, { replace: true });
-            }
-        }
-    }, [loading, isMainPortfolioPage, filteredProjects, navigate]);
+
 
     const portfolioRoot = categories.find(c => c.slug === 'portfolio') || categories.find(c => c.name?.toLowerCase() === 'portfolio');
     const subCategories = portfolioRoot ? (portfolioRoot.children || []) : [];
@@ -182,11 +194,20 @@ const PortfolioList = () => {
         return checkTree(categories);
     };
 
+    if (catLoading) {
+        return (
+            <div className="loading-state">
+                <div className="loader"></div>
+                <div className="loader-text">Loading Category...</div>
+            </div>
+        );
+    }
+
     if (!loading && !isCategoryCheck()) {
         return <PortfolioDetail explicitSlug={categorySlug} />;
     }
 
-    if ((loading || (filteredProjects.length === 1 && !searchQuery)) && !isMainPortfolioPage) {
+    if (loading && !isMainPortfolioPage) {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
@@ -236,106 +257,200 @@ const PortfolioList = () => {
 
             <div className="port-main-container">
                 {isMainPortfolioPage ? (
-                    <>
-                        {/* 1. Core Portfolio Section */}
-                        <div className="port-section-block">
-                            <h2 className="port-section-title">Our Core Portfolio</h2>
+                    loading ? (
+                        <div className="loading-state" style={{ height: '300px', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                            <div className="loader"></div>
+                            <div className="loader-text" style={{ marginTop: '15px', color: '#666', fontSize: '14px' }}>Fetching Portfolio List...</div>
+                        </div>
+                    ) : filteredProjects.length === 0 ? (
+                        <div className="port-empty-state" style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                            margin: '40px auto'
+                        }}>
+                            <div style={{
+                                textAlign: 'center',
+                                padding: '60px 40px',
+                                background: '#ffffff',
+                                borderRadius: '8px',
+                                boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+                                maxWidth: '500px',
+                                width: '100%'
+                            }}>
+                                <div style={{ fontSize: '48px', color: '#c5a880', marginBottom: '20px' }}>
+                                    <i className="fas fa-drafting-compass"></i>
+                                </div>
+                                <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: '28px', color: '#1a1a1a', marginBottom: '15px' }}>No Portfolio Found</h2>
+                                <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                                    We couldn't find any portfolio projects matching your selection. Please try another filter or explore all works.
+                                </p>
+                                <button
+                                    onClick={() => navigate('/services')}
+                                    style={{
+                                        background: '#E85D25',
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        padding: '14px 28px',
+                                        borderRadius: '4px',
+                                        fontSize: '13px',
+                                        fontFamily: 'inherit',
+                                        fontWeight: '600',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '1px',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => e.target.style.background = '#d1501c'}
+                                    onMouseLeave={(e) => e.target.style.background = '#E85D25'}
+                                >
+                                    Explore All Service
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* 1. Core Portfolio Section */}
                             {coreProjects.length > 0 && (
-                                <div className="port-premium-grid">
-                                    {coreProjects.map((project) => (
-                                        <Link to={`/portfolio/${project.sub_category?.slug || project.category?.slug}`} key={project.id} className="port-premium-card">
-                                            <div className="port-premium-card-media">
-                                                <LazyImage
-                                                    src={project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.length > 0 ? getStorageUrl(project.images[0].image_path) : '/placeholder-image.jpg'}
-                                                    alt={project.title}
-                                                />
-                                            </div>
-                                            <div className="port-premium-card-content">
-                                                <h3 className="port-premium-title">{project.title} <span className="port-premium-arrow">→</span></h3>
-                                            </div>
-                                        </Link>
-                                    ))}
+                                <div className="port-section-block">
+                                    <h2 className="port-section-title">Our Core Portfolio</h2>
+                                    <div className="port-premium-grid">
+                                        {coreProjects.map((project) => (
+                                            <Link to={`/portfolio/${project.sub_category?.slug || project.category?.slug}`} key={project.id} className="port-premium-card">
+                                                <div className="port-premium-card-media">
+                                                    <LazyImage
+                                                        src={project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.length > 0 ? getStorageUrl(project.images[0].image_path) : '/placeholder-image.jpg'}
+                                                        alt={project.title}
+                                                    />
+                                                </div>
+                                                <div className="port-premium-card-content">
+                                                    <h3 className="port-premium-title">{project.title} <span className="port-premium-arrow">→</span></h3>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
-                        </div>
 
-                        {/* 2. Sub Categories Sections */}
-                        {subCategories.map(sub => {
-                            const activeChildFilter = subFilters[sub.id] || 'all';
-                            const subProjects = filteredProjects.filter(p => {
-                                if (p.sub_category_id !== sub.id) return false;
-                                // Exclude items with no child category from sub category sections to avoid recurrence
-                                if (!p.child_category_id) return false;
-                                if (activeChildFilter !== 'all' && p.child_category?.slug !== activeChildFilter) return false;
-                                return true;
-                            });
+                            {/* 2. Sub Categories Sections */}
+                            {subCategories.map(sub => {
+                                const activeChildFilter = subFilters[sub.id] || 'all';
+                                const subProjects = filteredProjects.filter(p => {
+                                    if (p.sub_category_id !== sub.id) return false;
+                                    // Exclude items with no child category from sub category sections to avoid recurrence
+                                    if (!p.child_category_id) return false;
+                                    if (activeChildFilter !== 'all' && p.child_category?.slug !== activeChildFilter) return false;
+                                    return true;
+                                });
 
-                            const totalProjectsInSub = filteredProjects.filter(p => p.sub_category_id === sub.id && p.child_category_id !== null).length;
-                            if (totalProjectsInSub === 0) return null;
+                                const totalProjectsInSub = filteredProjects.filter(p => p.sub_category_id === sub.id && p.child_category_id !== null).length;
+                                if (totalProjectsInSub === 0) return null;
 
-                            return (
-                                <div key={sub.id} className="port-section-block">
-                                    <h2 className="port-section-title">Portfolio Under "{sub.name}"</h2>
+                                return (
+                                    <div key={sub.id} className="port-section-block">
+                                        <h2 className="port-section-title">Portfolio Under "{sub.name}"</h2>
 
-                                    {sub.children && sub.children.length > 0 && (
-                                        <div className="port-filters-section compact">
-                                            <div className="port-filter-row">
-                                                <div className="port-filters-inner">
-                                                    <button
-                                                        className={`port-filter-item ${activeChildFilter === 'all' ? 'active' : ''}`}
-                                                        onClick={() => handleSubFilterChange(sub.id, 'all')}
-                                                    >
-                                                        All
-                                                    </button>
-                                                    {sub.children.map(child => (
+                                        {sub.children && sub.children.length > 0 && (
+                                            <div className="port-filters-section compact">
+                                                <div className="port-filter-row">
+                                                    <div className="port-filters-inner">
                                                         <button
-                                                            key={child.id}
-                                                            className={`port-filter-item ${activeChildFilter === child.slug ? 'active' : ''}`}
-                                                            onClick={() => handleSubFilterChange(sub.id, child.slug)}
+                                                            className={`port-filter-item ${activeChildFilter === 'all' ? 'active' : ''}`}
+                                                            onClick={() => handleSubFilterChange(sub.id, 'all')}
                                                         >
-                                                            {child.name}
+                                                            All
                                                         </button>
-                                                    ))}
+                                                        {sub.children.map(child => (
+                                                            <button
+                                                                key={child.id}
+                                                                className={`port-filter-item ${activeChildFilter === child.slug ? 'active' : ''}`}
+                                                                onClick={() => handleSubFilterChange(sub.id, child.slug)}
+                                                            >
+                                                                {child.name}
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {subProjects.length === 0 ? (
-                                        <div className="port-empty-state">
-                                            <p>No portfolios available under this selection.</p>
-                                        </div>
-                                    ) : (
-                                        <div className="port-premium-grid">
-                                            {subProjects.map((project) => {
-                                                const url = (project.sub_category?.slug && project.child_category?.slug) 
-                                                    ? `/portfolio/${project.sub_category.slug}/${project.child_category.slug}/${project.slug}`
-                                                    : `/portfolio/${project.sub_category?.slug || 'view'}/${project.slug}`;
-                                                
-                                                return (
-                                                <Link to={url} key={project.id} className="port-premium-card">
-                                                    <div className="port-premium-card-media">
-                                                        <LazyImage
-                                                            src={project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.length > 0 ? getStorageUrl(project.images[0].image_path) : '/placeholder-image.jpg'}
-                                                            alt={project.title}
-                                                        />
-                                                    </div>
-                                                    <div className="port-premium-card-content">
-                                                        <h3 className="port-premium-title">{project.title} <span className="port-premium-arrow">→</span></h3>
-                                                    </div>
-                                                </Link>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </>
+                                        {subProjects.length === 0 ? (
+                                            <div className="port-empty-state" style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                textAlign: 'center',
+                                                padding: '60px 40px',
+                                                background: '#ffffff',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+                                                maxWidth: '500px',
+                                                width: '100%',
+                                                margin: '40px auto'
+                                            }}>
+                                                <div style={{ fontSize: '48px', color: '#c5a880', marginBottom: '20px' }}>
+                                                    <i className="fas fa-drafting-compass"></i>
+                                                </div>
+                                                <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: '28px', color: '#1a1a1a', marginBottom: '15px' }}>No Portfolio Found</h2>
+                                                <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                                                    No portfolios available under this selection.
+                                                </p>
+                                                <button
+                                                    onClick={() => handleSubFilterChange(sub.id, 'all')}
+                                                    style={{
+                                                        background: '#E85D25',
+                                                        color: '#ffffff',
+                                                        border: 'none',
+                                                        padding: '14px 28px',
+                                                        borderRadius: '4px',
+                                                        fontSize: '13px',
+                                                        fontFamily: 'inherit',
+                                                        fontWeight: '600',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '1px',
+                                                        cursor: 'pointer',
+                                                        transition: 'background 0.3s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => e.target.style.background = '#d1501c'}
+                                                    onMouseLeave={(e) => e.target.style.background = '#E85D25'}
+                                                >
+                                                    Explore All Works
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="port-premium-grid">
+                                                {subProjects.map((project) => {
+                                                    const url = (project.sub_category?.slug && project.child_category?.slug)
+                                                        ? `/portfolio/${project.sub_category.slug}/${project.child_category.slug}/${project.slug}`
+                                                        : `/portfolio/${project.sub_category?.slug || 'view'}/${project.slug}`;
+
+                                                    return (
+                                                        <Link to={url} key={project.id} className="port-premium-card">
+                                                            <div className="port-premium-card-media">
+                                                                <LazyImage
+                                                                    src={project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.length > 0 ? getStorageUrl(project.images[0].image_path) : '/placeholder-image.jpg'}
+                                                                    alt={project.title}
+                                                                />
+                                                            </div>
+                                                            <div className="port-premium-card-content">
+                                                                <h3 className="port-premium-title">{project.title} <span className="port-premium-arrow">→</span></h3>
+                                                            </div>
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </>
+                    )
                 ) : (
                     /* Standard Single Grid For Specific Sub/Child Pages */
                     <>
-                        {currentSubCategory && currentSubCategory.children && currentSubCategory.children.length > 0 && (
+                        {currentSubCategory && currentSubCategory.children && currentSubCategory.children.length > 0 && (filteredProjects.filter(p => p.child_category_id !== null).length > 0 || parentSlug || searchParams.get('area') || loading) && (
                             <div className="port-filters-section compact" style={{ marginBottom: '40px' }}>
                                 <div className="port-filter-row">
                                     <div className="port-filters-inner">
@@ -365,32 +480,103 @@ const PortfolioList = () => {
                                     <div className="loader"></div>
                                     <div className="loader-text">Structuring Visuals...</div>
                                 </div>
-                            ) : filteredProjects.filter(p => p.child_category_id !== null).length === 0 ? (
-                                <div className="port-empty-state">
-                                    <div className="empty-icon">
-                                        <i className="fas fa-drafting-compass"></i>
+                            ) : displayedProjects.length === 0 ? (
+                                <div className="port-empty-state" style={{
+                                    gridColumn: '1 / -1',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    width: '100%',
+                                    margin: '40px auto'
+                                }}>
+                                    <div style={{
+                                        textAlign: 'center',
+                                        padding: '60px 40px',
+                                        background: '#ffffff',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+                                        maxWidth: '500px',
+                                        width: '100%'
+                                    }}>
+                                        <div style={{ fontSize: '48px', color: '#c5a880', marginBottom: '20px' }}>
+                                            <i className="fas fa-drafting-compass"></i>
+                                        </div>
+                                        <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: '28px', color: '#1a1a1a', marginBottom: '15px' }}>No Portfolio Found</h2>
+                                        {filteredProjects.length === 0 ? (
+                                             <>
+                                                 <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                                                     We couldn't find any portfolio projects matching your selection. Please try exploring our other portfolios instead.
+                                                 </p>
+                                                 <button
+                                                     onClick={() => navigate('/portfolio')}
+                                                     style={{
+                                                         background: '#E85D25',
+                                                         color: '#ffffff',
+                                                         border: 'none',
+                                                         padding: '14px 28px',
+                                                         borderRadius: '4px',
+                                                         fontSize: '13px',
+                                                         fontFamily: 'inherit',
+                                                         fontWeight: '600',
+                                                         textTransform: 'uppercase',
+                                                         letterSpacing: '1px',
+                                                         cursor: 'pointer',
+                                                         transition: 'background 0.3s ease'
+                                                     }}
+                                                     onMouseEnter={(e) => e.target.style.background = '#d1501c'}
+                                                     onMouseLeave={(e) => e.target.style.background = '#E85D25'}
+                                                 >
+                                                     Explore All Portfolio
+                                                 </button>
+                                             </>
+                                         ) : (
+                                             <>
+                                                 <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                                                     We couldn't find any portfolio projects matching your selection. Please try another filter or explore all works.
+                                                 </p>
+                                                 <button
+                                                     onClick={() => navigate(`/portfolio/${activeSubCategorySlug}`)}
+                                                     style={{
+                                                         background: '#E85D25',
+                                                         color: '#ffffff',
+                                                         border: 'none',
+                                                         padding: '14px 28px',
+                                                         borderRadius: '4px',
+                                                         fontSize: '13px',
+                                                         fontFamily: 'inherit',
+                                                         fontWeight: '600',
+                                                         textTransform: 'uppercase',
+                                                         letterSpacing: '1px',
+                                                         cursor: 'pointer',
+                                                         transition: 'background 0.3s ease'
+                                                     }}
+                                                     onMouseEnter={(e) => e.target.style.background = '#d1501c'}
+                                                     onMouseLeave={(e) => e.target.style.background = '#E85D25'}
+                                                 >
+                                                     Explore All Works
+                                                 </button>
+                                             </>
+                                         )}
                                     </div>
-                                    <h3>No Child Portfolio Projects Found</h3>
-                                    <button onClick={() => { handleFilterClick('all'); setSearchQuery(''); }} className="port-btn-return">Explore All Works</button>
                                 </div>
                             ) : (
-                                filteredProjects.filter(p => p.child_category_id !== null).map((project) => {
-                                    const url = (project.sub_category?.slug && project.child_category?.slug) 
+                                displayedProjects.map((project) => {
+                                    const url = (project.sub_category?.slug && project.child_category?.slug)
                                         ? `/portfolio/${project.sub_category.slug}/${project.child_category.slug}/${project.slug}`
                                         : `/portfolio/${project.sub_category?.slug || 'view'}/${project.slug}`;
-                                    
+
                                     return (
-                                    <Link to={url} key={project.id} className="port-premium-card">
-                                        <div className="port-premium-card-media">
-                                            <LazyImage
-                                                src={project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.length > 0 ? getStorageUrl(project.images[0].image_path) : '/placeholder-image.jpg'}
-                                                alt={project.title}
-                                            />
-                                        </div>
-                                        <div className="port-premium-card-content">
-                                            <h3 className="port-premium-title">{project.title} <span className="port-premium-arrow">→</span></h3>
-                                        </div>
-                                    </Link>
+                                        <Link to={url} key={project.id} className="port-premium-card">
+                                            <div className="port-premium-card-media">
+                                                <LazyImage
+                                                    src={project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.length > 0 ? getStorageUrl(project.images[0].image_path) : '/placeholder-image.jpg'}
+                                                    alt={project.title}
+                                                />
+                                            </div>
+                                            <div className="port-premium-card-content">
+                                                <h3 className="port-premium-title">{project.title} <span className="port-premium-arrow">→</span></h3>
+                                            </div>
+                                        </Link>
                                     );
                                 })
                             )}

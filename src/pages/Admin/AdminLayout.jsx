@@ -12,6 +12,22 @@ const AdminLayout = ({ children }) => {
     const [blogMenuOpen, setBlogMenuOpen] = useState(
         location.pathname.includes('/admin/blog') || location.pathname.includes('/admin/comments')
     );
+    // Project submenu toggle
+    const [projectMenuOpen, setProjectMenuOpen] = useState(
+        location.pathname.includes('/admin/projects') || location.pathname.includes('/admin/project-categories')
+    );
+    // Portfolio submenu toggle
+    const [portfolioMenuOpen, setPortfolioMenuOpen] = useState(
+        location.pathname.includes('/admin/portfolios') || location.pathname.includes('/admin/portfolio-categories')
+    );
+    // Service submenu toggle
+    const [serviceMenuOpen, setServiceMenuOpen] = useState(
+        location.pathname.includes('/admin/services') || location.pathname.includes('/admin/service-categories')
+    );
+    // Gallery submenu toggle
+    const [galleryMenuOpen, setGalleryMenuOpen] = useState(
+        location.pathname.includes('/admin/gallery')
+    );
     const [siteInfo, setSiteInfo] = useState({ site_name: 'Premium Touch', logo: '' });
 
     useEffect(() => {
@@ -72,6 +88,99 @@ const AdminLayout = ({ children }) => {
                             </NavLink>
                         </li>
 
+                        <li className={`has-submenu ${projectMenuOpen ? 'open' : ''}`}>
+                            <div className="menu-item-toggle" onClick={() => setProjectMenuOpen(!projectMenuOpen)}>
+                                <i className="fas fa-drafting-compass"></i>
+                                <span>Manage Projects</span>
+                                <i className={`fas fa-chevron-${projectMenuOpen ? 'up' : 'down'} arrow`}></i>
+                            </div>
+
+                            {projectMenuOpen && (
+                                <ul className="submenu-list">
+                                    <li>
+                                        <NavLink to="/admin/projects" end className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-list"></i>
+                                            <span>All Projects</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/projects/new" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-plus-circle"></i>
+                                            <span>Add New Project</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/project-categories" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-tags"></i>
+                                            <span>Categories</span>
+                                        </NavLink>
+                                    </li>
+                                </ul>
+                            )}
+                        </li>
+
+                        <li className={`has-submenu ${portfolioMenuOpen ? 'open' : ''}`}>
+                            <div className="menu-item-toggle" onClick={() => setPortfolioMenuOpen(!portfolioMenuOpen)}>
+                                <i className="fas fa-camera-retro"></i>
+                                <span>Manage Portfolios</span>
+                                <i className={`fas fa-chevron-${portfolioMenuOpen ? 'up' : 'down'} arrow`}></i>
+                            </div>
+
+                            {portfolioMenuOpen && (
+                                <ul className="submenu-list">
+                                    <li>
+                                        <NavLink to="/admin/portfolios" end className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-list"></i>
+                                            <span>All Portfolios</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/portfolios/new" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-plus-circle"></i>
+                                            <span>Add New Portfolio</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/portfolio-categories" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-tags"></i>
+                                            <span>Categories</span>
+                                        </NavLink>
+                                    </li>
+                                </ul>
+                            )}
+                        </li>
+
+                        <li className={`has-submenu ${serviceMenuOpen ? 'open' : ''}`}>
+                            <div className="menu-item-toggle" onClick={() => setServiceMenuOpen(!serviceMenuOpen)}>
+                                <i className="fas fa-concierge-bell"></i>
+                                <span>Manage Services</span>
+                                <i className={`fas fa-chevron-${serviceMenuOpen ? 'up' : 'down'} arrow`}></i>
+                            </div>
+
+                            {serviceMenuOpen && (
+                                <ul className="submenu-list">
+                                    <li>
+                                        <NavLink to="/admin/services" end className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-list"></i>
+                                            <span>All Services</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/services/new" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-plus-circle"></i>
+                                            <span>Add New Service</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/service-categories" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-tags"></i>
+                                            <span>Categories</span>
+                                        </NavLink>
+                                    </li>
+                                </ul>
+                            )}
+                        </li>
+
                         <li className={`has-submenu ${blogMenuOpen ? 'open' : ''}`}>
                             <div className="menu-item-toggle" onClick={() => setBlogMenuOpen(!blogMenuOpen)}>
                                 <i className="fas fa-pen-nib"></i>
@@ -109,17 +218,41 @@ const AdminLayout = ({ children }) => {
                             )}
                         </li>
 
-                        <li>
-                            <NavLink to="/admin/projects" className={({ isActive }) => isActive ? 'active' : ''}>
-                                <i className="fas fa-drafting-compass"></i>
-                                <span>Manage Projects</span>
-                            </NavLink>
+                        <li className={`has-submenu ${galleryMenuOpen ? 'open' : ''}`}>
+                            <div className="menu-item-toggle" onClick={() => setGalleryMenuOpen(!galleryMenuOpen)}>
+                                <i className="fas fa-images"></i>
+                                <span>Manage Gallery</span>
+                                <i className={`fas fa-chevron-${galleryMenuOpen ? 'up' : 'down'} arrow`}></i>
+                            </div>
+
+                            {galleryMenuOpen && (
+                                <ul className="submenu-list">
+                                    <li>
+                                        <NavLink to="/admin/gallery/photos" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-camera"></i>
+                                            <span>Photo Gallery</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/gallery/videos" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-video"></i>
+                                            <span>Video Gallery</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/gallery/handover" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-handshake"></i>
+                                            <span>Handover Snapshot</span>
+                                        </NavLink>
+                                    </li>
+                                </ul>
+                            )}
                         </li>
 
                         <li>
-                            <NavLink to="/admin/portfolios" className={({ isActive }) => isActive ? 'active' : ''}>
-                                <i className="fas fa-camera-retro"></i>
-                                <span>Manage Portfolios</span>
+                            <NavLink to="/admin/about" className={({ isActive }) => isActive ? 'active' : ''}>
+                                <i className="fas fa-info-circle"></i>
+                                <span>About Us</span>
                             </NavLink>
                         </li>
 
@@ -127,13 +260,6 @@ const AdminLayout = ({ children }) => {
                             <NavLink to="/admin/categories" className={({ isActive }) => isActive ? 'active' : ''}>
                                 <i className="fas fa-sitemap"></i>
                                 <span>Manage Categories</span>
-                            </NavLink>
-                        </li>
-
-                        <li>
-                            <NavLink to="/admin/services" className={({ isActive }) => isActive ? 'active' : ''}>
-                                <i className="fas fa-concierge-bell"></i>
-                                <span>Manage Services</span>
                             </NavLink>
                         </li>
 

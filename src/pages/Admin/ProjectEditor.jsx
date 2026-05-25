@@ -17,7 +17,8 @@ const cleanHtml = (html) => {
 };
 
 const ProjectEditor = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
+    const id = slug;
     const navigate = useNavigate();
     const [project, setProject] = useState({
         title: '',
@@ -170,9 +171,73 @@ const ProjectEditor = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Required validation checks
+        if (!project.title || project.title.trim() === '') {
+            setAlert({ type: 'error', msg: 'Project Title is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        const cleanedDescription = cleanHtml(project.description);
+        if (!cleanedDescription || cleanedDescription === '<p><br></p>' || cleanedDescription.replace(/<[^>]*>/g, '').trim() === '') {
+            setAlert({ type: 'error', msg: 'Description is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!project.sub_category_id || project.sub_category_id === '') {
+            setAlert({ type: 'error', msg: 'Sub Category is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (childCategoryOptions.length > 0 && (!project.child_category_id || project.child_category_id === '')) {
+            setAlert({ type: 'error', msg: 'Child Category is required for this sub-category.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!project.location || project.location.trim() === '') {
+            setAlert({ type: 'error', msg: 'Location is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!project.client_name || project.client_name.trim() === '') {
+            setAlert({ type: 'error', msg: 'Client Name is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!project.completion_date || project.completion_date === '') {
+            setAlert({ type: 'error', msg: 'Completion Date is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!project.duration || project.duration.trim() === '') {
+            setAlert({ type: 'error', msg: 'Duration is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!project.floor_area || project.floor_area.trim() === '') {
+            setAlert({ type: 'error', msg: 'Floor Area is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        const totalImages = existingImages.length + images.length;
+        if (totalImages === 0) {
+            setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
         setLoading(true);
 
-        const cleanedProject = { ...project, description: cleanHtml(project.description) };
+        const cleanedProject = { ...project, description: cleanedDescription };
 
         const formData = new FormData();
         Object.keys(cleanedProject).forEach(key => {
@@ -240,7 +305,7 @@ const ProjectEditor = () => {
                 <form onSubmit={handleSubmit} className="admin-editor-layout">
                     <div className="editor-main-card">
                         <div className="form-group">
-                            <label>Project Title</label>
+                            <label>Project Title <span style={{ color: '#ef4444' }}>*</span></label>
                             <input
                                 type="text"
                                 className="admin-input-large"
@@ -251,8 +316,8 @@ const ProjectEditor = () => {
                             />
                         </div>
 
-                        <div className="form-group quill-container">
-                            <label>Description</label>
+                        <div className="form-group quill-container" style={{ position: 'relative' }}>
+                            <label>Description <span style={{ color: '#ef4444' }}>*</span></label>
                             <ReactQuill
                                 theme="snow"
                                 value={project.description}
@@ -260,16 +325,51 @@ const ProjectEditor = () => {
                                 modules={modules}
                                 placeholder="Describe the project's vision, materials, and challenges..."
                             />
+                            <textarea
+                                value={cleanHtml(project.description) && cleanHtml(project.description) !== '<p><br></p>' && cleanHtml(project.description).replace(/<[^>]*>/g, '').trim() !== '' ? 'has-description' : ''}
+                                required
+                                readOnly
+                                style={{
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: '50%',
+                                    width: '1px',
+                                    height: '1px',
+                                    opacity: 0,
+                                    pointerEvents: 'none',
+                                    border: 'none',
+                                    padding: 0,
+                                    margin: 0
+                                }}
+                            />
                         </div>
 
-                        <div className="form-group" style={{ marginTop: '30px' }}>
-                            <label>Gallery Images</label>
+                        <div className="form-group" style={{ marginTop: '30px', position: 'relative' }}>
+                            <label>Gallery Images <span style={{ color: '#ef4444' }}>*</span></label>
                             <div className="multi-image-uploader">
                                 <label className="upload-box">
                                     <i className="fas fa-camera"></i>
                                     <span>Upload Photos</span>
                                     <input type="file" multiple onChange={handleFileChange} hidden accept="image/*" />
                                 </label>
+                                <input
+                                    type="text"
+                                    value={existingImages.length + images.length > 0 ? 'has-images' : ''}
+                                    required
+                                    readOnly
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: 0,
+                                        left: '50%',
+                                        width: '1px',
+                                        height: '1px',
+                                        opacity: 0,
+                                        pointerEvents: 'none',
+                                        border: 'none',
+                                        padding: 0,
+                                        margin: 0
+                                    }}
+                                />
 
                                 <div className="image-preview-grid">
                                     {existingImages.map(img => (
@@ -311,7 +411,6 @@ const ProjectEditor = () => {
                                 className="admin-input"
                                 value={project.category_id}
                                 onChange={(e) => setProject({ ...project, category_id: e.target.value, sub_category_id: '', child_category_id: '' })}
-                                required
                             >
                                 <option value="">Select Category</option>
                                 {categories.map(cat => (
@@ -321,12 +420,13 @@ const ProjectEditor = () => {
                         </div>
 
                         <div className="form-group">
-                            <label>Sub Category</label>
+                            <label>Sub Category <span style={{ color: '#ef4444' }}>*</span></label>
                             <select
                                 className="admin-input"
                                 value={project.sub_category_id}
                                 onChange={(e) => setProject({ ...project, sub_category_id: e.target.value, child_category_id: '' })}
                                 disabled={!project.category_id}
+                                required
                             >
                                 <option value="">Select Sub Category</option>
                                 {subCategoryOptions.map(cat => (
@@ -336,12 +436,13 @@ const ProjectEditor = () => {
                         </div>
 
                         <div className="form-group">
-                            <label>Child Category</label>
+                            <label>Child Category {childCategoryOptions.length > 0 && <span style={{ color: '#ef4444' }}>*</span>}</label>
                             <select
                                 className="admin-input"
                                 value={project.child_category_id}
                                 onChange={(e) => setProject({ ...project, child_category_id: e.target.value })}
                                 disabled={!project.sub_category_id}
+                                required={childCategoryOptions.length > 0}
                             >
                                 <option value="">Select Child Category</option>
                                 {childCategoryOptions.map(cat => (
@@ -355,56 +456,61 @@ const ProjectEditor = () => {
                         <h3>Project Details</h3>
 
                         <div className="form-group">
-                            <label>Location</label>
+                            <label>Location <span style={{ color: '#ef4444' }}>*</span></label>
                             <input
                                 type="text"
                                 className="admin-input"
                                 placeholder="City, Country"
                                 value={project.location}
                                 onChange={(e) => setProject({ ...project, location: e.target.value })}
+                                required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label>Client Name</label>
+                            <label>Client Name <span style={{ color: '#ef4444' }}>*</span></label>
                             <input
                                 type="text"
                                 className="admin-input"
-                                placeholder="Optional"
+                                placeholder="e.g. Shakil Ahmed"
                                 value={project.client_name}
                                 onChange={(e) => setProject({ ...project, client_name: e.target.value })}
+                                required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label>Completion Date</label>
+                            <label>Completion Date <span style={{ color: '#ef4444' }}>*</span></label>
                             <input
                                 type="date"
                                 className="admin-input"
                                 value={project.completion_date}
                                 onChange={(e) => setProject({ ...project, completion_date: e.target.value })}
+                                required
                             />
                         </div>
 
                         <div className="form-row">
                             <div className="form-group">
-                                <label>Duration</label>
+                                <label>Duration <span style={{ color: '#ef4444' }}>*</span></label>
                                 <input
                                     type="text"
                                     className="admin-input"
                                     placeholder="e.g. 2 months"
                                     value={project.duration}
                                     onChange={(e) => setProject({ ...project, duration: e.target.value })}
+                                    required
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Floor Area</label>
+                                <label>Floor Area <span style={{ color: '#ef4444' }}>*</span></label>
                                 <input
                                     type="text"
                                     className="admin-input"
                                     placeholder="e.g. 1200 sq. ft."
                                     value={project.floor_area}
                                     onChange={(e) => setProject({ ...project, floor_area: e.target.value })}
+                                    required
                                 />
                             </div>
                         </div>

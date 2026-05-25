@@ -207,6 +207,12 @@ const PortfolioEditor = () => {
             return;
         }
 
+        if (childCategoryOptions.length > 0 && (!portfolio.child_category_id || portfolio.child_category_id === '')) {
+            setAlert({ type: 'error', msg: 'Child Category is required for this sub-category.' });
+            window.scrollTo(0, 0);
+            return;
+        }
+
         if (id) {
             if (existingImages.length + images.length === 0) {
                 setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
@@ -426,12 +432,13 @@ const PortfolioEditor = () => {
                         </div>
 
                         <div className="form-group">
-                            <label>Child Category</label>
+                            <label>Child Category {childCategoryOptions.length > 0 && <span style={{ color: '#ef4444' }}>*</span>}</label>
                             <select
                                 className="admin-input"
                                 value={portfolio.child_category_id}
                                 onChange={(e) => setPortfolio({ ...portfolio, child_category_id: e.target.value })}
                                 disabled={!portfolio.sub_category_id}
+                                required={childCategoryOptions.length > 0}
                             >
                                 <option value="">Select Child Category</option>
                                 {childCategoryOptions.map(cat => (
