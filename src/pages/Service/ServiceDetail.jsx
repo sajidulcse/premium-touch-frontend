@@ -17,12 +17,20 @@ const ServiceDetail = () => {
     }, [id]);
 
     const fetchServiceData = async () => {
+        setLoading(true);
         try {
-            const [serviceRes, siteInfoRes] = await Promise.all([
-                api.get(`/services/${id}`),
-                api.get('/site-info')
-            ]);
-            
+            // Fetch site info first (non-blocking)
+            try {
+                const siteInfoRes = await api.get('/site-info');
+                if (siteInfoRes.data) {
+                    setSiteInfo(siteInfoRes.data);
+                }
+            } catch (siteErr) {
+                console.error("Error fetching site info:", siteErr);
+            }
+
+            // Fetch service details
+            const serviceRes = await api.get(`/services/${id}`);
             if (serviceRes.data) {
                 const data = serviceRes.data;
                 try {
@@ -31,13 +39,12 @@ const ServiceDetail = () => {
                     data.faqs = [];
                 }
                 setService(data);
-            }
-            if (siteInfoRes.data) {
-                setSiteInfo(siteInfoRes.data);
+            } else {
+                setService(null);
             }
         } catch (err) {
-            console.error(err);
-            navigate('/');
+            console.error("Error fetching service data:", err);
+            setService(null);
         } finally {
             setLoading(false);
         }
@@ -48,7 +55,51 @@ const ServiceDetail = () => {
     };
 
     if (loading) return <div className="loading-state"><div className="loader"></div></div>;
-    if (!service) return <div className="error-state">Service not found</div>;
+
+    if (!service) {
+        return (
+            <div className="sd-page-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', padding: '40px 20px' }}>
+                <div style={{ 
+                    textAlign: 'center', 
+                    padding: '60px 40px', 
+                    background: '#ffffff', 
+                    borderRadius: '8px', 
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
+                    maxWidth: '500px', 
+                    width: '100%'
+                }}>
+                    <div style={{ fontSize: '48px', color: '#c5a880', marginBottom: '20px' }}>
+                        <i className="fas fa-drafting-compass"></i>
+                    </div>
+                    <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: '28px', color: '#1a1a1a', marginBottom: '15px' }}>No Services Found</h2>
+                    <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
+                        This service page currently has no published content. Please check back later or explore our other services.
+                    </p>
+                    <button 
+                        onClick={() => navigate('/services')} 
+                        style={{
+                            background: '#E85D25',
+                            color: '#ffffff',
+                            border: 'none',
+                            padding: '14px 28px',
+                            borderRadius: '4px',
+                            fontSize: '13px',
+                            fontFamily: 'inherit',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px',
+                            cursor: 'pointer',
+                            transition: 'background 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = '#d1501c'}
+                        onMouseLeave={(e) => e.target.style.background = '#E85D25'}
+                    >
+                        Explore All Services
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const phoneNumber = siteInfo.phone || '+1234567890';
     const cleanPhone = phoneNumber.replace(/[^0-9+]/g, '');
