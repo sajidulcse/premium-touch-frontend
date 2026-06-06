@@ -4,7 +4,7 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const VideoGallery = () => {
     const [videos, setVideos] = useState([]);
-    const [formData, setFormData] = useState({ title: '', url: '', description: '', position: 0 });
+    const [formData, setFormData] = useState({ title: '', url: '', description: '', position: 1 });
     const [editingId, setEditingId] = useState(null);
     const [activeVideo, setActiveVideo] = useState(null);
     const [alert, setAlert] = useState(null);
@@ -29,14 +29,32 @@ const VideoGallery = () => {
         }
     ];
 
+    const calculateNextPosition = (videoList) => {
+        if (!videoList || videoList.length === 0) return 1;
+        const positions = videoList.map(v => parseInt(v.position) || 0);
+        return Math.max(...positions) + 1;
+    };
+
+    const resetForm = (videoList) => {
+        const nextPos = calculateNextPosition(videoList);
+        setFormData({ title: '', url: '', description: '', position: nextPos });
+        setEditingId(null);
+    };
+
     useEffect(() => {
         const saved = localStorage.getItem('premium_touch_videos');
+        let currentVideos = [];
         if (saved) {
-            setVideos(JSON.parse(saved));
+            currentVideos = JSON.parse(saved);
         } else {
             localStorage.setItem('premium_touch_videos', JSON.stringify(defaultVideos));
-            setVideos(defaultVideos);
+            currentVideos = defaultVideos;
         }
+        setVideos(currentVideos);
+        
+        // Auto set initial position
+        const nextPos = calculateNextPosition(currentVideos);
+        setFormData(prev => ({ ...prev, position: nextPos }));
     }, []);
 
     const getEmbedUrlAndThumbnail = (url) => {
@@ -87,6 +105,7 @@ const VideoGallery = () => {
         setConfirmOpen(false);
         setDeleteTargetId(null);
         setAlert({ type: 'success', msg: 'Video removed from gallery.' });
+        resetForm(filtered);
     };
 
     const handleSubmit = (e) => {
@@ -98,22 +117,22 @@ const VideoGallery = () => {
             return;
         }
 
+        let updated = [];
         if (editingId) {
-            const updated = videos.map(v => v.id === editingId ? { ...v, ...formData } : v);
+            updated = videos.map(v => v.id === editingId ? { ...v, ...formData } : v);
             saveToLocalStorage(updated);
             setAlert({ type: 'success', msg: 'Video link updated successfully.' });
-            setEditingId(null);
         } else {
             const newVideo = {
                 id: `vid-${Date.now()}`,
                 ...formData
             };
-            const updated = [...videos, newVideo];
+            updated = [...videos, newVideo];
             saveToLocalStorage(updated);
             setAlert({ type: 'success', msg: 'New video added to gallery.' });
         }
 
-        setFormData({ title: '', url: '', description: '', position: 0 });
+        resetForm(updated);
     };
 
     return (
@@ -192,8 +211,7 @@ const VideoGallery = () => {
                                     type="button"
                                     className="admin-btn-secondary"
                                     onClick={() => {
-                                        setEditingId(null);
-                                        setFormData({ title: '', url: '', description: '', position: 0 });
+                                        resetForm(videos);
                                     }}
                                 >
                                     Cancel

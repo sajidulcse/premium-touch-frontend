@@ -244,9 +244,11 @@ const ProjectEditor = () => {
             formData.append(key, cleanedProject[key]);
         });
 
-        // Append new images
+        // Append new images (ensure they are actual File objects)
         for (let i = 0; i < images.length; i++) {
-            formData.append('images[]', images[i]);
+            if (images[i] instanceof File) {
+                formData.append('images[]', images[i]);
+            }
         }
 
         try {

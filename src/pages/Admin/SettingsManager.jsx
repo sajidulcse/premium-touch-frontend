@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api, { BASE_URL } from '../../api/axios';
+import api, { BASE_URL, clearClientCache } from '../../api/axios';
 import './Admin.css';
 
 const SettingsManager = () => {
@@ -14,12 +14,23 @@ const SettingsManager = () => {
         map_embed_url: '',
         facebook_page_url: '',
         logo: '',
-        project_header_bg: ''
+        header_bg: '',
+        cta_bg: '',
+        stat_1_num: '',
+        stat_1_label: '',
+        stat_2_num: '',
+        stat_2_label: '',
+        stat_3_num: '',
+        stat_3_label: '',
+        stat_4_num: '',
+        stat_4_label: ''
     });
     const [logo, setLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
     const [headerBg, setHeaderBg] = useState(null);
     const [headerPreview, setHeaderPreview] = useState(null);
+    const [ctaBg, setCtaBg] = useState(null);
+    const [ctaBgPreview, setCtaBgPreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState(null);
 
@@ -48,8 +59,11 @@ const SettingsManager = () => {
             if (data.logo) {
                 setLogoPreview(getUploadUrl('logo', data.logo));
             }
-            if (data.project_header_bg) {
-                setHeaderPreview(getUploadUrl('header', data.project_header_bg));
+            if (data.header_bg) {
+                setHeaderPreview(getUploadUrl('header', data.header_bg));
+            }
+            if (data.cta_bg) {
+                setCtaBgPreview(getUploadUrl('cta', data.cta_bg));
             }
         } catch (err) {
             console.error("Error fetching settings:", err);
@@ -72,6 +86,14 @@ const SettingsManager = () => {
         }
     };
 
+    const handleCtaBgChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setCtaBg(file);
+            setCtaBgPreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -79,20 +101,23 @@ const SettingsManager = () => {
 
         // Only append text settings
         Object.keys(settings).forEach(key => {
-            if (key !== 'logo' && key !== 'project_header_bg' && key !== 'updated_at' && key !== 'created_at' && key !== 'id') {
+            if (key !== 'logo' && key !== 'header_bg' && key !== 'cta_bg' && key !== 'updated_at' && key !== 'created_at' && key !== 'id') {
                 data.append(key, settings[key] || '');
             }
         });
 
         if (logo) data.append('logo', logo);
-        if (headerBg) data.append('project_header_bg', headerBg);
+        if (headerBg) data.append('header_bg', headerBg);
+        if (ctaBg) data.append('cta_bg', ctaBg);
 
         try {
             await api.post('/site-info', data);
+            clearClientCache();
             setAlert({ type: 'success', msg: 'Global settings updated successfully!' });
             // Clear local file state after success but keep previews until refresh
             setLogo(null);
             setHeaderBg(null);
+            setCtaBg(null);
             fetchSettings();
         } catch (err) {
             console.error("Error saving settings:", err);
@@ -172,7 +197,7 @@ const SettingsManager = () => {
                         </div>
 
                         <div className="form-group" style={{ marginTop: '30px' }}>
-                            <label>Project Page Header Background</label>
+                            <label>All Page Header Background</label>
                             <div className="header-edit-preview">
                                 <div className="preview-box" style={{ width: '100%', height: '150px', background: '#f1f5f9', borderRadius: '8px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                                     {headerPreview ? (
@@ -186,6 +211,24 @@ const SettingsManager = () => {
                                 </div>
                                 <input type="file" onChange={handleHeaderChange} className="admin-input" accept="image/*" />
                                 <small style={{ color: '#64748b', display: 'block', marginTop: '5px' }}>High resolution landscape image (1920x600px+) suggested.</small>
+                            </div>
+                        </div>
+
+                        <div className="form-group" style={{ marginTop: '30px' }}>
+                            <label>Call to Action Background</label>
+                            <div className="header-edit-preview">
+                                <div className="preview-box" style={{ width: '100%', height: '150px', background: '#f1f5f9', borderRadius: '8px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                                    {ctaBgPreview ? (
+                                        <img src={ctaBgPreview} alt="CTA Background Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                                            <i className="fas fa-image" style={{ fontSize: '24px' }}></i>
+                                            <p style={{ fontSize: '12px', marginTop: '5px' }}>No CTA Image Uploaded</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <input type="file" onChange={handleCtaBgChange} className="admin-input" accept="image/*" />
+                                <small style={{ color: '#64748b', display: 'block', marginTop: '5px' }}>Landscape image (1920x600px+) suggested.</small>
                             </div>
                         </div>
                     </div>
@@ -261,7 +304,70 @@ const SettingsManager = () => {
                     </div>
                 </div>
 
-                <button type="submit" className="admin-btn-primary" disabled={loading} style={{ marginTop: '20px', width: '200px' }}>
+                <div className="form-group" style={{ marginTop: '30px', padding: '25px', background: '#f8fafc', borderRadius: '12px' }}>
+                    <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', color: '#0f172a' }}>Landing Statistics Counters</h3>
+                    <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px 0' }}>Manage the counter values for the statistics section.</p>
+
+                    <div className="stats-fields-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+                        <div style={{ padding: '15px', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                            <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>Luxury Projects Completed</h4>
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label>Value (e.g. 250+)</label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    value={settings.stat_1_num || ''}
+                                    placeholder="250+"
+                                    onChange={(e) => setSettings({ ...settings, stat_1_num: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '15px', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                            <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>Years of Design Experience</h4>
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label>Value (e.g. 15+)</label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    value={settings.stat_2_num || ''}
+                                    placeholder="15+"
+                                    onChange={(e) => setSettings({ ...settings, stat_2_num: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '15px', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                            <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>Client Satisfaction Rate</h4>
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label>Value (e.g. 98%)</label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    value={settings.stat_3_num || ''}
+                                    placeholder="98%"
+                                    onChange={(e) => setSettings({ ...settings, stat_3_num: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '15px', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                            <h4 style={{ margin: '0 0 12px 0', color: '#0f172a', fontSize: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '6px' }}>Design & Architecture Awards</h4>
+                            <div className="form-group" style={{ margin: 0 }}>
+                                <label>Value (e.g. 18+)</label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    value={settings.stat_4_num || ''}
+                                    placeholder="18+"
+                                    onChange={(e) => setSettings({ ...settings, stat_4_num: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" className="admin-btn-primary" disabled={loading} style={{ marginTop: '30px', width: '200px' }}>
                     {loading ? 'Saving...' : 'Save Configuration'}
                 </button>
             </form>

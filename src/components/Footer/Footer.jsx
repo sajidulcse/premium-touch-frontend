@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
-import { BASE_URL } from "../../api/axios";
+import { getFooter, getSiteInfo } from "../../api/axios";
 import "./Footer.css";
 
 const Footer = () => {
@@ -10,27 +9,27 @@ const Footer = () => {
 
   useEffect(() => {
     // Fetch footer sections
-    const fetchFooter = async () => {
+    const fetchFooterData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/footer`);
-        setSections(response.data);
+        const data = await getFooter();
+        setSections(data);
       } catch (error) {
         console.error("Error fetching footer sections:", error);
       }
     };
 
     // Fetch site settings
-    const fetchSiteSettings = async () => {
+    const fetchSiteSettingsData = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/site-info`);
-        setSiteSettings(response.data);
+        const data = await getSiteInfo();
+        setSiteSettings(data);
       } catch (error) {
         console.error("Error fetching site settings:", error);
       }
     };
 
-    fetchFooter();
-    fetchSiteSettings();
+    fetchFooterData();
+    fetchSiteSettingsData();
   }, []);
 
   const getNormalizedUrl = (url) => {
