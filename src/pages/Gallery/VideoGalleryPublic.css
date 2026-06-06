@@ -1,0 +1,451 @@
+/* ==========================================================================
+   Public Video Gallery - Cinematic Minimal Luxury
+   ========================================================================== */
+
+.vg-public-wrapper {
+    font-family: 'Outfit', sans-serif;
+    background-color: #faf9f6; /* Beautiful warm soft neutral background */
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding-bottom: 100px;
+}
+
+.vg-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
+
+/* --- Hero Section --- */
+.vg-hero {
+    position: relative;
+    height: 80vh;
+    min-height: 550px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: #111;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+.vg-hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.45);
+    transform: scale(1.05);
+    animation: zoomOutEffect 15s ease-out forwards;
+}
+
+.vg-hero-bg:not([style]) {
+    background-image: url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1920&q=80');
+}
+
+@keyframes zoomOutEffect {
+    from { transform: scale(1.1); }
+    to { transform: scale(1); }
+}
+
+.vg-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.75));
+    z-index: 1;
+}
+
+.vg-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 0 20px;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.vg-hero-subtitle {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: #E85D25;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.vg-hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.2;
+    font-weight: 400;
+    margin-bottom: 24px;
+    letter-spacing: -0.5px;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.vg-hero-desc {
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 600px;
+    margin-bottom: 40px;
+    animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.vg-hero-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.8s ease-out 0.8s both;
+}
+
+.vg-hero-btn i {
+    margin-top: 10px;
+    font-size: 12px;
+    animation: bounce 2s infinite;
+    color: #E85D25;
+}
+
+.vg-hero-btn:hover {
+    color: #E85D25;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+    60% { transform: translateY(-3px); }
+}
+
+/* --- Video Grid & Cards --- */
+.vg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 40px;
+}
+
+.vg-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.vg-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+}
+
+.vg-media-wrapper {
+    position: relative;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    background-color: #000;
+    overflow: hidden;
+}
+
+.vg-thumbnail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.vg-card:hover .vg-thumbnail {
+    transform: scale(1.06);
+    filter: brightness(0.85);
+}
+
+.vg-thumbnail-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #222;
+    color: #555;
+}
+
+/* Play button overlay */
+.vg-play-button-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70px;
+    height: 70px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vg-play-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #111111;
+    font-size: 16px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 2;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.vg-play-icon i {
+    margin-left: 4px; /* Centering tweak for play arrow */
+    transition: transform 0.3s ease;
+}
+
+.vg-play-icon-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: rgba(232, 93, 37, 0.3); /* Accent glow */
+    transform: scale(0.9);
+    opacity: 0;
+    z-index: 1;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vg-card:hover .vg-play-icon {
+    background-color: #E85D25; /* Accent Orange */
+    color: #ffffff;
+    transform: scale(1.08);
+}
+
+.vg-card:hover .vg-play-icon i {
+    transform: scale(1.1);
+}
+
+.vg-card:hover .vg-play-icon-glow {
+    opacity: 1;
+    transform: scale(1.3);
+}
+
+/* Info container */
+.vg-info {
+    padding: 24px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.vg-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin: 0 0 10px 0;
+    color: #1a1a1a;
+    transition: color 0.3s ease;
+}
+
+.vg-card:hover .vg-info h3 {
+    color: #E85D25;
+}
+
+.vg-info p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+    font-weight: 300;
+}
+
+/* --- Cinematic Lightbox Modal --- */
+.vg-lightbox-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+    animation: fadeInModal 0.4s ease-out forwards;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.vg-lightbox-content {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    aspect-ratio: 16/9;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #000;
+    box-shadow: 0 30px 100px rgba(0,0,0,0.8);
+    animation: zoomInModal 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes zoomInModal {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.vg-lightbox-close {
+    position: absolute;
+    top: -50px;
+    right: 0;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    z-index: 10;
+}
+
+.vg-lightbox-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.vg-iframe-container {
+    width: 100%;
+    height: 100%;
+}
+
+.vg-iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Adjust close button placement inside content box for smaller viewports if needed */
+@media (max-width: 768px) {
+    .vg-lightbox-content {
+        aspect-ratio: 16/9;
+    }
+    .vg-lightbox-close {
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 50%;
+    }
+}
+
+/* --- Dynamic Loader State --- */
+.vg-loading-state {
+    min-height: 80vh;
+    background-color: #faf9f6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.vg-loader {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #ececec;
+    border-top: 3px solid #E85D25;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 20px;
+}
+
+.vg-loader-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: #555;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1024px) {
+    .vg-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .vg-hero {
+        margin-bottom: 40px;
+        height: 40vh !important;
+        min-height: 320px !important;
+    }
+    .vg-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    .vg-info {
+        padding: 20px;
+    }
+}

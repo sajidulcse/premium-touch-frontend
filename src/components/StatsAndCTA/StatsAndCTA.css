@@ -1,0 +1,176 @@
+/* ==========================================================================
+   Global Stats & CTA Styles
+   ========================================================================== */
+
+.global-stats-cta-wrapper {
+    font-family: 'Outfit', sans-serif;
+    color: #1a1a1a;
+    width: 100%;
+}
+
+.gl-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* --- Statistics Section --- */
+.gl-stats-section {
+    padding: 60px 0;
+    background-color: #ffffff;
+    border-top: 1px solid #f0edf8;
+    border-bottom: 1px solid #f0edf8;
+}
+
+.gl-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    text-align: center;
+}
+
+.gl-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gl-stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    color: #E85D25;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.gl-stat-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #666;
+    font-weight: 500;
+    line-height: 1.4;
+    max-width: 180px;
+}
+
+/* --- Call To Action Section --- */
+.gl-cta-section {
+    position: relative;
+    padding: 120px 0;
+    background-color: #111;
+    color: #ffffff;
+    text-align: center;
+    overflow: hidden;
+}
+
+.gl-cta-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.25);
+    z-index: 0;
+}
+
+.gl-cta-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.8) 100%);
+    z-index: 1;
+}
+
+.gl-cta-content {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.gl-cta-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 400;
+    margin: 0 0 20px 0;
+    line-height: 1.3;
+}
+
+.gl-cta-content p {
+    font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.7;
+    margin: 0 0 40px 0;
+    font-weight: 300;
+}
+
+.gl-cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.gl-cta-btn-primary {
+    background-color: #E85D25;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 16px 36px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.gl-cta-btn-primary:hover {
+    background-color: #d1501c;
+    transform: translateY(-2px);
+}
+
+.gl-cta-btn-secondary {
+    border: 1.5px solid #ffffff;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 14px 34px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.gl-cta-btn-secondary:hover {
+    background-color: #ffffff;
+    color: #111111;
+    transform: translateY(-2px);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .gl-cta-section {
+        padding: 80px 0;
+    }
+
+    .gl-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .gl-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gl-cta-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+}

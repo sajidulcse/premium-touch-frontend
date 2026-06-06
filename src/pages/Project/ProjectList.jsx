@@ -12,6 +12,7 @@ const ProjectList = () => {
     const [categories, setCategories] = useState([]);
     const [settings, setSettings] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [catLoading, setCatLoading] = useState(true);
 
     // Get filters from searchParams or URL Params
     const activeFilter = searchParams.get('category') || categorySlug || 'all';
@@ -33,6 +34,8 @@ const ProjectList = () => {
                 setSettings(setRes.data);
             } catch (error) {
                 console.error("Error fetching initial data:", error);
+            } finally {
+                setCatLoading(false);
             }
         };
         fetchInitialData();
@@ -178,9 +181,9 @@ const ProjectList = () => {
         : `${categoryPath[categoryPath.length - 1].name}`;
 
     const getHeaderBgUrl = () => {
-        if (settings?.project_header_bg) {
+        if (settings?.header_bg) {
             const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${settings.project_header_bg}`;
+            return `${root}/public/uploads/header/${settings.header_bg}`;
         }
         return null;
     };
@@ -199,13 +202,33 @@ const ProjectList = () => {
 
     const showCategoryFilter = isMainProjectsPage || (currentCategoryNode && currentCategoryNode.children && currentCategoryNode.children.length > 0);
 
+    if (catLoading) {
+        return (
+            <div className="loading-state">
+                <div className="loader"></div>
+                <div className="loader-text">Loading Project...</div>
+            </div>
+        );
+    }
+
+    if (loading && !isMainProjectsPage) {
+        return (
+            <div className="loading-state">
+                <div className="loader"></div>
+                <div className="loader-text">Loading Project...</div>
+            </div>
+        );
+    }
+
     return (
         <div className="projects-page-wrapper">
-            <header className="pl-header" style={headerStyle}>
-                <div className="pl-header-overlay"></div>
-                <div className="pl-header-content">
-                    <h1 className="pl-title">{pageTitle}</h1>
-                    <div className="pl-header-breadcrumb">
+            {/* Hero Section */}
+            <section className="pl-hero">
+                <div className="pl-hero-bg" style={headerStyle}></div>
+                <div className="pl-hero-overlay"></div>
+                <div className="pl-hero-content">
+                    <h1 className="pl-hero-title">{pageTitle}</h1>
+                    <div className="pl-hero-breadcrumb">
                         <Link to="/">Home</Link>
                         {activeFilter === 'all' ? (
                             <>
@@ -225,11 +248,14 @@ const ProjectList = () => {
                             ))
                         ) : null}
                     </div>
+                    <a href="#projects-grid" className="pl-hero-btn">
+                        <span>EXPLORE PROJECTS</span>
+                        <i className="fas fa-chevron-down"></i>
+                    </a>
                 </div>
-                <div className="pl-header-bg"></div>
-            </header>
+            </section>
 
-            <div className="pl-main-container">
+            <div id="projects-grid" className="pl-main-container">
                 {(showCategoryFilter || showAreaFilter) && (projects.length > 0 || searchParams.get('category') || searchParams.get('area')) && (
                     <div className="pl-filters-section compact">
                         {showCategoryFilter && (
@@ -278,7 +304,7 @@ const ProjectList = () => {
                     {loading && projects.length === 0 ? (
                         <div className="loading-state" style={{ height: '300px', gridColumn: '1 / -1' }}>
                             <div className="loader"></div>
-                            <div className="loader-text">Filtering Narrative...</div>
+                            <div className="loader-text">Loading Project...</div>
                         </div>
                     ) : displayedProjects.length === 0 ? (
                         <div className="pl-empty-state" style={{ 

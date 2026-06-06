@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BASE_URL } from "../../api/axios";
+import { BASE_URL, getCategories, getSiteInfo } from "../../api/axios";
 import "./Navbar.css";
 
 const Navbar = () => {
@@ -28,16 +28,14 @@ const Navbar = () => {
 
   /* -------------------- FETCH CATEGORIES -------------------- */
   useEffect(() => {
-    fetch(`${BASE_URL}/categories`)
-      .then((res) => res.json())
+    getCategories()
       .then((data) => setCategories(data))
       .catch(console.error);
   }, []);
 
   /* -------------------- FETCH SITE INFO -------------------- */
   useEffect(() => {
-    fetch(`${BASE_URL}/site-info`)
-      .then((res) => res.json())
+    getSiteInfo()
       .then((data) => setSiteInfo(data))
       .catch(console.error);
   }, []);
@@ -55,6 +53,9 @@ const Navbar = () => {
       return `/services/${slug2 || slug1}`;
     }
     if (rootSlug === 'blogs' || rootSlug === 'blog') return `/blogs/category/${slug2 || slug1}`;
+    if (rootSlug === 'about-us' || rootSlug === 'about') {
+      return `/about-us/${slug2 || slug1}`;
+    }
     return `/${slug2 || slug1}`;
   };
 

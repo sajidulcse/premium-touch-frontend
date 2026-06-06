@@ -18,7 +18,9 @@ const PortfolioList = () => {
     const [subFilters, setSubFilters] = useState({});
     const [catLoading, setCatLoading] = useState(true);
 
-    const [selectedChildCategory, setSelectedChildCategory] = useState(parentSlug ? categorySlug : 'all');
+    const [selectedChildCategory, setSelectedChildCategory] = useState(
+        (parentSlug && parentSlug !== categorySlug) ? categorySlug : 'all'
+    );
 
     const activeFilter = parentSlug || categorySlug || searchParams.get('category') || 'all';
     const activeArea = searchParams.get('area') || 'all';
@@ -26,7 +28,7 @@ const PortfolioList = () => {
     const isMainPortfolioPage = !categorySlug || categorySlug === 'portfolio';
 
     useEffect(() => {
-        if (parentSlug && categorySlug) {
+        if (parentSlug && categorySlug && parentSlug !== categorySlug) {
             setSelectedChildCategory(categorySlug);
         } else {
             setSelectedChildCategory('all');
@@ -143,9 +145,9 @@ const PortfolioList = () => {
         : `${categoryPath[categoryPath.length - 1].name}`;
 
     const getHeaderBgUrl = () => {
-        if (settings?.project_header_bg) {
+        if (settings?.header_bg) {
             const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${settings.project_header_bg}`;
+            return `${root}/public/uploads/header/${settings.header_bg}`;
         }
         return null;
     };
@@ -161,7 +163,6 @@ const PortfolioList = () => {
     );
 
     const displayedProjects = filteredProjects.filter(p => {
-        if (p.child_category_id === null) return false;
         if (selectedChildCategory === 'all') return true;
         return p.child_category?.slug === selectedChildCategory || p.childCategory?.slug === selectedChildCategory;
     });
@@ -198,7 +199,7 @@ const PortfolioList = () => {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Category...</div>
+                <div className="loader-text">Loading Portfolio...</div>
             </div>
         );
     }
@@ -218,11 +219,14 @@ const PortfolioList = () => {
 
     return (
         <div className="portfolio-page-wrapper">
-            <header className="port-header" style={headerStyle}>
-                <div className="port-header-overlay"></div>
-                <div className="port-header-content">
-                    <h1 className="port-title">{pageTitle}</h1>
-                    <div className="port-header-breadcrumb">
+            {/* Hero Section */}
+            <section className="port-hero">
+                <div className="port-hero-bg" style={headerStyle}></div>
+                <div className="port-hero-overlay"></div>
+                <div className="port-hero-content">
+                    <span className="port-hero-subtitle">OUR PORTFOLIO</span>
+                    <h1 className="port-hero-title">{pageTitle}</h1>
+                    <div className="port-hero-breadcrumb">
                         <Link to="/">Home</Link>
                         {activeFilter === 'all' ? (
                             <>
@@ -251,11 +255,14 @@ const PortfolioList = () => {
                             ))
                         ) : null}
                     </div>
+                    <a href="#portfolio-grid" className="port-hero-btn">
+                        <span>EXPLORE PORTFOLIO</span>
+                        <i className="fas fa-chevron-down"></i>
+                    </a>
                 </div>
-                <div className="port-header-bg"></div>
-            </header>
+            </section>
 
-            <div className="port-main-container">
+            <div id="portfolio-grid" className="port-main-container">
                 {isMainPortfolioPage ? (
                     loading ? (
                         <div className="loading-state" style={{ height: '300px', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
@@ -535,7 +542,7 @@ const PortfolioList = () => {
                                                      We couldn't find any portfolio projects matching your selection. Please try another filter or explore all works.
                                                  </p>
                                                  <button
-                                                     onClick={() => navigate(`/portfolio/${activeSubCategorySlug}`)}
+                                                     onClick={() => navigate(parentSlug ? `/portfolio/${parentSlug}` : '/portfolio')}
                                                      style={{
                                                          background: '#E85D25',
                                                          color: '#ffffff',

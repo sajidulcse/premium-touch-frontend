@@ -1,6 +1,23 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+
+// Scroll to Top on route change helper
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  const prevPathname = React.useRef(pathname);
+
+  useEffect(() => {
+    const isAboutUsChange = pathname.startsWith('/about-us') && prevPathname.current.startsWith('/about-us');
+    if (!isAboutUsChange) {
+      window.scrollTo(0, 0);
+    }
+    prevPathname.current = pathname;
+  }, [pathname]);
+
+  return null;
+};
 import Navbar from './components/Navbar/Navbar'
+import StatsAndCTA from './components/StatsAndCTA/StatsAndCTA'
 import ContactCTA from "./components/ContactCTA/ContactCTA";
 import Footer from "./components/Footer/Footer";
 import BlogList from './pages/Blog/BlogList';
@@ -14,6 +31,13 @@ import ServiceDetail from './pages/Service/ServiceDetail';
 import ServiceList from './pages/Service/ServiceList';
 import PhotoGalleryPublic from './pages/Gallery/PhotoGalleryPublic';
 import HandoverSnapshotPublic from './pages/Gallery/HandoverSnapshotPublic';
+import Gallery from './pages/Gallery/Gallery';
+import VideoGalleryPublic from './pages/Gallery/VideoGalleryPublic';
+// About Us Components (with lazy loading)
+import AboutLayout from './pages/About/AboutLayout';
+import AboutOverview from './pages/About/AboutOverview';
+const AboutTeam = React.lazy(() => import('./pages/About/AboutTeam'));
+const AboutCareer = React.lazy(() => import('./pages/About/AboutCareer'));
 // Admin Components
 import AdminLayout from './pages/Admin/AdminLayout';
 import Dashboard from './pages/Admin/Dashboard';
@@ -65,8 +89,25 @@ const AppContent = () => {
           <Route path="/service-detail/:id" element={<ServiceDetail />} />
           <Route path="/services" element={<ServiceList />} />
           <Route path="/services/:id" element={<ServiceDetail />} />
-          <Route path="/photo-gallery" element={<PhotoGalleryPublic />} />
+           <Route path="/photo-gallery" element={<PhotoGalleryPublic />} />
+          <Route path="/video-gallery" element={<VideoGalleryPublic />} />
           <Route path="/handover-snapshot" element={<HandoverSnapshotPublic />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/about-us" element={<AboutLayout />}>
+            <Route index element={<AboutOverview />} />
+            <Route path="about-overview" element={<AboutOverview />} />
+            <Route path="about-our-team" element={
+              <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Team...</p></div>}>
+                <AboutTeam />
+              </React.Suspense>
+            } />
+            <Route path="about-career" element={
+              <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Careers...</p></div>}>
+                <AboutCareer />
+              </React.Suspense>
+            } />
+            <Route path=":subCategorySlug" element={<AboutOverview />} />
+          </Route>
           
           {/* Default catch-all for dynamic root categories */}
           <Route path="/:categorySlug" element={<ProjectList />} />
@@ -100,6 +141,7 @@ const AppContent = () => {
           <Route path="/admin/settings" element={<AdminLayout><SettingsManager /></AdminLayout>} />
         </Routes>
       </main>
+      {!isAdminRoute && <StatsAndCTA />}
       {!isAdminRoute && <ContactCTA />}
       {!isAdminRoute && <Footer />}
     </>
@@ -109,6 +151,7 @@ const AppContent = () => {
 const App = () => {
   return (
     <Router>
+      <ScrollToTop />
       <AppContent />
     </Router>
   )

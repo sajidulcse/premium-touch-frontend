@@ -829,6 +829,11 @@
 }
 
 @media (max-width: 768px) {
+    .port-hero {
+        height: 40vh !important;
+        min-height: 320px !important;
+    }
+
     .port-header {
         padding: 120px 20px 60px;
     }
@@ -896,5 +901,147 @@
 
     .container-inner {
         padding: 0 20px;
+    }
+}
+/* --- Hero Section with Zoom Effect --- */
+.port-hero {
+    position: relative;
+    height: 80vh;
+    min-height: 550px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: #0d0d0d;
+    overflow: hidden;
+}
+
+.port-hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.45);
+    transform: scale(1.05);
+    animation: zoomOutEffect 15s ease-out forwards;
+}
+
+.port-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.75));
+    z-index: 1;
+}
+
+.port-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    padding: 0 30px;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.port-hero-subtitle {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: #c5a880;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.port-hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.2;
+    font-weight: 400;
+    margin-bottom: 24px;
+    letter-spacing: -0.5px;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.port-hero-breadcrumb {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+    animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.port-hero-breadcrumb a,
+.bc-link-btn {
+    color: rgba(255, 255, 255, 0.75);
+    text-decoration: none;
+    transition: 0.3s;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+}
+
+.port-hero-breadcrumb a:hover,
+.bc-link-btn:hover {
+    color: #c5a880;
+}
+
+.port-hero-breadcrumb .bc-sep {
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 300;
+    margin: 0;
+}
+
+.port-hero-breadcrumb .current-page {
+    color: #c5a880;
+    font-weight: 500;
+}
+
+.port-hero-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.8s ease-out 0.8s both;
+}
+
+.port-hero-btn i {
+    margin-top: 10px;
+    font-size: 12px;
+    animation: bounce 2s infinite;
+    color: #c5a880;
+}
+
+.port-hero-btn:hover {
+    color: #c5a880;
+}
+
+@keyframes zoomOutEffect {
+    from {
+        transform: scale(1.1);
+    }
+    to {
+        transform: scale(1.0);
     }
 }

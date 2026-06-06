@@ -2,7 +2,7 @@
 .gallery-container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 60px 24px;
+    padding: 30px 24px 80px 24px;
     font-family: 'Outfit', 'Inter', sans-serif;
     color: #0f172a;
 }
@@ -19,6 +19,7 @@
     letter-spacing: -0.03em;
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 12px;
 }
@@ -77,9 +78,15 @@
 }
 
 @media (max-width: 768px) {
+    .pg-hero {
+        height: 40vh !important;
+        min-height: 320px !important;
+    }
+
     .gallery-grid {
         grid-template-columns: 1fr;
     }
+
     .gallery-header h1 {
         font-size: 2.2rem;
     }
@@ -92,7 +99,7 @@
     overflow: hidden;
     background: #fff;
     border: 1px solid #f1f5f9;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
     cursor: pointer;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -116,7 +123,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.7) 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.7) 100%);
     z-index: 1;
     opacity: 0;
     transition: opacity 0.4s ease;
@@ -152,8 +159,9 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 100%;
+    right: 0;
     padding: 24px;
+    box-sizing: border-box;
     z-index: 2;
     transform: translateY(15px);
     opacity: 0;
@@ -178,7 +186,7 @@
     padding: 6px 14px;
     border-radius: 30px;
     margin-bottom: 10px;
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .gallery-card-title {
@@ -186,7 +194,7 @@
     font-weight: 700;
     color: #ffffff;
     margin: 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Lightbox Modal */
@@ -278,7 +286,7 @@
     transform: translateY(-50%);
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: #ffffff;
     width: 56px;
     height: 56px;
@@ -309,6 +317,7 @@
     .lightbox-arrow.prev {
         left: 10px;
     }
+
     .lightbox-arrow.next {
         right: 10px;
     }
@@ -335,8 +344,13 @@
 
 /* Keyframes */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes fadeInDown {
@@ -344,6 +358,7 @@
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -355,6 +370,7 @@
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -366,6 +382,7 @@
         opacity: 0;
         transform: scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -373,6 +390,158 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+/* --- Hero Section --- */
+.pg-hero {
+    position: relative;
+    height: 80vh;
+    min-height: 550px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: #111;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+.pg-hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.45);
+    transform: scale(1.05);
+    animation: zoomOutEffect 15s ease-out forwards;
+}
+
+.pg-hero-bg:not([style]) {
+    background-image: url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1920&q=80');
+}
+
+@keyframes zoomOutEffect {
+    from { transform: scale(1.1); }
+    to { transform: scale(1); }
+}
+
+.pg-hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.75));
+    z-index: 1;
+}
+
+.pg-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 0 20px;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pg-hero-subtitle {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: #E85D25;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.pg-hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.2;
+    font-weight: 400;
+    margin-bottom: 24px;
+    letter-spacing: -0.5px;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.pg-hero-desc {
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 600px;
+    margin-bottom: 40px;
+    animation: fadeInUp 0.8s ease-out 0.6s both;
+}
+
+.pg-hero-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.8s ease-out 0.8s both;
+}
+
+.pg-hero-btn i {
+    margin-top: 10px;
+    font-size: 12px;
+    animation: bounce 2s infinite;
+    color: #E85D25;
+}
+
+.pg-hero-btn:hover {
+    color: #E85D25;
+}
+
+.gallery-header {
+    display: none !important;
+}
+
+/* --- Dynamic Loader State --- */
+.pg-loading-state {
+    min-height: 80vh;
+    background-color: #faf9f6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.pg-loader {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #ececec;
+    border-top: 3px solid #E85D25;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 20px;
+}
+
+.pg-loader-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: #555;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    animation: pulse 1.5s infinite;
+}
+
+.gallery-loader-container {
+    display: none !important;
 }

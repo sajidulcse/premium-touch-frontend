@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { BASE_URL } from "../../api/axios";
+import { BASE_URL, getSiteInfo, getServices, getSocialLinks } from "../../api/axios";
 import "./ContactCTA.css";
 
 
@@ -10,9 +9,9 @@ const ContactCTA = () => {
   const [socialLinks, setSocialLinks] = useState([]);
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/site-info`).then(res => setSiteInfo(res.data)).catch(console.error);
-    axios.get(`${BASE_URL}/services`).then(res => setServices(res.data)).catch(console.error);
-    axios.get(`${BASE_URL}/social-links`).then(res => setSocialLinks(res.data)).catch(console.error);
+    getSiteInfo().then(data => setSiteInfo(data)).catch(console.error);
+    getServices().then(data => setServices(data)).catch(console.error);
+    getSocialLinks().then(data => setSocialLinks(data)).catch(console.error);
   }, []);
 
   return (
