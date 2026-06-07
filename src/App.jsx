@@ -62,6 +62,8 @@ import PhotoGallery from './pages/Admin/PhotoGallery';
 import VideoGallery from './pages/Admin/VideoGallery';
 import HandoverSnapshot from './pages/Admin/HandoverSnapshot';
 import AboutManager from './pages/Admin/AboutManager';
+import TeamManager from './pages/Admin/TeamManager';
+import CareerManager from './pages/Admin/CareerManager';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -137,6 +139,9 @@ const AppContent = () => {
           <Route path="/admin/gallery/videos" element={<AdminLayout><VideoGallery /></AdminLayout>} />
           <Route path="/admin/gallery/handover" element={<AdminLayout><HandoverSnapshot /></AdminLayout>} />
           <Route path="/admin/about" element={<AdminLayout><AboutManager /></AdminLayout>} />
+          <Route path="/admin/about/overview" element={<AdminLayout><AboutManager /></AdminLayout>} />
+          <Route path="/admin/about/team" element={<AdminLayout><TeamManager /></AdminLayout>} />
+          <Route path="/admin/about/career" element={<AdminLayout><CareerManager /></AdminLayout>} />
           <Route path="/admin/profile" element={<AdminLayout><Profile /></AdminLayout>} />
           <Route path="/admin/settings" element={<AdminLayout><SettingsManager /></AdminLayout>} />
         </Routes>

@@ -868,3 +868,53 @@ html.admin-html {
 .preview-actions .remove-btn {
     position: static;
 }
+
+/* Career Manager Vacancy Description Preview */
+.admin-job-desc-preview.ql-editor {
+    padding: 8px 12px !important;
+    min-height: unset !important;
+    font-size: 12.5px !important;
+    line-height: 1.5 !important;
+    color: #475569 !important;
+    background: #fdfcfb !important;
+}
+
+.admin-job-desc-preview.ql-editor p {
+    margin: 0 0 8px 0 !important;
+    line-height: 1.5 !important;
+}
+
+.admin-job-desc-preview.ql-editor p:last-child {
+    margin-bottom: 0 !important;
+}
+
+.admin-job-desc-preview.ql-editor ul {
+    list-style-type: disc !important;
+    margin: 8px 0 8px 20px !important;
+    padding-left: 0 !important;
+}
+
+.admin-job-desc-preview.ql-editor ol {
+    list-style-type: decimal !important;
+    margin: 8px 0 8px 20px !important;
+    padding-left: 0 !important;
+}
+
+.admin-job-desc-preview.ql-editor li {
+    margin-bottom: 4px !important;
+    display: list-item !important;
+    line-height: 1.4 !important;
+}
+
+.admin-job-desc-preview.ql-editor strong {
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+}
+
+.admin-job-desc-preview.ql-editor blockquote {
+    border-left: 3px solid #E85D25 !important;
+    padding-left: 10px !important;
+    margin: 8px 0 !important;
+    color: #64748b !important;
+    font-style: italic !important;
+}

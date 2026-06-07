@@ -27,7 +27,6 @@ let cache = {
     siteInfo: null,
     categories: null,
     services: null,
-    socialLinks: null,
     footer: null
 };
 
@@ -55,16 +54,14 @@ const getCachedData = async (key, endpoint, sessionKey) => {
 export const getSiteInfo = () => getCachedData('siteInfo', '/site-info', 'premium_touch_site_info');
 export const getCategories = () => getCachedData('categories', '/categories', 'premium_touch_categories');
 export const getServices = () => getCachedData('services', '/services', 'premium_touch_services');
-export const getSocialLinks = () => getCachedData('socialLinks', '/social-links', 'premium_touch_social_links');
 export const getFooter = () => getCachedData('footer', '/footer', 'premium_touch_footer');
 
 // Clear cache when settings are saved in admin panel (or globally)
 export const clearClientCache = () => {
-    cache = { siteInfo: null, categories: null, services: null, socialLinks: null, footer: null };
+    cache = { siteInfo: null, categories: null, services: null, footer: null };
     sessionStorage.removeItem('premium_touch_site_info');
     sessionStorage.removeItem('premium_touch_categories');
     sessionStorage.removeItem('premium_touch_services');
-    sessionStorage.removeItem('premium_touch_social_links');
     sessionStorage.removeItem('premium_touch_footer');
 };
 

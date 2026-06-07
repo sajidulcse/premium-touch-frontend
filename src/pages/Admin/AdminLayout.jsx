@@ -28,6 +28,10 @@ const AdminLayout = ({ children }) => {
     const [galleryMenuOpen, setGalleryMenuOpen] = useState(
         location.pathname.includes('/admin/gallery')
     );
+    // About Us submenu toggle
+    const [aboutMenuOpen, setAboutMenuOpen] = useState(
+        location.pathname.includes('/admin/about')
+    );
     const [siteInfo, setSiteInfo] = useState({ site_name: 'Premium Touch', logo: '' });
 
     useEffect(() => {
@@ -249,11 +253,35 @@ const AdminLayout = ({ children }) => {
                             )}
                         </li>
 
-                        <li>
-                            <NavLink to="/admin/about" className={({ isActive }) => isActive ? 'active' : ''}>
+                        <li className={`has-submenu ${aboutMenuOpen ? 'open' : ''}`}>
+                            <div className="menu-item-toggle" onClick={() => setAboutMenuOpen(!aboutMenuOpen)}>
                                 <i className="fas fa-info-circle"></i>
                                 <span>About Us</span>
-                            </NavLink>
+                                <i className={`fas fa-chevron-${aboutMenuOpen ? 'up' : 'down'} arrow`}></i>
+                            </div>
+
+                            {aboutMenuOpen && (
+                                <ul className="submenu-list">
+                                    <li>
+                                        <NavLink to="/admin/about/overview" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-eye"></i>
+                                            <span>Overview</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/about/team" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-users"></i>
+                                            <span>Our Team</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/about/career" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-briefcase"></i>
+                                            <span>Career</span>
+                                        </NavLink>
+                                    </li>
+                                </ul>
+                            )}
                         </li>
 
                         <li>
