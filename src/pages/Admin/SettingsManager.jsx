@@ -13,6 +13,8 @@ const SettingsManager = () => {
         map_url: '',
         map_embed_url: '',
         facebook_page_url: '',
+        instagram_page_url: '',
+        linkedin_page_url: '',
         logo: '',
         header_bg: '',
         cta_bg: '',
@@ -269,12 +271,42 @@ const SettingsManager = () => {
                                 type="text"
                                 className="admin-input"
                                 placeholder="https://www.facebook.com/yourpage"
-                                value={settings.facebook_page_url}
+                                value={settings.facebook_page_url || ''}
                                 style={{ borderColor: '#3b5998' }}
                                 onChange={(e) => setSettings({ ...settings, facebook_page_url: e.target.value })}
                             />
                             <small style={{ color: '#64748b', marginTop: '5px', display: 'block' }}>
                                 This URL is used to generate the interactive Like Box in the footer area.
+                            </small>
+                        </div>
+
+                        <div className="form-group" style={{ marginTop: '20px', padding: '15px', background: '#f8fafc', borderRadius: '12px' }}>
+                            <label style={{ color: '#0f172a', fontWeight: 'bold' }}>Instagram Page URL</label>
+                            <input
+                                type="text"
+                                className="admin-input"
+                                placeholder="https://www.instagram.com/yourpage"
+                                value={settings.instagram_page_url || ''}
+                                style={{ borderColor: '#e1306c' }}
+                                onChange={(e) => setSettings({ ...settings, instagram_page_url: e.target.value })}
+                            />
+                            <small style={{ color: '#64748b', marginTop: '5px', display: 'block' }}>
+                                This URL is used to link to your Instagram page in the footer and about overview.
+                            </small>
+                        </div>
+
+                        <div className="form-group" style={{ marginTop: '20px', padding: '15px', background: '#f8fafc', borderRadius: '12px' }}>
+                            <label style={{ color: '#0f172a', fontWeight: 'bold' }}>LinkedIn Page URL</label>
+                            <input
+                                type="text"
+                                className="admin-input"
+                                placeholder="https://www.linkedin.com/company/yourpage"
+                                value={settings.linkedin_page_url || ''}
+                                style={{ borderColor: '#0077b5' }}
+                                onChange={(e) => setSettings({ ...settings, linkedin_page_url: e.target.value })}
+                            />
+                            <small style={{ color: '#64748b', marginTop: '5px', display: 'block' }}>
+                                This URL is used to link to your LinkedIn page in the footer and about overview.
                             </small>
                         </div>
                     </div>

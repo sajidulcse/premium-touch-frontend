@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { BASE_URL, getSiteInfo, getServices, getSocialLinks } from "../../api/axios";
+import { BASE_URL, getSiteInfo, getServices } from "../../api/axios";
 import "./ContactCTA.css";
 
 
 const ContactCTA = () => {
   const [siteInfo, setSiteInfo] = useState({});
   const [services, setServices] = useState([]);
-  const [socialLinks, setSocialLinks] = useState([]);
 
   useEffect(() => {
     getSiteInfo().then(data => setSiteInfo(data)).catch(console.error);
     getServices().then(data => setServices(data)).catch(console.error);
-    getSocialLinks().then(data => setSocialLinks(data)).catch(console.error);
   }, []);
 
   return (
@@ -45,18 +43,28 @@ const ContactCTA = () => {
         <div className="cta-section social-links">
           <h4>Connect With Us</h4>
           <div className="social-icons">
-            {socialLinks.map(s => (
-              <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer">
-                <i className={s.icon}></i>
+            {siteInfo.facebook_page_url && (
+              <a href={siteInfo.facebook_page_url} target="_blank" rel="noopener noreferrer">
+                <i className="fab fa-facebook-f"></i>
               </a>
-            ))}
+            )}
+            {siteInfo.instagram_page_url && (
+              <a href={siteInfo.instagram_page_url} target="_blank" rel="noopener noreferrer">
+                <i className="fab fa-instagram"></i>
+              </a>
+            )}
+            {siteInfo.linkedin_page_url && (
+              <a href={siteInfo.linkedin_page_url} target="_blank" rel="noopener noreferrer">
+                <i className="fab fa-linkedin-in"></i>
+              </a>
+            )}
           </div>
 
           {/* Facebook Page Plugin */}
-          {(siteInfo.facebook_page_url || socialLinks.find(s => s.name.toLowerCase().includes('facebook'))) && (
+          {siteInfo.facebook_page_url && (
             <div className="facebook-page-plugin" style={{ marginTop: '25px', overflow: 'hidden', borderRadius: '8px', border: '1px solid #e9ecef' }}>
               <iframe
-                src={`https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(siteInfo.facebook_page_url || socialLinks.find(s => s.name.toLowerCase().includes('facebook')).url)}&tabs=timeline&width=300&height=130&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId`}
+                src={`https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(siteInfo.facebook_page_url)}&tabs=timeline&width=300&height=130&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId`}
                 width="100%"
                 height="130"
                 style={{ border: 'none', overflow: 'hidden' }}

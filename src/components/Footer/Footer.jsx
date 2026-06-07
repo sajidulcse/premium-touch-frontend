@@ -105,8 +105,47 @@ const Footer = () => {
       </div>
 
       <div className="footer-bottom">
-        &copy; {new Date().getFullYear()}{" "}
-        {siteSettings?.site_name || "Your Company"}. All rights reserved.
+        {(siteSettings?.facebook_page_url || siteSettings?.instagram_page_url || siteSettings?.linkedin_page_url) && (
+          <div className="footer-social-links" style={{ marginBottom: "12px", display: "flex", gap: "16px", justifyContent: "center" }}>
+            {siteSettings.facebook_page_url && (
+              <a
+                href={siteSettings.facebook_page_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-link"
+                title="Facebook"
+              >
+                <i className="fab fa-facebook-f"></i>
+              </a>
+            )}
+            {siteSettings.instagram_page_url && (
+              <a
+                href={siteSettings.instagram_page_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-link"
+                title="Instagram"
+              >
+                <i className="fab fa-instagram"></i>
+              </a>
+            )}
+            {siteSettings.linkedin_page_url && (
+              <a
+                href={siteSettings.linkedin_page_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-link"
+                title="LinkedIn"
+              >
+                <i className="fab fa-linkedin-in"></i>
+              </a>
+            )}
+          </div>
+        )}
+        <p style={{ margin: 0 }}>
+          &copy; {new Date().getFullYear()}{" "}
+          {siteSettings?.site_name || "Your Company"}. All rights reserved.
+        </p>
       </div>
     </footer>
   );
