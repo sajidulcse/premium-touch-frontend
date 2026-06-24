@@ -1,10 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { BASE_URL } from '../../api/axios';
+import api, { BASE_URL, getStorageUrl } from '../../api/axios';
 
 const AboutOverview = () => {
     // Read cached site settings from the parent layout outlet context
     const { settings } = useOutletContext();
+    const [philosophies, setPhilosophies] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPhilosophies = async () => {
+            try {
+                const res = await api.get('/design-philosophies');
+                const sorted = res.data.sort((a, b) => a.step_number.localeCompare(b.step_number));
+                setPhilosophies(sorted);
+            } catch (err) {
+                console.error("Failed to fetch design philosophies:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPhilosophies();
+    }, []);
 
     return (
         <div className="about-overview-wrapper">
@@ -74,29 +91,31 @@ const AboutOverview = () => {
                 </div>
 
                 <div className="philosophy-grid">
-                    <div className="philosophy-card">
-                        <div className="card-icon-box">
-                            <i className="fas fa-drafting-compass"></i>
+                    {philosophies.map((philosophy) => (
+                        <div key={philosophy.id} className="philosophy-card">
+                            <div className="philosophy-card-header">
+                                <span className="philosophy-number">{philosophy.stepNumber || philosophy.step_number}</span>
+                                <div className="philosophy-image-box">
+                                    <img 
+                                        src={getStorageUrl(philosophy.image)} 
+                                        alt={philosophy.title}
+                                        onError={(e) => {
+                                            e.target.src = "/photo/values_step1.png";
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="philosophy-card-content">
+                                <h3>{philosophy.title}</h3>
+                                <p>{philosophy.description}</p>
+                            </div>
                         </div>
-                        <h4>Signature Craftsmanship</h4>
-                        <p>We implement custom millwork, detailed marble trims, and veneers to ensure every corner reflects luxury standards and tailored quality.</p>
-                    </div>
-
-                    <div className="philosophy-card">
-                        <div className="card-icon-box">
-                            <i className="fas fa-seedling"></i>
+                    ))}
+                    {!loading && philosophies.length === 0 && (
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#888' }}>
+                            No design philosophies found.
                         </div>
-                        <h4>Sustainable Elegance</h4>
-                        <p>Balancing premium visual styling with energy-efficient systems, eco-friendly materials, and smart automation for future-ready living.</p>
-                    </div>
-
-                    <div className="philosophy-card">
-                        <div className="card-icon-box">
-                            <i className="fas fa-couch"></i>
-                        </div>
-                        <h4>Bespoke Customization</h4>
-                        <p>No cookie-cutter templates. We design custom furniture layouts, curate bespoke palettes, and select art pieces to complement your tastes.</p>
-                    </div>
+                    )}
                 </div>
             </section>
 
@@ -108,56 +127,82 @@ const AboutOverview = () => {
                     <div className="section-line"></div>
                 </div>
 
-                <div className="timeline-wrapper">
-                    <div className="timeline-item">
-                        <div className="timeline-card-header">
-                            <div className="timeline-icon-box">
-                                <i className="fas fa-comments"></i>
+                <div className="process-grid">
+                    <div className="process-card">
+                        <div className="process-card-header">
+                            <span className="process-number">01</span>
+                            <div className="process-image-box">
+                                <img src="/photo/process_step1.png" alt="Place a phone call" />
                             </div>
-                            <span className="timeline-step-label">STEP 01</span>
                         </div>
-                        <div className="timeline-content">
-                            <h4>Consultation & Concept</h4>
-                            <p>We analyze the structural flow, natural lighting, and client preferences to map out the conceptual blueprint and space plans.</p>
+                        <div className="process-card-content">
+                            <h3>Place a phone call</h3>
+                            <p>Our professional customer care team is here to provide all the basic information you need to know.</p>
                         </div>
                     </div>
 
-                    <div className="timeline-item">
-                        <div className="timeline-card-header">
-                            <div className="timeline-icon-box">
-                                <i className="fas fa-cube"></i>
+                    <div className="process-card">
+                        <div className="process-card-header">
+                            <span className="process-number">02</span>
+                            <div className="process-image-box">
+                                <img src="/photo/process_step2.png" alt="Visit" />
                             </div>
-                            <span className="timeline-step-label">STEP 02</span>
                         </div>
-                        <div className="timeline-content">
-                            <h4>3D Visualization</h4>
-                            <p>Generating realistic 3D renderings, material boards, and detailed walkthroughs so you see the finalized design before construction.</p>
+                        <div className="process-card-content">
+                            <h3>Visit</h3>
+                            <p>After a successful visit, considering all your requirements along with material we will provide an idea about cost.</p>
                         </div>
                     </div>
 
-                    <div className="timeline-item">
-                        <div className="timeline-card-header">
-                            <div className="timeline-icon-box">
-                                <i className="fas fa-palette"></i>
+                    <div className="process-card">
+                        <div className="process-card-header">
+                            <span className="process-number">03</span>
+                            <div className="process-image-box">
+                                <img src="/photo/process_step3.png" alt="Design" />
                             </div>
-                            <span className="timeline-step-label">STEP 03</span>
                         </div>
-                        <div className="timeline-content">
-                            <h4>Material Sourcing</h4>
-                            <p>Selecting custom veneers, light fittings, fabrics, marbles, and finishes from verified suppliers to ensure premium texture quality.</p>
+                        <div className="process-card-content">
+                            <h3>Design</h3>
+                            <p>For design you can bring your ideas to the table, or can choose from our vast collections. Else our creative designer team can make a complete design for you.</p>
                         </div>
                     </div>
 
-                    <div className="timeline-item">
-                        <div className="timeline-card-header">
-                            <div className="timeline-icon-box">
-                                <i className="fas fa-key"></i>
+                    <div className="process-card">
+                        <div className="process-card-header">
+                            <span className="process-number">04</span>
+                            <div className="process-image-box">
+                                <img src="/photo/process_step4.png" alt="Approval" />
                             </div>
-                            <span className="timeline-step-label">STEP 04</span>
                         </div>
-                        <div className="timeline-content">
-                            <h4>Supervision & Handover</h4>
-                            <p>Our engineers supervise the turnkey installation, ensuring high-fidelity assembly, final detailing, and clean ceremony keys handover.</p>
+                        <div className="process-card-content">
+                            <h3>Approval</h3>
+                            <p>After approval of the design we will provide final costing for the project considering your choice of material.</p>
+                        </div>
+                    </div>
+
+                    <div className="process-card">
+                        <div className="process-card-header">
+                            <span className="process-number">05</span>
+                            <div className="process-image-box">
+                                <img src="/photo/process_step5.png" alt="Payment procedure" />
+                            </div>
+                        </div>
+                        <div className="process-card-content">
+                            <h3>Payment procedure</h3>
+                            <p>If the design and price is being finalized we will come up with a very easy and convenient payment procedure and working schedule.</p>
+                        </div>
+                    </div>
+
+                    <div className="process-card">
+                        <div className="process-card-header">
+                            <span className="process-number">06</span>
+                            <div className="process-image-box">
+                                <img src="/photo/process_step6.png" alt="Agreement" />
+                            </div>
+                        </div>
+                        <div className="process-card-content">
+                            <h3>Agreement</h3>
+                            <p>Both parties will sign in an agreement. We believe in professionalism and commitment. Our professional architects, workers work simultaneously.</p>
                         </div>
                     </div>
                 </div>

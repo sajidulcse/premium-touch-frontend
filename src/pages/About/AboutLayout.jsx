@@ -99,7 +99,11 @@ const AboutLayout = () => {
                 <div className="about-hero-overlay"></div>
                 <div className="about-hero-content">
                     <span className="about-hero-subtitle">OUR STORIES</span>
-                    <h1 className="about-hero-title">About Us</h1>
+                    <h1 className="about-hero-title">
+                        {activeSubCat && activeSubCat.slug !== 'about-overview' && activeSubCat.slug !== 'overview' 
+                            ? activeSubCat.name 
+                            : "About Us"}
+                    </h1>
                     <div className="about-hero-breadcrumb">
                         <Link to="/">Home</Link>
                         <span className="bc-sep">/</span>

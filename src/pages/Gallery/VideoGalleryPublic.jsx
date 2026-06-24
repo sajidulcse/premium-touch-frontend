@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import api, { BASE_URL } from '../../api/axios';
+import api, { BASE_URL, getSiteInfo } from '../../api/axios';
 import './VideoGalleryPublic.css';
 
 const VideoGalleryPublic = () => {
     const [videos, setVideos] = useState([]);
+    const [catLoading, setCatLoading] = useState(true);
     const [loading, setLoading] = useState(true);
     const [settings, setSettings] = useState(null);
     const [activeVideo, setActiveVideo] = useState(null);
@@ -33,12 +34,22 @@ const VideoGalleryPublic = () => {
     ];
 
     useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const siteData = await getSiteInfo();
+                setSettings(siteData);
+            } catch (error) {
+                console.error("Error loading site settings:", error);
+            } finally {
+                setCatLoading(false);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // Fetch site settings for background header
-                const siteRes = await api.get('/site-info');
-                setSettings(siteRes.data);
-
                 // Fetch videos from localStorage (populated via admin)
                 const saved = localStorage.getItem('premium_touch_videos');
                 if (saved) {
@@ -56,10 +67,7 @@ const VideoGalleryPublic = () => {
                 console.error("Error loading video gallery:", err);
                 setVideos(defaultVideos);
             } finally {
-                // Keep loading screen active for a beat
-                setTimeout(() => {
-                    setLoading(false);
-                }, 1000);
+                setLoading(false);
             }
         };
 
@@ -95,7 +103,7 @@ const VideoGalleryPublic = () => {
         return null;
     };
 
-    if (loading) {
+    if (catLoading) {
         return (
             <div className="vg-loading-state">
                 <div className="vg-loader"></div>
@@ -128,47 +136,54 @@ const VideoGalleryPublic = () => {
 
             {/* Main Content */}
             <div id="videos" className="vg-container">
-                <div className="vg-grid">
-                    {videos.map((vid) => {
-                        const { embedUrl, thumbnailUrl } = getEmbedUrlAndThumbnail(vid.url);
-                        return (
-                            <div key={vid.id} className="vg-card" onClick={() => setActiveVideo(embedUrl)}>
-                                <div className="vg-media-wrapper">
-                                    {thumbnailUrl ? (
-                                        <img 
-                                            src={thumbnailUrl} 
-                                            alt={vid.title} 
-                                            className="vg-thumbnail"
-                                            onError={(e) => {
-                                                // Handle cases where maxresdefault doesn't exist
-                                                const fallbackYtMatch = vid.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
-                                                if (fallbackYtMatch && fallbackYtMatch[1]) {
-                                                    e.target.src = `https://img.youtube.com/vi/${fallbackYtMatch[1]}/0.jpg`;
-                                                } else {
-                                                    e.target.src = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80";
-                                                }
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="vg-thumbnail-fallback">
-                                            <i className="fas fa-video fa-2x"></i>
-                                        </div>
-                                    )}
-                                    <div className="vg-play-button-overlay">
-                                        <div className="vg-play-icon-glow"></div>
-                                        <div className="vg-play-icon">
-                                            <i className="fas fa-play"></i>
+                {loading ? (
+                    <div className="vg-loading-state" style={{ height: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                        <div className="vg-loader"></div>
+                        <div className="vg-loader-text" style={{ marginTop: '15px', color: '#666', fontSize: '14px' }}>Loading Video Gallery...</div>
+                    </div>
+                ) : (
+                    <div className="vg-grid">
+                        {videos.map((vid) => {
+                            const { embedUrl, thumbnailUrl } = getEmbedUrlAndThumbnail(vid.url);
+                            return (
+                                <div key={vid.id} className="vg-card" onClick={() => setActiveVideo(embedUrl)}>
+                                    <div className="vg-media-wrapper">
+                                        {thumbnailUrl ? (
+                                            <img 
+                                                src={thumbnailUrl} 
+                                                alt={vid.title} 
+                                                className="vg-thumbnail"
+                                                onError={(e) => {
+                                                    // Handle cases where maxresdefault doesn't exist
+                                                    const fallbackYtMatch = vid.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+                                                    if (fallbackYtMatch && fallbackYtMatch[1]) {
+                                                        e.target.src = `https://img.youtube.com/vi/${fallbackYtMatch[1]}/0.jpg`;
+                                                    } else {
+                                                        e.target.src = "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80";
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="vg-thumbnail-fallback">
+                                                <i className="fas fa-video fa-2x"></i>
+                                            </div>
+                                        )}
+                                        <div className="vg-play-button-overlay">
+                                            <div className="vg-play-icon-glow"></div>
+                                            <div className="vg-play-icon">
+                                                <i className="fas fa-play"></i>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="vg-info">
+                                        <h3>{vid.title}</h3>
+                                        {vid.description && <p>{vid.description}</p>}
+                                    </div>
                                 </div>
-                                <div className="vg-info">
-                                    <h3>{vid.title}</h3>
-                                    {vid.description && <p>{vid.description}</p>}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Cinematic Lightbox Modal */}

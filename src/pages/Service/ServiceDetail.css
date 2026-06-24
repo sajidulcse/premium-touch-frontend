@@ -12,18 +12,15 @@
 /* --- MOBILE CONTACT BAR (Hidden on Desktop) --- */
 .sd-mobile-contact-bar {
     display: none;
-    position: sticky;
-    top: 70px; /* Adjust based on global navbar height */
-    left: 0;
-    width: 100%;
     background: #ffffff;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    z-index: 99;
-    padding: 10px 20px;
+    padding: 12px 18px;
     box-sizing: border-box;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eaeaea;
+    border: 1px solid #eaeaea;
+    border-radius: 6px;
+    margin-top: 25px;
+    width: 100%;
 }
 
 .sd-mobile-actions {
@@ -68,19 +65,19 @@
     max-width: 1400px;
     margin: 0 auto;
     position: relative;
-    padding-top: 100px; /* offset for global navbar */
-    padding-bottom: 100px;
+    padding-top: 30px; /* reduced offset for global navbar */
+    padding-bottom: 60px;
 }
 
 /* --- DESKTOP FIXED LEFT SIDEBAR --- */
 .sd-fixed-sidebar {
-    width: 320px;
-    min-width: 320px;
-    padding: 0 40px;
+    width: 300px;
+    min-width: 300px;
+    padding: 0 20px;
     position: sticky;
-    top: 120px; /* Stays fixed below navbar */
+    top: 95px; /* Stays fixed below navbar */
     align-self: flex-start;
-    height: calc(100vh - 150px);
+    height: calc(100vh - 110px);
     overflow-y: auto;
     /* Hide scrollbar for clean look */
     scrollbar-width: none; 
@@ -93,26 +90,26 @@
 .sd-sidebar-inner {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 20px;
 }
 
 .sd-brand-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 20px;
+    padding-bottom: 12px;
     border-bottom: 1px solid #eaeaea;
 }
 
 .sd-brand-logo {
     font-family: "Playfair Display", serif;
     font-weight: 700;
-    font-size: 24px;
+    font-size: 22px;
     color: #E85D25;
 }
 
 .sd-brand-name {
-    font-size: 14px;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 2px;
     color: #555;
@@ -121,23 +118,23 @@
 
 .sd-lead-text {
     font-family: "Playfair Display", serif;
-    font-size: 22px;
+    font-size: 18px;
     color: #1a1a1a;
     line-height: 1.3;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .sd-contact-blocks {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
 }
 
 .sd-contact-card {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 16px;
+    gap: 12px;
+    padding: 12px;
     background: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.02);
@@ -153,15 +150,15 @@
 }
 
 .sd-contact-card .icon-wrapper {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: #f9f9f9;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #333;
-    font-size: 16px;
+    font-size: 14px;
     transition: background 0.3s ease;
 }
 
@@ -176,7 +173,7 @@
 }
 
 .sd-contact-card .label {
-    font-size: 12px;
+    font-size: 11px;
     color: #888;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -184,7 +181,7 @@
 }
 
 .sd-contact-card .value {
-    font-size: 15px;
+    font-size: 14px;
     color: #1a1a1a;
     font-weight: 500;
 }
@@ -193,9 +190,9 @@
     background: #E85D25;
     color: #ffffff;
     border: none;
-    padding: 18px 20px;
+    padding: 14px 18px;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     font-family: inherit;
     font-weight: 600;
     text-transform: uppercase;
@@ -203,7 +200,7 @@
     cursor: pointer;
     transition: background 0.3s ease;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .sd-primary-cta:hover {
@@ -219,16 +216,15 @@
 
 .sd-document-paper {
     background: #ffffff;
-    border-radius: 4px;
+    border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02);
-    padding: 80px 100px;
+    padding: 45px 50px;
     max-width: 900px;
     margin: 0 auto;
-    border-top: 5px solid #1a1a1a; /* Subtle premium framing */
 }
 
 .sd-doc-header {
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     text-align: center;
 }
 
@@ -261,9 +257,10 @@
 .sd-doc-cover {
     width: 100%;
     height: 400px;
-    margin-bottom: 50px;
-    border-radius: 4px;
+    margin-bottom: 35px;
+    border-radius: 8px;
     overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
 }
 
 .sd-doc-cover img {
@@ -278,10 +275,10 @@
 
 .sd-block-heading {
     font-family: "Playfair Display", serif;
-    font-size: 26px;
+    font-size: 24px;
     color: #1a1a1a;
-    margin-top: 50px;
-    margin-bottom: 20px;
+    margin-top: 35px;
+    margin-bottom: 15px;
     font-weight: 600;
 }
 
@@ -351,15 +348,15 @@
 }
 
 .sd-doc-footer {
-    margin-top: 60px;
-    padding-top: 40px;
+    margin-top: 40px;
+    padding-top: 30px;
     border-top: 1px solid #eaeaea;
     text-align: center;
 }
 
 .sd-conclusion h3 {
     font-family: "Playfair Display", serif;
-    font-size: 24px;
+    font-size: 22px;
     margin-bottom: 10px;
 }
 
@@ -371,11 +368,23 @@
 
 /* --- FAQ ACCORDION --- */
 .faq-accordion {
-    border-top: 1px solid #eaeaea;
+    border-top: none;
+    margin-top: 15px;
 }
 
 .faq-item {
-    border-bottom: 1px solid #eaeaea;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    background: #fbfbfb;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.faq-item.active {
+    background: #ffffff;
+    border-color: #E85D25;
+    box-shadow: 0 4px 15px rgba(232, 93, 37, 0.05);
 }
 
 .faq-question {
@@ -383,8 +392,8 @@
     text-align: left;
     background: none;
     border: none;
-    padding: 20px 0;
-    font-size: 18px;
+    padding: 16px 20px;
+    font-size: 16px;
     font-weight: 600;
     color: #1a1a1a;
     cursor: pointer;
@@ -400,11 +409,50 @@
 }
 
 .faq-answer {
-    padding-bottom: 20px;
+    padding: 0 20px 16px 20px;
     color: #555;
     line-height: 1.6;
-    font-size: 16px;
+    font-size: 15px;
     animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- VISUAL PORTFOLIO GALLERY --- */
+.sd-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.sd-gallery-grid .sd-block-image {
+    margin: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.3s ease;
+    background: #f9f9f9;
+}
+
+.sd-gallery-grid .sd-block-image:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.sd-gallery-grid .sd-block-image img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.sd-gallery-grid .sd-block-image:hover img {
+    transform: scale(1.05);
 }
 
 @keyframes fadeIn {
@@ -435,8 +483,9 @@
     }
 
     .sd-document-paper {
-        padding: 40px 20px;
-        border-top: 3px solid #1a1a1a;
+        padding: 30px 15px;
+        border-top: none;
+        border-radius: 8px;
     }
 
     .sd-doc-title {

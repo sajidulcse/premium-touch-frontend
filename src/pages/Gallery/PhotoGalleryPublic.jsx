@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import api, { getStorageUrl, BASE_URL } from '../../api/axios';
+import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
 import './PhotoGalleryPublic.css';
 
 // Progressive Image Component for smooth loading
@@ -30,19 +30,30 @@ const ProgressiveImage = ({ src, alt, className }) => {
 
 const PhotoGalleryPublic = () => {
     const [images, setImages] = useState([]);
+    const [catLoading, setCatLoading] = useState(true);
     const [loading, setLoading] = useState(true);
     const [lightboxIndex, setLightboxIndex] = useState(null);
     const [settings, setSettings] = useState(null);
 
     useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                const siteData = await getSiteInfo();
+                setSettings(siteData);
+            } catch (error) {
+                console.error("Error fetching site settings:", error);
+            } finally {
+                setCatLoading(false);
+            }
+        };
+        fetchInitialData();
+    }, []);
+
+    useEffect(() => {
         const fetchGallery = async () => {
             try {
-                const [projRes, siteRes] = await Promise.all([
-                    api.get('/projects?category=all&area=all'),
-                    api.get('/site-info')
-                ]);
+                const projRes = await api.get('/projects?category=all&area=all');
                 const projectList = projRes.data || [];
-                setSettings(siteRes.data);
 
                 // Extract images with metadata
                 const extractedImages = projectList.flatMap(project => {
@@ -109,7 +120,7 @@ const PhotoGalleryPublic = () => {
     const headerBgUrl = getHeaderBgUrl();
     const headerBgStyle = headerBgUrl ? { backgroundImage: `url(${headerBgUrl})` } : {};
 
-    if (loading) {
+    if (catLoading) {
         return (
             <div className="pg-loading-state">
                 <div className="pg-loader"></div>
@@ -139,7 +150,12 @@ const PhotoGalleryPublic = () => {
 
             <div id="photos" className="gallery-container">
                 {/* Image Cards Grid */}
-                {images.length === 0 ? (
+                {loading ? (
+                    <div className="pg-loading-state" style={{ height: '300px', gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                        <div className="pg-loader"></div>
+                        <div className="pg-loader-text" style={{ marginTop: '15px', color: '#666', fontSize: '14px' }}>Loading Photo Gallery...</div>
+                    </div>
+                ) : images.length === 0 ? (
                             <div className="gallery-empty-state" style={{
                                 textAlign: 'center',
                                 padding: '80px 24px',

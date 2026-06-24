@@ -20,8 +20,8 @@
 .gl-stats-section {
     padding: 60px 0;
     background-color: #ffffff;
-    border-top: 1px solid #f0edf8;
-    border-bottom: 1px solid #f0edf8;
+    border-top: 1px solid #e8e4de;
+    border-bottom: 1px solid #e8e4de;
 }
 
 .gl-stats-grid {
@@ -49,7 +49,7 @@
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #666;
+    color: #766e65;
     font-weight: 500;
     line-height: 1.4;
     max-width: 180px;
@@ -130,7 +130,7 @@
 }
 
 .gl-cta-btn-primary:hover {
-    background-color: #d1501c;
+    background-color: #cf4f1d;
     transform: translateY(-2px);
 }
 

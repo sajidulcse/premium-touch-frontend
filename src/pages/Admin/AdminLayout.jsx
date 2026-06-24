@@ -32,6 +32,10 @@ const AdminLayout = ({ children }) => {
     const [aboutMenuOpen, setAboutMenuOpen] = useState(
         location.pathname.includes('/admin/about')
     );
+    // Home Page Setup submenu toggle
+    const [homeMenuOpen, setHomeMenuOpen] = useState(
+        location.pathname.includes('/admin/home')
+    );
     const [siteInfo, setSiteInfo] = useState({ site_name: 'Premium Touch', logo: '' });
 
     useEffect(() => {
@@ -303,6 +307,43 @@ const AdminLayout = ({ children }) => {
                                 <i className="fas fa-cog"></i>
                                 <span>Site Settings</span>
                             </NavLink>
+                        </li>
+
+                        <li className={`has-submenu ${homeMenuOpen ? 'open' : ''}`}>
+                            <div className="menu-item-toggle" onClick={() => setHomeMenuOpen(!homeMenuOpen)}>
+                                <i className="fas fa-home"></i>
+                                <span>Home Page Setup</span>
+                                <i className={`fas fa-chevron-${homeMenuOpen ? 'up' : 'down'} arrow`}></i>
+                            </div>
+
+                            {homeMenuOpen && (
+                                <ul className="submenu-list">
+                                    <li>
+                                        <NavLink to="/admin/home/hero" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-images"></i>
+                                            <span>Hero Setup</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/home/identity" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-id-card"></i>
+                                            <span>Our Identity Setup</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/home/process" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-stream"></i>
+                                            <span>Our Creative Process Setup</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/home/reviews" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-comments"></i>
+                                            <span>Our Clients Review</span>
+                                        </NavLink>
+                                    </li>
+                                </ul>
+                            )}
                         </li>
 
                         <li className="menu-divider">System</li>

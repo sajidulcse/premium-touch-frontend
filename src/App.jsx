@@ -8,7 +8,23 @@ const ScrollToTop = () => {
 
   useEffect(() => {
     const isAboutUsChange = pathname.startsWith('/about-us') && prevPathname.current.startsWith('/about-us');
-    if (!isAboutUsChange) {
+    
+    // Check if we are filtering within the same portfolio subcategory (e.g., /portfolio/residence -> /portfolio/residence/bedroom)
+    const pathSegments = pathname.split('/').filter(Boolean);
+    const prevSegments = prevPathname.current.split('/').filter(Boolean);
+    const isSamePortfolioSubcategory = 
+      pathSegments[0] === 'portfolio' && 
+      prevSegments[0] === 'portfolio' && 
+      pathSegments[1] === prevSegments[1] &&
+      pathSegments[1] !== undefined;
+
+    const isSameProjectsSubcategory = 
+      pathSegments[0] === 'projects' && 
+      prevSegments[0] === 'projects' && 
+      pathSegments[1] === prevSegments[1] &&
+      pathSegments[1] !== undefined;
+
+    if (!isAboutUsChange && !isSamePortfolioSubcategory && !isSameProjectsSubcategory) {
       window.scrollTo(0, 0);
     }
     prevPathname.current = pathname;
@@ -33,6 +49,8 @@ import PhotoGalleryPublic from './pages/Gallery/PhotoGalleryPublic';
 import HandoverSnapshotPublic from './pages/Gallery/HandoverSnapshotPublic';
 import Gallery from './pages/Gallery/Gallery';
 import VideoGalleryPublic from './pages/Gallery/VideoGalleryPublic';
+import Contact from './pages/Contact/Contact';
+import Home from './pages/Home/Home';
 // About Us Components (with lazy loading)
 import AboutLayout from './pages/About/AboutLayout';
 import AboutOverview from './pages/About/AboutOverview';
@@ -64,6 +82,10 @@ import HandoverSnapshot from './pages/Admin/HandoverSnapshot';
 import AboutManager from './pages/Admin/AboutManager';
 import TeamManager from './pages/Admin/TeamManager';
 import CareerManager from './pages/Admin/CareerManager';
+import HeroSetup from './pages/Admin/HeroSetup';
+import IdentitySetup from './pages/Admin/IdentitySetup';
+import ProcessSetup from './pages/Admin/ProcessSetup';
+import ReviewsSetup from './pages/Admin/ReviewsSetup';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -76,13 +98,16 @@ const AppContent = () => {
       {!isAdminRoute && <Navbar />}
       <main style={{ minHeight: '80vh' }}>
         <Routes>
-          <Route path="/" element={<div>Home Page (Existing)</div>} />
+          <Route path="/" element={<Home />} />
           <Route path="/blogs" element={<BlogList />} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/blogs/category/:slug" element={<CategoryBlogList />} />
           <Route path="/projects" element={<ProjectList />} />
-          <Route path="/projects/:slug" element={<ProjectDetail />} />
+          <Route path="/projects/:categorySlug" element={<ProjectList />} />
+          <Route path="/projects/:parentSlug/:categorySlug" element={<ProjectList />} />
+          <Route path="/projects/view/:slug" element={<ProjectDetail />} />
+          <Route path="/projects/:parentSlug/:categorySlug/:slug" element={<ProjectDetail />} />
           <Route path="/portfolio" element={<PortfolioList />} />
           <Route path="/portfolio/:categorySlug" element={<PortfolioList />} />
           <Route path="/portfolio/:parentSlug/:categorySlug" element={<PortfolioList />} />
@@ -95,6 +120,8 @@ const AppContent = () => {
           <Route path="/video-gallery" element={<VideoGalleryPublic />} />
           <Route path="/handover-snapshot" element={<HandoverSnapshotPublic />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/contact-us" element={<Contact />} />
           <Route path="/about-us" element={<AboutLayout />}>
             <Route index element={<AboutOverview />} />
             <Route path="about-overview" element={<AboutOverview />} />
@@ -144,6 +171,10 @@ const AppContent = () => {
           <Route path="/admin/about/career" element={<AdminLayout><CareerManager /></AdminLayout>} />
           <Route path="/admin/profile" element={<AdminLayout><Profile /></AdminLayout>} />
           <Route path="/admin/settings" element={<AdminLayout><SettingsManager /></AdminLayout>} />
+          <Route path="/admin/home/hero" element={<AdminLayout><HeroSetup /></AdminLayout>} />
+          <Route path="/admin/home/identity" element={<AdminLayout><IdentitySetup /></AdminLayout>} />
+          <Route path="/admin/home/process" element={<AdminLayout><ProcessSetup /></AdminLayout>} />
+          <Route path="/admin/home/reviews" element={<AdminLayout><ReviewsSetup /></AdminLayout>} />
         </Routes>
       </main>
       {!isAdminRoute && <StatsAndCTA />}

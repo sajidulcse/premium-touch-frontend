@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import api, { getStorageUrl, BASE_URL } from '../../api/axios';
+import api, { getStorageUrl, BASE_URL, getSiteInfo, getCategories } from '../../api/axios';
 import LazyImage from '../../components/LazyImage/LazyImage';
 import PortfolioDetail from './PortfolioDetail';
 import './Portfolio.css';
@@ -38,12 +38,12 @@ const PortfolioList = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [catRes, setRes] = await Promise.all([
-                    api.get('/categories'),
-                    api.get('/site-info')
+                const [catsData, siteData] = await Promise.all([
+                    getCategories(),
+                    getSiteInfo()
                 ]);
-                setCategories(catRes.data);
-                setSettings(setRes.data);
+                setCategories(catsData);
+                setSettings(siteData);
             } catch (error) {
                 console.error("Error fetching initial data:", error);
             } finally {
@@ -139,7 +139,7 @@ const PortfolioList = () => {
         return null;
     };
 
-    const categoryPath = findCategoryPath(activeFilter, categories);
+    const categoryPath = findCategoryPath(categorySlug || parentSlug || activeFilter, categories);
     const pageTitle = (activeFilter === 'all' || !categoryPath)
         ? 'Portfolio'
         : `${categoryPath[categoryPath.length - 1].name}`;
@@ -169,14 +169,17 @@ const PortfolioList = () => {
 
 
 
-    const portfolioRoot = categories.find(c => c.slug === 'portfolio') || categories.find(c => c.name?.toLowerCase() === 'portfolio');
+    const portfolioRoot = Array.isArray(categories)
+        ? (categories.find(c => c.slug === 'portfolio') || categories.find(c => c.name?.toLowerCase() === 'portfolio'))
+        : null;
     const subCategories = portfolioRoot ? (portfolioRoot.children || []) : [];
 
     const activeSubCategorySlug = parentSlug || categorySlug;
-    const currentSubCategory = !isMainPortfolioPage ? subCategories.find(s => s.slug === activeSubCategorySlug) : null;
+    const currentSubCategory = !isMainPortfolioPage && Array.isArray(subCategories)
+        ? subCategories.find(s => s && s.slug === activeSubCategorySlug)
+        : null;
 
-    // "Our Core Portfolio" contains items that have NO child category (e.g. generic Residence, Restaurant items)
-    const coreProjects = filteredProjects.filter(p => !p.child_category_id);
+    // "Our Core Portfolio" now displays all subcategories under the portfolio root category
 
     const handleSubFilterChange = (subId, childSlug) => {
         setSubFilters(prev => ({ ...prev, [subId]: childSlug }));
@@ -184,16 +187,34 @@ const PortfolioList = () => {
 
     const isCategoryCheck = () => {
         if (!categorySlug) return true;
+        if (categorySlug === 'portfolio') return true;
 
-        const checkTree = (cats) => {
-            for (let c of cats) {
-                if (c.slug === categorySlug) return true;
-                if (c.children && checkTree(c.children)) return true;
-            }
-            return false;
-        };
-        return checkTree(categories);
+        const portfolioRoot = Array.isArray(categories)
+            ? (categories.find(c => c.slug === 'portfolio') || categories.find(c => c.name?.toLowerCase() === 'portfolio'))
+            : null;
+        
+        if (!portfolioRoot) return false;
+
+        const subCats = portfolioRoot.children || [];
+
+        if (parentSlug) {
+            // categorySlug must be a child of parentSlug subcategory
+            const parentCat = subCats.find(c => c.slug === parentSlug);
+            if (!parentCat || !parentCat.children) return false;
+            return parentCat.children.some(c => c.slug === categorySlug);
+        } else {
+            // categorySlug must be a subcategory (direct child of portfolioRoot)
+            return subCats.some(c => c.slug === categorySlug);
+        }
     };
+
+    const shouldShowDetailDirectly = 
+        !parentSlug && 
+        categorySlug && 
+        isCategoryCheck() && 
+        currentSubCategory && 
+        (!currentSubCategory.children || currentSubCategory.children.length === 0) && 
+        projects.length === 1;
 
     if (catLoading) {
         return (
@@ -206,6 +227,10 @@ const PortfolioList = () => {
 
     if (!loading && !isCategoryCheck()) {
         return <PortfolioDetail explicitSlug={categorySlug} />;
+    }
+
+    if (!loading && shouldShowDetailDirectly) {
+        return <PortfolioDetail explicitSlug={projects[0].slug} />;
     }
 
     if (loading && !isMainPortfolioPage) {
@@ -318,40 +343,53 @@ const PortfolioList = () => {
                         </div>
                     ) : (
                         <>
-                            {/* 1. Core Portfolio Section */}
-                            {coreProjects.length > 0 && (
+                            {subCategories.length > 0 && (
                                 <div className="port-section-block">
                                     <h2 className="port-section-title">Our Core Portfolio</h2>
                                     <div className="port-premium-grid">
-                                        {coreProjects.map((project) => (
-                                            <Link to={`/portfolio/${project.sub_category?.slug || project.category?.slug}`} key={project.id} className="port-premium-card">
-                                                <div className="port-premium-card-media">
-                                                    <LazyImage
-                                                        src={project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.length > 0 ? getStorageUrl(project.images[0].image_path) : '/placeholder-image.jpg'}
-                                                        alt={project.title}
-                                                    />
-                                                </div>
-                                                <div className="port-premium-card-content">
-                                                    <h3 className="port-premium-title">{project.title} <span className="port-premium-arrow">→</span></h3>
-                                                </div>
-                                            </Link>
-                                        ))}
+                                        {subCategories.map((sub) => {
+                                            // Find a project belonging to this subcategory to use as the thumbnail image
+                                            const subProject = Array.isArray(projects)
+                                                ? projects.find(p => p && sub && p.sub_category_id === sub.id)
+                                                : null;
+                                            const imageUrl = subProject?.thumbnail 
+                                                ? getStorageUrl(subProject.thumbnail.image_path) 
+                                                : subProject?.images?.length > 0 
+                                                    ? getStorageUrl(subProject.images[0].image_path) 
+                                                    : null;
+
+                                            return (
+                                                <Link to={`/portfolio/${sub.slug}`} key={sub.id} className="port-premium-card">
+                                                    <div className="port-premium-card-media">
+                                                        <LazyImage
+                                                            src={imageUrl}
+                                                            alt={sub.name}
+                                                        />
+                                                    </div>
+                                                    <div className="port-premium-card-content">
+                                                        <h3 className="port-premium-title">{sub.name} <span className="port-premium-arrow">→</span></h3>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
 
                             {/* 2. Sub Categories Sections */}
-                            {subCategories.map(sub => {
+                            {Array.isArray(subCategories) && subCategories.map(sub => {
+                                if (!sub || !sub.id) return null;
+                                // Only show subcategory sections that have child categories
+                                if (!sub.children || sub.children.length === 0) return null;
                                 const activeChildFilter = subFilters[sub.id] || 'all';
-                                const subProjects = filteredProjects.filter(p => {
+                                const subProjects = Array.isArray(filteredProjects) ? filteredProjects.filter(p => {
+                                    if (!p) return false;
                                     if (p.sub_category_id !== sub.id) return false;
-                                    // Exclude items with no child category from sub category sections to avoid recurrence
-                                    if (!p.child_category_id) return false;
                                     if (activeChildFilter !== 'all' && p.child_category?.slug !== activeChildFilter) return false;
                                     return true;
-                                });
+                                }) : [];
 
-                                const totalProjectsInSub = filteredProjects.filter(p => p.sub_category_id === sub.id && p.child_category_id !== null).length;
+                                const totalProjectsInSub = Array.isArray(filteredProjects) ? filteredProjects.filter(p => p && p.sub_category_id === sub.id).length : 0;
                                 if (totalProjectsInSub === 0) return null;
 
                                 return (

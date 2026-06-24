@@ -11,14 +11,14 @@
 /* --- Variables --- */
 :root {
   --color-light-bg: #ffffff; /* Background of contact box */
-  --color-text: #000000;     /* Black text */
-  --color-dark-text: #000000; /* Black for headings & general text */
-  --color-secondary-text: #000000; /* Black for paragraphs/links */
-  --color-primary: #007bff; /* Blue for hover only */
-  --color-primary-hover: #0056b3;
-  --color-border: #e9ecef;
-  --spacing-unit: 20px; 
-  --content-padding: 40px;
+  --color-text: #1a1a1a;     /* Soft black text */
+  --color-dark-text: #1a1a1a; /* Soft black for headings & general text */
+  --color-secondary-text: #555555; /* Warm dark grey for paragraphs/links */
+  --color-primary: #E85D25; /* Luxury brand orange */
+  --color-primary-hover: #cf4f1d;
+  --color-border: #e8e4de; /* Warm luxury border */
+  --spacing-unit: 15px; 
+  --content-padding: 30px;
 }
 
 
@@ -29,43 +29,44 @@
   color: var(--color-dark-text);
   width: 100%;
   box-sizing: border-box; /* ensures padding doesn't add extra width */
-  padding: 40px var(--content-padding); /* Use padding instead of margin for spacing */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 25px var(--content-padding); /* Use padding instead of margin for spacing */
+  font-family: 'Outfit', sans-serif;
   max-width: none; /* FIX 3: Remove max-width for full size */
   margin: 0; /* FIX 3: Remove margin */
   border-radius: 0; /* Remove card styling */
   box-shadow: none; /* Remove card styling */
 }
 
+
+
 /* Grid Layout for Desktop */
 html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--color-light-bg); /* Same as contact box */
 }
-
 
 .contact-cta {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1.5fr; /* desktop: 4 columns */
-  gap: 30px;
-  max-width: 1200px;
+  gap: 25px;
+  max-width: 1600px;
   margin: 0 auto;
   background-color: var(--color-light-bg);
   color: var(--color-text);
-  padding: 40px var(--content-padding);
+  padding: 25px var(--content-padding);
   box-sizing: border-box;
 }
 
 /* --- Section Headings --- */
 .contact-cta h4 {
-  font-size: 1.4em;
-  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25em;
+  font-weight: 600;
   color: var(--color-dark-text);
-  margin-bottom: var(--spacing-unit);
+  margin-bottom: 12px;
   display: inline-block;
   position: relative;
-  padding-bottom: 8px;
+  padding-bottom: 5px;
 }
 
 .contact-cta h4::after {
@@ -75,9 +76,9 @@ html, body {
 
 /* --- General Text and Links --- */
 .contact-cta p {
-  font-size: 1em;
-  line-height: 1.6;
-  margin-bottom: 10px;
+  font-size: 0.9em;
+  line-height: 1.5;
+  margin-bottom: 8px;
   color: var(--color-secondary-text);
 }
 
@@ -101,8 +102,8 @@ html, body {
 }
 
 .site-info .logo {
-  width: 70px;
-  height: 70px;
+  width: 50px;
+  height: 50px;
   object-fit: contain;
   margin-bottom: 0; /* No margin-bottom in row layout */
   flex-shrink: 0; /* Prevent logo from shrinking */
@@ -116,23 +117,27 @@ html, body {
 }
 
 .site-info .site-text h3 {
-  font-size: 1.5em;
-  margin: 0 0 5px 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25em;
+  margin: 0 0 3px 0;
   color: var(--color-text);
+  font-weight: 600;
 }
 
 .site-info .tagline {
+  font-family: 'Outfit', sans-serif;
   font-style: italic;
   color: var(--color-primary);
-  margin-bottom: 15px;
-  font-size: 1.1em;
+  margin-bottom: 10px;
+  font-size: 0.95em;
 }
 
 .site-info .short-desc {
   grid-column: 1 / -1;
-  margin-top: 10px;
+  margin-top: 8px;
   color: var(--color-text);
   font-weight: 400;
+  font-size: 0.85em;
 }
 
 /* --- 2. Services Section --- */
@@ -170,19 +175,21 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 45px;
-  height: 45px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background-color: var(--color-border);
-  color: var(--color-dark-text);
-  font-size: 1.3em;
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  background-color: #fcfbfa;
+  color: #1a1a1a;
+  border: 1px solid #e8e4de;
+  font-size: 1.05em;
+  transition: all 0.3s ease;
 }
 
 .social-icons a:hover {
   background-color: var(--color-primary);
-  color: var(--color-light-bg);
-  transform: scale(1.1);
+  color: #ffffff;
+  border-color: var(--color-primary);
+  transform: translateY(-3px);
 }
 
 /* --- 4. Contact Info Section --- */
@@ -202,20 +209,23 @@ html, body {
   background-color: var(--color-primary);
   color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 12px 25px;
-  font-size: 1em;
+  font-size: 0.9em;
   font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   margin-top: 15px;
   align-self: flex-start;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(232, 93, 37, 0.2);
 }
 
 .contact-info button:hover {
   background-color: var(--color-primary-hover);
-  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+  box-shadow: 0 6px 18px rgba(232, 93, 37, 0.3);
 }
 
 .contact-info button:active {
@@ -228,16 +238,27 @@ html, body {
   position: relative;
   width: 100%;
   max-width: 100%;
-  height: 180px;
-  margin-top: 15px;
-  border-radius: 10px;
+  height: 140px;
+  margin-top: 10px;
+  border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .map-preview iframe {
   pointer-events: none; /* 👈 allows click to pass through */
+}
+
+/* Facebook Plugin Responsive Default (Desktop & Mobile: 250px height, 340px max-width) */
+.facebook-page-plugin {
+  width: 100%;
+  max-width: 340px;
+  height: 250px;
+}
+.facebook-page-plugin iframe {
+  width: 100% !important;
+  height: 250px !important;
 }
 
 .map-overlay {
@@ -254,37 +275,28 @@ html, body {
   transition: opacity 0.3s ease;
 }
 
-.map-preview:hover .map-overlay {
-  opacity: 1;
-}
-
 
 /* --- Responsiveness (Mobile First) --- */
 
 /* Default: Stacked layout for smaller screens (e.g., mobile) */
 @media (max-width: 768px) {
   .contact-cta {
-    padding: 30px 20px; /* Adjust padding for mobile */
-  }
-  
-  .contact-cta {
+    padding: 25px 20px; /* Reduced top/bottom padding */
     grid-template-columns: 1fr; /* Single column layout */
-    gap: 30px;
-    /* FIX: Remove text-align: center from main container to allow left alignment */
-    text-align: left;
+    gap: 20px; /* Reduced grid gap */
+    text-align: center; /* Center-align text */
   }
 
   .cta-section.site-info {
     display: flex;
     flex-direction: column;
-    align-items: center; /* centers the logo horizontally */
-    gap: 10px;
-    text-align: center; /* center site name and tagline */
+    align-items: center; /* Centers the logo horizontally */
+    gap: 8px; /* Slightly reduced gap */
+    text-align: center;
   }
 
   .site-info .logo {
-    margin-bottom: 10px;
-    /* remove display:flex or flex-direction here — it's just an image */
+    margin-bottom: 5px;
   }
 
   .site-info .site-text h3,
@@ -294,29 +306,46 @@ html, body {
 
   .site-info .short-desc {
     width: 100%;
-    text-align: left; /* short description left-aligned */
-    margin-top: 10px;
+    text-align: center; /* Center description */
+    margin-top: 8px;
+  }
+
+  /* Center services list */
+  .cta-section.services ul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
   }
   
-  /* Center social icons */
+  /* Center social links section & widget */
+  .cta-section.social-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   .cta-section.social-links .social-icons {
-    justify-content: flex-start;
+    justify-content: center;
+  }
+  .facebook-page-plugin {
+    margin: 20px auto 0 auto !important; /* Center the widget and reduce top margin */
   }
   
-  /* Align contact info items left */
+  /* Align contact info items center */
   .contact-info {
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
   
   .contact-info button {
-    width: auto; /* Revert to auto width */
-    align-self: flex-start;
+    width: auto;
+    align-self: center; /* Center the contact button if any exists */
   }
 
-  /* Remove the border-bottom from the last section on mobile */
+  /* Reduce the padding-bottom and margin-bottom of sections on mobile */
   .cta-section:not(:last-child) {
-    padding-bottom: 20px;
-    margin-bottom: 10px;
+    padding-bottom: 15px;
+    margin-bottom: 0;
     border-bottom: 1px solid var(--color-border);
   }
 }

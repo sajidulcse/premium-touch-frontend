@@ -207,6 +207,27 @@ html.admin-html {
     transform: translateY(-2px);
 }
 
+.admin-btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 12px 30px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.admin-btn-secondary:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: translateY(-2px);
+}
+
 /* Tables */
 .admin-table-container {
     background: #fff;
@@ -917,4 +938,71 @@ html.admin-html {
     margin: 8px 0 !important;
     color: #64748b !important;
     font-style: italic !important;
+}
+
+/* Responsive Grid Layout for Setup Pages */
+.admin-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+.admin-grid-layout > * {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+@media (min-width: 1024px) {
+    .admin-grid-layout {
+        grid-template-columns: 380px 1fr;
+    }
+    
+    .admin-grid-layout:has(.list-sidebar-card) {
+        grid-template-columns: 1fr 350px;
+    }
+    
+    .admin-grid-layout > :only-child {
+        grid-column: span 2;
+    }
+}
+
+/* Table Avatar & Actions */
+.table-avatar-wrap {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+}
+
+.table-avatar-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.table-avatar-wrap i {
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+.action-buttons,
+.action-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Remove nesting style for nested table containers */
+.admin-card .admin-table-container {
+    box-shadow: none;
+    background: transparent;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
 }

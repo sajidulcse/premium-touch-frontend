@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import api, { getStorageUrl, BASE_URL } from '../../api/axios';
+import api, { getStorageUrl, BASE_URL, getSiteInfo, getCategories } from '../../api/axios';
 import './Service.css'; // Reusing the project list grid styling
 
 const ServiceList = () => {
@@ -21,12 +21,12 @@ const ServiceList = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [catRes, setRes] = await Promise.all([
-                    api.get('/categories'),
-                    api.get('/site-info')
+                const [catsData, siteData] = await Promise.all([
+                    getCategories(),
+                    getSiteInfo()
                 ]);
-                setCategories(catRes.data);
-                setSettings(setRes.data);
+                setCategories(catsData);
+                setSettings(siteData);
             } catch (error) {
                 console.error("Error fetching initial data:", error);
             } finally {
@@ -100,7 +100,7 @@ const ServiceList = () => {
 
     const categoryPath = findCategoryPath(activeFilter, categories);
     const pageTitle = (activeFilter === 'all' || !categoryPath)
-        ? 'Premium Touch Services'
+        ? 'Services'
         : `${categoryPath[categoryPath.length - 1].name}`;
 
     const getHeaderBgUrl = () => {

@@ -3,8 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Project.css';
 
-const ProjectDetail = () => {
+const ProjectDetail = ({ explicitSlug }) => {
     const { slug } = useParams();
+    const projectSlug = explicitSlug || slug;
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,7 +18,7 @@ const ProjectDetail = () => {
     useEffect(() => {
         const fetchProject = async () => {
             try {
-                const response = await api.get(`/projects/${slug}`);
+                const response = await api.get(`/projects/${projectSlug}`);
                 setProject(response.data);
             } catch (err) {
                 console.error("Error fetching project:", err);
@@ -28,7 +29,7 @@ const ProjectDetail = () => {
         };
         fetchProject();
         window.scrollTo(0, 0);
-    }, [slug]);
+    }, [projectSlug]);
 
     const openViewer = (index) => {
         setCurrentIndex(index);
@@ -87,7 +88,7 @@ const ProjectDetail = () => {
     if (error || !project) return (
         <div className="error-state" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <h2>{error || "Project Missing"}</h2>
-            <Link to={project?.category ? (project.category.slug === 'projects' ? '/projects' : `/${project.category.slug}`) : '/projects'} className="back-link">Return to Collections</Link>
+            <Link to={project?.category ? (project.category.slug === 'projects' ? '/projects' : `/projects/${project.category.slug}`) : '/projects'} className="back-link">Return to Collections</Link>
         </div>
     );
 
@@ -113,7 +114,7 @@ const ProjectDetail = () => {
                         {project.category && (
                             <>
                                 <span className="bc-sep">/</span>
-                                <Link to={project.category.slug === 'projects' ? '/projects' : `/${project.category.slug}`} className="bc-current link">
+                                <Link to={project.category.slug === 'projects' ? '/projects' : `/projects/${project.category.slug}`} className="bc-current link">
                                     {project.category.name}
                                 </Link>
                             </>
@@ -121,7 +122,7 @@ const ProjectDetail = () => {
                         {project.sub_category && (
                             <>
                                 <span className="bc-sep">/</span>
-                                <Link to={`/${project.sub_category.slug}`} className="bc-current link">
+                                <Link to={`/projects/${project.sub_category.slug}`} className="bc-current link">
                                     {project.sub_category.name}
                                 </Link>
                             </>
@@ -129,7 +130,7 @@ const ProjectDetail = () => {
                         {project.child_category && (
                             <>
                                 <span className="bc-sep">/</span>
-                                <Link to={`/${project.child_category.slug}`} className="bc-current link">
+                                <Link to={`/projects/${project.sub_category?.slug || project.category?.slug}/${project.child_category.slug}`} className="bc-current link">
                                     {project.child_category.name}
                                 </Link>
                             </>
@@ -240,7 +241,7 @@ const ProjectDetail = () => {
 
                 <footer className="pd-footer-nav">
                     <div className="container-inner">
-                        <Link to={project?.category ? (project.category.slug === 'projects' ? '/projects' : `/${project.category.slug}`) : '/projects'} className="pd-explore-btn-v3">
+                        <Link to={project?.category ? (project.category.slug === 'projects' ? '/projects' : `/projects/${project.category.slug}`) : '/projects'} className="pd-explore-btn-v3">
                             <span>Continue the Journey</span>
                             <i className="fas fa-long-arrow-alt-right"></i>
                         </Link>

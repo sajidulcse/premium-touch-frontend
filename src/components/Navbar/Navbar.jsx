@@ -49,6 +49,10 @@ const Navbar = () => {
       if (slug2) return `/portfolio/${slug1}/${slug2}`;
       return `/portfolio/${slug1}`;
     }
+    if (rootSlug === 'projects' || rootSlug === 'project') {
+      if (slug2) return `/projects/${slug1}/${slug2}`;
+      return `/projects/${slug1}`;
+    }
     if (rootSlug === 'services') {
       return `/services/${slug2 || slug1}`;
     }
@@ -105,7 +109,11 @@ const Navbar = () => {
                   <Link to={getSubLink(rootSlug, item.slug)} className="menu-text">
                     {item.name}
                   </Link>
-                  {hasChildren && <span className="submenu-mark">▶</span>}
+                  {hasChildren && (
+                    <span className="submenu-mark">
+                      <i className="fa-solid fa-chevron-right"></i>
+                    </span>
+                  )}
                 </div>
               </li>
             );
@@ -140,7 +148,11 @@ const Navbar = () => {
                     toggleMenu(item.id);
                   }}
                 >
-                  {isMobile ? (isOpen ? "▲" : "▼") : "▼"}
+                  {isMobile ? (
+                    isOpen ? <i className="fa-solid fa-chevron-up"></i> : <i className="fa-solid fa-chevron-down"></i>
+                  ) : (
+                    <i className="fa-solid fa-chevron-down"></i>
+                  )}
                 </span>
               )}
             </div>
@@ -176,7 +188,7 @@ const Navbar = () => {
                               toggleMenu(sub.id);
                             }}
                           >
-                            {subIsOpen ? "▲" : "▼"}
+                            {subIsOpen ? <i className="fa-solid fa-chevron-up"></i> : <i className="fa-solid fa-chevron-down"></i>}
                           </span>
                         )}
                       </div>

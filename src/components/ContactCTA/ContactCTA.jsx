@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BASE_URL, getSiteInfo, getServices } from "../../api/axios";
+import { BASE_URL, getSiteInfo, getCategories } from "../../api/axios";
 import "./ContactCTA.css";
 
 
@@ -9,7 +9,12 @@ const ContactCTA = () => {
 
   useEffect(() => {
     getSiteInfo().then(data => setSiteInfo(data)).catch(console.error);
-    getServices().then(data => setServices(data)).catch(console.error);
+    getCategories().then(cats => {
+      const serviceCategory = cats.find(c => c.slug === 'services');
+      if (serviceCategory && serviceCategory.children) {
+        setServices(serviceCategory.children);
+      }
+    }).catch(console.error);
   }, []);
 
   return (
@@ -34,7 +39,7 @@ const ContactCTA = () => {
           <h4>Our Services</h4>
           <ul>
             {services.map(s => (
-              <li key={s.id}><a href={`/${s.slug}`}>{s.title}</a></li>
+              <li key={s.id}><a href={`/services/${s.slug}`}>{s.name}</a></li>
             ))}
           </ul>
         </div>
@@ -44,17 +49,17 @@ const ContactCTA = () => {
           <h4>Connect With Us</h4>
           <div className="social-icons">
             {siteInfo.facebook_page_url && (
-              <a href={siteInfo.facebook_page_url} target="_blank" rel="noopener noreferrer">
+              <a href={siteInfo.facebook_page_url} target="_blank" rel="noopener noreferrer" className="facebook">
                 <i className="fab fa-facebook-f"></i>
               </a>
             )}
             {siteInfo.instagram_page_url && (
-              <a href={siteInfo.instagram_page_url} target="_blank" rel="noopener noreferrer">
+              <a href={siteInfo.instagram_page_url} target="_blank" rel="noopener noreferrer" className="instagram">
                 <i className="fab fa-instagram"></i>
               </a>
             )}
             {siteInfo.linkedin_page_url && (
-              <a href={siteInfo.linkedin_page_url} target="_blank" rel="noopener noreferrer">
+              <a href={siteInfo.linkedin_page_url} target="_blank" rel="noopener noreferrer" className="linkedin">
                 <i className="fab fa-linkedin-in"></i>
               </a>
             )}
@@ -62,11 +67,11 @@ const ContactCTA = () => {
 
           {/* Facebook Page Plugin */}
           {siteInfo.facebook_page_url && (
-            <div className="facebook-page-plugin" style={{ marginTop: '25px', overflow: 'hidden', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+            <div className="facebook-page-plugin" style={{ marginTop: '25px', overflow: 'hidden', borderRadius: '8px', border: '1px solid #e8e4de' }}>
               <iframe
-                src={`https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(siteInfo.facebook_page_url)}&tabs=timeline&width=300&height=130&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId`}
+                src={`https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(siteInfo.facebook_page_url)}&tabs=timeline&width=340&height=250&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId`}
                 width="100%"
-                height="130"
+                height="250"
                 style={{ border: 'none', overflow: 'hidden' }}
                 scrolling="no"
                 frameBorder="0"
@@ -98,9 +103,7 @@ const ContactCTA = () => {
               loading="lazy"
               title="Map Preview"
             />
-            <div className="map-overlay">
-              <span>📍 View on Google Maps</span>
-            </div>
+            {/* Map Overlay Removed */}
           </div>
         </div>
       </div>

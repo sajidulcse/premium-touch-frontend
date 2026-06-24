@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import api, { getStorageUrl, BASE_URL } from '../../api/axios';
+import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
 import './HandoverSnapshotPublic.css';
 
 // Progressive Image Component for smooth loading
@@ -30,19 +30,30 @@ const ProgressiveImage = ({ src, alt, className }) => {
 
 const HandoverSnapshotPublic = () => {
     const [snapshots, setSnapshots] = useState([]);
+    const [catLoading, setCatLoading] = useState(true);
     const [loading, setLoading] = useState(true);
     const [lightboxIndex, setLightboxIndex] = useState(null);
     const [settings, setSettings] = useState(null);
 
     useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const siteData = await getSiteInfo();
+                setSettings(siteData);
+            } catch (error) {
+                console.error("Error loading site settings:", error);
+            } finally {
+                setCatLoading(false);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    useEffect(() => {
         const fetchSnapshots = async () => {
             try {
-                const [snapRes, siteRes] = await Promise.all([
-                    api.get('/handover-snapshots'),
-                    api.get('/site-info')
-                ]);
+                const snapRes = await api.get('/handover-snapshots');
                 setSnapshots(snapRes.data || []);
-                setSettings(siteRes.data);
             } catch (err) {
                 console.error("Error fetching handover snapshots:", err);
             } finally {
@@ -93,7 +104,7 @@ const HandoverSnapshotPublic = () => {
     const headerBgUrl = getHeaderBgUrl();
     const headerBgStyle = headerBgUrl ? { backgroundImage: `url(${headerBgUrl})` } : {};
 
-    if (loading) {
+    if (catLoading) {
         return (
             <div className="hs-loading-state">
                 <div className="hs-loader"></div>
@@ -122,7 +133,12 @@ const HandoverSnapshotPublic = () => {
             </section>
 
             <div id="snapshots" className="handover-container">
-                {snapshots.length === 0 ? (
+                {loading ? (
+                    <div className="hs-loading-state" style={{ height: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                        <div className="hs-loader"></div>
+                        <div className="hs-loader-text" style={{ marginTop: '15px', color: '#666', fontSize: '14px' }}>Loading Handover Snapshots...</div>
+                    </div>
+                ) : snapshots.length === 0 ? (
                     <div className="handover-empty-state" style={{
                         textAlign: 'center',
                         padding: '80px 24px',

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api, { getStorageUrl, BASE_URL } from '../../api/axios';
+import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
 import './ServiceDetail.css';
 
 const ServiceDetail = () => {
@@ -21,9 +21,9 @@ const ServiceDetail = () => {
         try {
             // Fetch site info first (non-blocking)
             try {
-                const siteInfoRes = await api.get('/site-info');
-                if (siteInfoRes.data) {
-                    setSiteInfo(siteInfoRes.data);
+                const siteData = await getSiteInfo();
+                if (siteData) {
+                    setSiteInfo(siteData);
                 }
             } catch (siteErr) {
                 console.error("Error fetching site info:", siteErr);
@@ -54,7 +54,12 @@ const ServiceDetail = () => {
         setActiveFaq(activeFaq === index ? null : index);
     };
 
-    if (loading) return <div className="loading-state"><div className="loader"></div></div>;
+    if (loading) return (
+        <div className="loading-state">
+            <div className="loader"></div>
+            <div className="loader-text">Loading Services...</div>
+        </div>
+    );
 
     if (!service) {
         return (
@@ -108,16 +113,6 @@ const ServiceDetail = () => {
     return (
         <div className="sd-page-wrapper">
             
-            {/* Mobile Contact Bar (Sticky Top) */}
-            <div className="sd-mobile-contact-bar">
-                <div className="sd-mobile-actions">
-                    <a href={`tel:${cleanPhone}`} className="m-icon-btn"><i className="fas fa-phone-alt"></i></a>
-                    <a href={`https://wa.me/${cleanPhone}`} target="_blank" rel="noreferrer" className="m-icon-btn whatsapp"><i className="fab fa-whatsapp"></i></a>
-                    <a href={`mailto:${emailAddress}`} className="m-icon-btn"><i className="far fa-envelope"></i></a>
-                </div>
-                <button className="sd-m-cta-btn">Free Consultation</button>
-            </div>
-
             <div className="sd-main-container">
                 
                 {/* Desktop Fixed Left Sidebar */}
@@ -217,10 +212,10 @@ const ServiceDetail = () => {
                             {service.images && service.images.filter(img => !img.is_thumbnail).length > 0 && (
                                 <div className="sd-service-gallery" style={{ marginTop: '50px' }}>
                                     <h3 style={{ fontFamily: '"Playfair Display", serif', fontSize: '24px', marginBottom: '20px' }}>Visual Portfolio</h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '20px' }}>
+                                    <div className="sd-gallery-grid">
                                         {service.images.filter(img => !img.is_thumbnail).map((img, idx) => (
-                                            <figure key={idx} className="sd-block-image" style={{ margin: '0' }}>
-                                                <img src={getStorageUrl(img.image_path)} alt="Service detail" loading="lazy" style={{ width: '100%', borderRadius: '8px' }} />
+                                            <figure key={idx} className="sd-block-image">
+                                                <img src={getStorageUrl(img.image_path)} alt="Service detail" loading="lazy" />
                                             </figure>
                                         ))}
                                     </div>
@@ -232,6 +227,16 @@ const ServiceDetail = () => {
                             <div className="sd-conclusion">
                                 <h3>Let's build something extraordinary.</h3>
                                 <p>Our team is ready to discuss the possibilities.</p>
+                            </div>
+                            
+                            {/* Mobile Contact Bar */}
+                            <div className="sd-mobile-contact-bar">
+                                <div className="sd-mobile-actions">
+                                    <a href={`tel:${cleanPhone}`} className="m-icon-btn"><i className="fas fa-phone-alt"></i></a>
+                                    <a href={`https://wa.me/${cleanPhone}`} target="_blank" rel="noreferrer" className="m-icon-btn whatsapp"><i className="fab fa-whatsapp"></i></a>
+                                    <a href={`mailto:${emailAddress}`} className="m-icon-btn"><i className="far fa-envelope"></i></a>
+                                </div>
+                                <button className="sd-m-cta-btn">Free Consultation</button>
                             </div>
                         </div>
 
