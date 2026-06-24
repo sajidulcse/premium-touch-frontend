@@ -4,18 +4,23 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: 'Outfit', sans-serif;
 }
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #222;
-  padding: 5px 10px;
-  color: white;
-  position: relative;
-  font-family: Arial, sans-serif;
+  background-color: #eae8e4;
+  padding: 3px 4%; /* Slimmer height and reduced horizontal width spread */
+  color: #1a1a1a;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  font-family: 'Outfit', sans-serif;
+  border-bottom: 1px solid #dbd7cf;
+  box-shadow: 0 4px 20px rgba(26, 26, 26, 0.05); /* Soft, elegant shadow transition */
+  box-sizing: border-box;
 }
 
 .logo-title {
@@ -43,7 +48,7 @@ body {
 
 .nav-menu li a {
   text-decoration: none;
-  color: white;
+  color: #1a1a1a;
   font-weight: 600;
   padding: 8px 5px;
   display: flex;
@@ -51,7 +56,7 @@ body {
 }
 
 .nav-menu li a:hover {
-  color: #f0a500;
+  color: #E85D25;
 }
 
 /* Dropdown styles */
@@ -81,10 +86,30 @@ body {
 
 /* arrow */
 .submenu-mark {
-  margin-left: 1px;
-  margin-right: 10px;
+  margin-left: 4px;
+  margin-right: 0;
   cursor: pointer;
   flex-shrink: 0;
+  font-size: 0.7rem; /* Small & minimal */
+  opacity: 0.8;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+/* Align right inside Level 2 dropdown */
+.sub-category-list .submenu-mark {
+  margin-left: 10px;
+  margin-right: 15px;
+}
+
+/* Hover color adjustments */
+.dropdown-main:hover > .menu-item-row .submenu-mark {
+  color: #E85D25;
+}
+
+.sub-category-list li.active .submenu-mark {
+  color: #E85D25;
 }
 
 /* --- DESKTOP PROFESSIONAL MEGA DROPDOWN (Level 2 + Level 3) --- */
@@ -94,16 +119,17 @@ body {
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: #333;
+  background-color: #eae8e4;
   padding: 0;
   display: none; /* Hidden by default */
   min-width: 200px; /* Default width for Level 2 only */
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   z-index: 1000;
   overflow: hidden;
   /* Add transition for smoother width change */
   transition: min-width 0.2s ease-out;
+  border: 1px solid #dbd7cf;
 }
 
 .mega-dropdown.has-child-box {
@@ -128,19 +154,19 @@ body {
   padding: 10px 0;
   margin: 0;
   width: 100%; /* Default to full width */
-  background-color: #333;
+  background-color: #eae8e4;
   border-right: none; /* Default no border */
 }
 
 /* Adjust width and add border when Level 3 box is present */
 .mega-dropdown.has-child-box .sub-category-list {
   width: 50%; /* Takes up half the mega-dropdown width */
-  border-right: 1px solid #444;
+  border-right: 1px solid #dbd7cf;
 }
 
 .sub-category-box {
   width: 100%; /* Takes up the other half */
-  background-color: #444; /* Slightly different background for visual separation */
+  background-color: #dfdbd5; /* Slightly different background for visual separation */
   padding: 10px 0;
 }
 
@@ -155,28 +181,29 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: #1a1a1a;
   white-space: nowrap;       /* Prevent line break */
   overflow: hidden;          /* Hide overflow text */
   text-overflow: ellipsis;   /* Show ... if text is too long */
 }
 
 .sub-category-list li a:hover {
-  color: #f0a500;
+  color: #E85D25;
 }
 
 /* Highlight for active Level 2 item (the one being hovered) */
 .sub-category-list li.active {
-  background-color: #444; /* Highlight the active item */
+  background-color: #dfdbd5; /* Highlight the active item */
 }
 
 .sub-category-list li.active a {
-  color: #f0a500;
+  color: #E85D25;
 }
 
 /* Level 3 Box (Side-by-Side) */
 .child-category-box {
   width: 100%; /* Takes up the other half */
-  background-color: #444; /* Slightly different background for visual separation */
+  background-color: #dfdbd5; /* Slightly different background for visual separation */
   padding: 10px 0;
 }
 
@@ -190,15 +217,15 @@ body {
   padding: 8px 15px;
   font-weight: 400;
   display: block;
-  color: white;
+  color: #1a1a1a;
   white-space: nowrap;       /* Prevent line break */
   overflow: hidden;          /* Hide overflow text */
   text-overflow: ellipsis;   /* Show ... if text is too long */
 }
 
 .child-category-list li a:hover {
-  background-color: #555;
-  color: #f0a500;
+  background-color: #d2cdc5;
+  color: #E85D25;
 }
 
 /* --- END DESKTOP PROFESSIONAL MEGA DROPDOWN --- */
@@ -214,7 +241,7 @@ body {
 .hamburger .bar {
   width: 25px;
   height: 3px;
-  background-color: white;
+  background-color: #1a1a1a;
   margin: 4px 0;
   transition: 0.4s;
 }
@@ -235,12 +262,12 @@ body {
   display: flex;
   align-items: center; /* vertically center logo and text */
   gap: 12px; /* space between logo and text */
-  padding: 8px 16px;
+  padding: 4px 8px;
 }
 
 .logo {
-  width: 70px;        
-  height: 70px;
+  width: 55px;        
+  height: 55px;
   object-fit: contain;
   border-radius: 2px; /* subtle rounded corners */
   transition: transform 0.3s ease;
@@ -248,23 +275,25 @@ body {
 }
 
 .site-text {
-  color: white;
+  color: #1a1a1a;
   display: flex;
   flex-direction: column;
   line-height: 1.1; /* tighter line spacing for close look */
 }
 
 .site-text h3 {
+  font-family: 'Playfair Display', serif;
   font-size: 1.2rem; /* main site name */
   font-weight: 700;
-  color: #fff8f8;       /* dark color for contrast */
+  color: #1a1a1a;       /* dark color for contrast */
   margin: 0;
 }
 
 .tagline {
+  font-family: 'Outfit', sans-serif;
   font-size: 0.9rem;  /* smaller tagline */
   font-style: italic;  /* subtle professional style */
-  color: #918b8b;         /* muted secondary color */
+  color: #766e65;         /* muted secondary color */
   margin-top: 3px;     /* very close to site name */
 }
 
@@ -287,8 +316,8 @@ body {
   }
 
   .logo {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
   }
 
   .site-text h3 {
@@ -310,11 +339,12 @@ body {
     display: none;
     flex-direction: column;
     width: 100%;
-    background-color: #1b1b1b; /* Darker mobile menu background */
+    background-color: #eae8e4; /* Light mobile menu background */
     position: absolute;
-    top: 105px; /* Adjusted for logo-title height */
+    top: 75px; /* Adjusted for logo-title height */
     left: 0;
     z-index: 999;
+    border-bottom: 1px solid #dbd7cf;
   }
 
   .nav-wrapper.active {
@@ -324,7 +354,7 @@ body {
   .nav-menu-mobile {
     flex-direction: column;
     width: 100%;
-    color: white;
+    color: #1a1a1a;
   }
 
   /* Remove padding/margin from menu lists */
@@ -333,11 +363,12 @@ body {
   .mobile-child-list {
     padding: 0;
     margin: 0;
+    width: 100%;
   }
 
   .nav-menu-mobile li {
     margin: 0;
-    border-top: 1px solid #343333; /* Lighter border for separation */
+    border-top: 1px solid #dbd7cf; /* Warm sand border for separation */
   }
 
   /* Level 1 links */
@@ -347,29 +378,26 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #1b1b1b; /* Level 1 background */
-    color: #ffffff; /* Level 1 text */
+    background-color: #eae8e4; /* Level 1 background */
+    color: #1a1a1a; /* Level 1 text */
     transition: background 0.3s, color 0.3s;
   }
 
   .nav-menu-mobile li a:hover {
-    background-color: #f0a500; /* Hover color */
-    color: #000000; /* Text on hover */
+    background-color: #dfdbd5; /* Soft hover background */
+    color: #E85D25; /* Text on hover */
   }
 
   /* Level 2 links */
   .mobile-sub-list, .mobile-child-list {
     list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
   }
 
   .mobile-sub-list li a {
     text-decoration: none;
     padding: 12px 40px; /* Indent Level 2 */
-    background-color: #2c2c2c; /* Level 2 background */
-    color: #ffffff;
+    background-color: #dfdbd5; /* Level 2 background */
+    color: #1a1a1a;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -377,27 +405,47 @@ body {
   }
 
   .mobile-sub-list li a:hover {
-    background-color: #f0a500; /* Hover same golden */
-    color: #000000;
+    background-color: #d2cdc5; /* Hover */
+    color: #E85D25;
   }
 
   /* Level 3 links */
   .mobile-child-list li a {
     text-decoration: none;
     padding: 12px 60px; /* Indent Level 3 */
-    background-color: #383838; /* Level 3 background */
-    color: #ffffff;
+    background-color: #d2cdc5; /* Level 3 background */
+    color: #1a1a1a;
     display: block;
     transition: background 0.3s, color 0.3s;
   }
 
   .mobile-child-list li a:hover {
-    background-color: #f0a500; /* Hover same golden */
-    color: #000000;
+    background-color: #c5bfb6; /* Hover */
+    color: #E85D25;
   }
 
-  /* Submenu indicator (+) */
+  /* Submenu indicator (▲ / ▼ outline buttons) */
   .submenu-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    background-color: #f8fafc;
+    color: #475569;
+    font-size: 10px;
+    transition: all 0.2s ease;
+    margin-left: 10px;
+    margin-right: 5px;
+    cursor: pointer;
+  }
+
+  .submenu-mark:hover,
+  .submenu-mark:active {
+    background-color: #E85D25;
+    border-color: #E85D25;
     color: #ffffff;
   }
 
@@ -406,4 +454,7 @@ body {
     display: none !important;
   }
 }
+
+
+
 

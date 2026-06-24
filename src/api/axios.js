@@ -5,6 +5,7 @@ export const BASE_URL = 'http://localhost/premium_touch/premium-touch-backend/ap
 export const getStorageUrl = (path) => {
     if (!path) return '';
     if (path.startsWith('http')) return path;
+    if (path.startsWith('/photo/') || path.startsWith('photo/')) return path;
 
     // Use current BASE_URL to derive the public storage path
     // For your setup: http://localhost/premium_touch/premium-touch-backend/public/storage/

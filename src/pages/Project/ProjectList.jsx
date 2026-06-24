@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import api, { getStorageUrl, BASE_URL } from '../../api/axios';
+import api, { getStorageUrl, BASE_URL, getSiteInfo, getCategories } from '../../api/axios';
+import ProjectDetail from './ProjectDetail';
 import './Project.css';
 
 const ProjectList = () => {
-    const { categorySlug } = useParams();
+    const { parentSlug, categorySlug } = useParams();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -14,24 +15,35 @@ const ProjectList = () => {
     const [loading, setLoading] = useState(true);
     const [catLoading, setCatLoading] = useState(true);
 
+    const [selectedChildCategory, setSelectedChildCategory] = useState(
+        (parentSlug && parentSlug !== categorySlug) ? categorySlug : 'all'
+    );
+
     // Get filters from searchParams or URL Params
-    const activeFilter = searchParams.get('category') || categorySlug || 'all';
+    const activeFilter = parentSlug || categorySlug || searchParams.get('category') || 'all';
     const activeChildFilter = searchParams.get('category') || 'all';
-    const apiCategoryFilter = categorySlug || 'all';
     const activeArea = searchParams.get('area') || 'all';
 
     const isMainProjectsPage = !categorySlug || categorySlug === 'projects';
-    const isResidentialPage = categorySlug === 'residential';
+    const isResidentialPage = (parentSlug || categorySlug) === 'residential';
+
+    useEffect(() => {
+        if (parentSlug && categorySlug && parentSlug !== categorySlug) {
+            setSelectedChildCategory(categorySlug);
+        } else {
+            setSelectedChildCategory('all');
+        }
+    }, [parentSlug, categorySlug]);
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [catRes, setRes] = await Promise.all([
-                    api.get('/categories'),
-                    api.get('/site-info')
+                const [catsData, siteData] = await Promise.all([
+                    getCategories(),
+                    getSiteInfo()
                 ]);
-                setCategories(catRes.data);
-                setSettings(setRes.data);
+                setCategories(catsData);
+                setSettings(siteData);
             } catch (error) {
                 console.error("Error fetching initial data:", error);
             } finally {
@@ -45,7 +57,7 @@ const ProjectList = () => {
         const fetchProjects = async () => {
             setLoading(true);
             try {
-                const targetCat = categorySlug && categorySlug !== 'projects' ? categorySlug : 'all';
+                const targetCat = activeFilter && activeFilter !== 'projects' ? activeFilter : 'all';
                 const res = await api.get(`/projects?category=${targetCat}&area=all`);
                 setProjects(res.data);
             } catch (error) {
@@ -55,7 +67,7 @@ const ProjectList = () => {
             }
         };
         fetchProjects();
-    }, [categorySlug]);
+    }, [activeFilter]);
 
     const isResidentialOrChild = (slug) => {
         if (!slug) return false;
@@ -117,22 +129,27 @@ const ProjectList = () => {
     const projectCategory = categories.find(c => c.slug === 'projects') || categories.find(c => c.name?.toLowerCase() === 'projects');
     const subCategories = projectCategory ? (projectCategory.children || []) : [];
 
+    const activeSubCategorySlug = parentSlug || categorySlug;
+    const currentSubCategory = !isMainProjectsPage && Array.isArray(subCategories)
+        ? subCategories.find(s => s && s.slug === activeSubCategorySlug)
+        : null;
+
     const currentCategoryNode = categorySlug ? findCategoryNode(categorySlug, categories) : null;
     const displayCategories = currentCategoryNode 
         ? (currentCategoryNode.children || []) 
         : subCategories;
 
-    const showAreaFilter = isResidentialPage || isResidentialOrChild(activeFilter);
+    const showAreaFilter = true;
 
     const displayedProjects = projects.filter(project => {
         // 1. Category Filter
-        if (activeChildFilter !== 'all') {
+        if (selectedChildCategory !== 'all') {
             const matchesCategory = 
-                project.category?.slug === activeChildFilter ||
-                project.sub_category?.slug === activeChildFilter ||
-                project.subCategory?.slug === activeChildFilter ||
-                project.child_category?.slug === activeChildFilter ||
-                project.childCategory?.slug === activeChildFilter;
+                project.category?.slug === selectedChildCategory ||
+                project.sub_category?.slug === selectedChildCategory ||
+                project.subCategory?.slug === selectedChildCategory ||
+                project.child_category?.slug === selectedChildCategory ||
+                project.childCategory?.slug === selectedChildCategory;
             if (!matchesCategory) return false;
         }
 
@@ -175,9 +192,9 @@ const ProjectList = () => {
         return null;
     };
 
-    const categoryPath = findCategoryPath(activeFilter, categories);
+    const categoryPath = findCategoryPath(categorySlug || parentSlug || activeFilter, categories);
     const pageTitle = (activeFilter === 'all' || !categoryPath)
-        ? 'Premium Touch Project'
+        ? 'Projects'
         : `${categoryPath[categoryPath.length - 1].name}`;
 
     const getHeaderBgUrl = () => {
@@ -200,7 +217,38 @@ const ProjectList = () => {
         { label: '2500+ sft', value: '2500-500000' },
     ];
 
-    const showCategoryFilter = isMainProjectsPage || (currentCategoryNode && currentCategoryNode.children && currentCategoryNode.children.length > 0);
+    const showCategoryFilter = isMainProjectsPage || (currentSubCategory && currentSubCategory.children && currentSubCategory.children.length > 0);
+
+    const isCategoryCheck = () => {
+        if (!categorySlug) return true;
+        if (categorySlug === 'projects') return true;
+
+        const projectsRoot = Array.isArray(categories)
+            ? (categories.find(c => c.slug === 'projects') || categories.find(c => c.name?.toLowerCase() === 'projects'))
+            : null;
+        
+        if (!projectsRoot) return false;
+
+        const subCats = projectsRoot.children || [];
+
+        if (parentSlug) {
+            // categorySlug must be a child of parentSlug subcategory
+            const parentCat = subCats.find(c => c.slug === parentSlug);
+            if (!parentCat || !parentCat.children) return false;
+            return parentCat.children.some(c => c.slug === categorySlug);
+        } else {
+            // categorySlug must be a subcategory (direct child of projectsRoot)
+            return subCats.some(c => c.slug === categorySlug);
+        }
+    };
+
+    const shouldShowDetailDirectly = 
+        !parentSlug && 
+        categorySlug && 
+        isCategoryCheck() && 
+        currentSubCategory && 
+        (!currentSubCategory.children || currentSubCategory.children.length === 0) && 
+        projects.length === 1;
 
     if (catLoading) {
         return (
@@ -209,6 +257,14 @@ const ProjectList = () => {
                 <div className="loader-text">Loading Project...</div>
             </div>
         );
+    }
+
+    if (!catLoading && !isCategoryCheck()) {
+        return <ProjectDetail explicitSlug={categorySlug} />;
+    }
+
+    if (!loading && shouldShowDetailDirectly) {
+        return <ProjectDetail explicitSlug={projects[0].slug} />;
     }
 
     if (loading && !isMainProjectsPage) {
@@ -242,7 +298,16 @@ const ProjectList = () => {
                                     {index === path.length - 1 ? (
                                         <span className="current-page">{item.name}</span>
                                     ) : (
-                                        <Link to={`/${item.slug === 'projects' ? 'projects' : item.slug}`} className="bc-link-btn">{item.name}</Link>
+                                        <Link
+                                            to={
+                                                index === 0 ? '/projects' :
+                                                    index === 1 ? `/projects/${item.slug}` :
+                                                        `/projects/${path[1].slug}/${item.slug}`
+                                            }
+                                            className="bc-link-btn"
+                                        >
+                                            {item.name}
+                                        </Link>
                                     )}
                                 </React.Fragment>
                             ))
@@ -256,26 +321,50 @@ const ProjectList = () => {
             </section>
 
             <div id="projects-grid" className="pl-main-container">
-                {(showCategoryFilter || showAreaFilter) && (projects.length > 0 || searchParams.get('category') || searchParams.get('area')) && (
+                {projects.length > 0 && (showCategoryFilter || showAreaFilter) && (
                     <div className="pl-filters-section compact">
                         {showCategoryFilter && (
                             <div className="pl-filter-row">
                                 <div className="pl-filters-inner">
-                                    <button
-                                        className={`pl-filter-item ${activeChildFilter === 'all' || activeChildFilter === 'projects' ? 'active' : ''}`}
-                                        onClick={() => handleFilterClick('all')}
-                                    >
-                                        All Works
-                                    </button>
-                                    {displayCategories.map(cat => (
-                                        <button
-                                            key={cat.id}
-                                            className={`pl-filter-item ${activeChildFilter === cat.slug ? 'active' : ''}`}
-                                            onClick={() => handleFilterClick(cat.slug)}
-                                        >
-                                            {cat.name}
-                                        </button>
-                                    ))}
+                                    {isMainProjectsPage ? (
+                                        <>
+                                            <Link
+                                                to="/projects"
+                                                className={`pl-filter-item ${activeFilter === 'all' || activeFilter === 'projects' ? 'active' : ''}`}
+                                            >
+                                                All Works
+                                            </Link>
+                                            {displayCategories.map(cat => (
+                                                <Link
+                                                    key={cat.id}
+                                                    to={`/projects/${cat.slug}`}
+                                                    className={`pl-filter-item ${activeFilter === cat.slug ? 'active' : ''}`}
+                                                >
+                                                    {cat.name}
+                                                </Link>
+                                            ))}
+                                        </>
+                                    ) : (
+                                        currentSubCategory && (
+                                            <>
+                                                <Link
+                                                    to={`/projects/${currentSubCategory.slug}`}
+                                                    className={`pl-filter-item ${!parentSlug ? 'active' : ''}`}
+                                                >
+                                                    All
+                                                </Link>
+                                                {currentSubCategory.children && currentSubCategory.children.map(child => (
+                                                    <Link
+                                                        key={child.id}
+                                                        to={`/projects/${currentSubCategory.slug}/${child.slug}`}
+                                                        className={`pl-filter-item ${categorySlug === child.slug ? 'active' : ''}`}
+                                                    >
+                                                        {child.name}
+                                                    </Link>
+                                                ))}
+                                            </>
+                                        )
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -283,6 +372,14 @@ const ProjectList = () => {
                         {showAreaFilter && (
                             <div className="pl-filter-row secondary">
                                 <div className="pl-filters-inner area-filters">
+                                    {!showCategoryFilter && (
+                                        <button
+                                            className={`pl-filter-item mini ${activeArea === 'all' ? 'active' : ''}`}
+                                            onClick={() => handleAreaClick('all')}
+                                        >
+                                            All
+                                        </button>
+                                    )}
                                     {areaRanges.map(range => (
                                         <button
                                             key={range.value}
@@ -386,35 +483,43 @@ const ProjectList = () => {
                             </div>
                         </div>
                     ) : (
-                        displayedProjects.map((project) => (
-                            <Link
-                                to={`/projects/${project.slug}`}
-                                key={project.id}
-                                className="pl-small-card"
-                            >
-                                <div className="pl-small-card-media">
-                                    {project.thumbnail ? (
-                                        <img src={getStorageUrl(project.thumbnail.image_path)} alt={project.title} loading="lazy" />
-                                    ) : project.images?.length > 0 ? (
-                                        <img src={getStorageUrl(project.images[0].image_path)} alt={project.title} loading="lazy" />
-                                    ) : (
-                                        <div className="pl-placeholder">Premium Design</div>
-                                    )}
+                        displayedProjects.map((project) => {
+                            const subSlug = project.sub_category?.slug || project.subCategory?.slug;
+                            const childSlug = project.child_category?.slug || project.childCategory?.slug;
+                            const url = (subSlug && childSlug)
+                                ? `/projects/${subSlug}/${childSlug}/${project.slug}`
+                                : `/projects/view/${project.slug}`;
 
-                                    <div className="pl-small-overlay">
-                                        <div className="pl-small-overlay-content">
-                                            <span className="pl-small-cat">{project.child_category?.name || project.sub_category?.name || project.category?.name}</span>
-                                            <h3 className="pl-small-title">{project.title}</h3>
-                                            <div className="pl-small-footer">
-                                                <span className="pl-small-loc"><i className="fas fa-map-marker-alt"></i> {project.location || 'Boutique'}</span>
-                                                <span className="pl-small-area">{project.floor_area || 'Custom'}</span>
-                                                <i className="fas fa-long-arrow-alt-right pl-arrow"></i>
+                            return (
+                                <Link
+                                    to={url}
+                                    key={project.id}
+                                    className="pl-small-card"
+                                >
+                                    <div className="pl-small-card-media">
+                                        {project.thumbnail ? (
+                                            <img src={getStorageUrl(project.thumbnail.image_path)} alt={project.title} loading="lazy" />
+                                        ) : project.images?.length > 0 ? (
+                                            <img src={getStorageUrl(project.images[0].image_path)} alt={project.title} loading="lazy" />
+                                        ) : (
+                                            <div className="pl-placeholder">Premium Design</div>
+                                        )}
+
+                                        <div className="pl-small-overlay">
+                                            <div className="pl-small-overlay-content">
+                                                <span className="pl-small-cat">{project.child_category?.name || project.sub_category?.name || project.category?.name}</span>
+                                                <h3 className="pl-small-title">{project.title}</h3>
+                                                <div className="pl-small-footer">
+                                                    <span className="pl-small-loc"><i className="fas fa-map-marker-alt"></i> {project.location || 'Boutique'}</span>
+                                                    <span className="pl-small-area">{project.floor_area || 'Custom'}</span>
+                                                    <i className="fas fa-long-arrow-alt-right pl-arrow"></i>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))
+                                </Link>
+                            );
+                        })
                     )}
                 </div>
             </div>

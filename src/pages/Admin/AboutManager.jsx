@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import api, { BASE_URL, clearClientCache } from '../../api/axios';
+import api, { BASE_URL, clearClientCache, getStorageUrl } from '../../api/axios';
 import Cropper from 'react-easy-crop';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import './Admin.css';
 
 const getCroppedImg = (imageSrc, pixelCrop) => {
@@ -62,8 +63,30 @@ const AboutManager = () => {
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
+    // Design Philosophy states
+    const [philosophies, setPhilosophies] = useState([]);
+    const [philosophyFormData, setPhilosophyFormData] = useState({ stepNumber: '', title: '', image: '', description: '' });
+    const [philosophyImageFile, setPhilosophyImageFile] = useState(null);
+    const [editingPhilosophyIndex, setEditingPhilosophyIndex] = useState(null);
+    const [addingNewPhilosophy, setAddingNewPhilosophy] = useState(false);
+    const [philosophyConfirmOpen, setPhilosophyConfirmOpen] = useState(false);
+    const [deletePhilosophyTargetId, setDeletePhilosophyTargetId] = useState(null);
+    const [philosophyLoading, setPhilosophyLoading] = useState(false);
+
+    const fetchPhilosophies = async () => {
+        try {
+            const res = await api.get('/design-philosophies');
+            const sorted = res.data.sort((a, b) => a.step_number.localeCompare(b.step_number));
+            setPhilosophies(sorted);
+        } catch (err) {
+            console.error("Failed to fetch design philosophies:", err);
+            setAlert({ type: 'error', msg: 'Failed to load design philosophies from database.' });
+        }
+    };
+
     useEffect(() => {
         fetchSettings();
+        fetchPhilosophies();
     }, []);
 
     const fetchSettings = async () => {
@@ -159,6 +182,125 @@ const AboutManager = () => {
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
+        }
+    };
+
+    const handleEditPhilosophy = (phi, index) => {
+        setEditingPhilosophyIndex(index);
+        setAddingNewPhilosophy(false);
+        setPhilosophyFormData({
+            stepNumber: phi.stepNumber || phi.step_number || '',
+            title: phi.title,
+            image: phi.image,
+            description: phi.description
+        });
+        setPhilosophyImageFile(null);
+        const fileInput = document.getElementById('philosophy-image-file');
+        if (fileInput) fileInput.value = '';
+        
+        setTimeout(() => {
+            const editorElement = document.getElementById('philosophy-editor-section');
+            if (editorElement) {
+                editorElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 100);
+    };
+
+    const handleAddNewPhilosophyClick = () => {
+        setEditingPhilosophyIndex(null);
+        setAddingNewPhilosophy(true);
+        setPhilosophyFormData({
+            stepNumber: '',
+            title: '',
+            image: '',
+            description: ''
+        });
+        setPhilosophyImageFile(null);
+        const fileInput = document.getElementById('philosophy-image-file');
+        if (fileInput) fileInput.value = '';
+
+        setTimeout(() => {
+            const editorElement = document.getElementById('philosophy-editor-section');
+            if (editorElement) {
+                editorElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 100);
+    };
+
+    const handleDeletePhilosophyClick = (id) => {
+        setDeletePhilosophyTargetId(id);
+        setPhilosophyConfirmOpen(true);
+    };
+
+    const handleConfirmDeletePhilosophy = async () => {
+        try {
+            await api.delete(`/design-philosophies/${deletePhilosophyTargetId}`);
+            setPhilosophies(philosophies.filter(p => p.id !== deletePhilosophyTargetId));
+            setAlert({ type: 'success', msg: 'Design philosophy removed successfully.' });
+        } catch (err) {
+            console.error("Failed to delete philosophy:", err);
+            setAlert({ type: 'error', msg: 'Failed to remove design philosophy.' });
+        } finally {
+            setPhilosophyConfirmOpen(false);
+            setDeletePhilosophyTargetId(null);
+            setPhilosophyFormData({ stepNumber: '', title: '', image: '', description: '' });
+            setPhilosophyImageFile(null);
+            setEditingPhilosophyIndex(null);
+            setAddingNewPhilosophy(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handleSubmitPhilosophy = async (e) => {
+        e.preventDefault();
+
+        if (editingPhilosophyIndex === null && !addingNewPhilosophy) return;
+
+        if (!philosophyImageFile && !philosophyFormData.image) {
+            setAlert({ type: 'error', msg: 'Please select an image file to upload or enter an image path/URL.' });
+            return;
+        }
+
+        const submitData = new FormData();
+        submitData.append('title', philosophyFormData.title);
+        submitData.append('description', philosophyFormData.description);
+        submitData.append('image', philosophyFormData.image || '');
+        if (philosophyImageFile) {
+            submitData.append('image_file', philosophyImageFile);
+        }
+
+        setPhilosophyLoading(true);
+        try {
+            if (addingNewPhilosophy) {
+                submitData.append('step_number', philosophyFormData.stepNumber);
+                const res = await api.post('/design-philosophies', submitData);
+                const updated = [...philosophies, res.data.philosophy].sort((a, b) => 
+                    a.step_number.localeCompare(b.step_number)
+                );
+                setPhilosophies(updated);
+                setAlert({ type: 'success', msg: 'New design philosophy added successfully.' });
+            } else {
+                const targetPhi = philosophies[editingPhilosophyIndex];
+                const res = await api.post(`/design-philosophies/${targetPhi.id}`, submitData);
+                const updated = philosophies.map((p, idx) => 
+                    idx === editingPhilosophyIndex ? res.data.philosophy : p
+                );
+                setPhilosophies(updated);
+                setAlert({ type: 'success', msg: `Design philosophy ${targetPhi.stepNumber || targetPhi.step_number} updated successfully.` });
+            }
+
+            setEditingPhilosophyIndex(null);
+            setAddingNewPhilosophy(false);
+            setPhilosophyFormData({ stepNumber: '', title: '', image: '', description: '' });
+            setPhilosophyImageFile(null);
+            const fileInput = document.getElementById('philosophy-image-file');
+            if (fileInput) fileInput.value = '';
+        } catch (err) {
+            console.error("Failed to save design philosophy:", err);
+            setAlert({ type: 'error', msg: 'Failed to save design philosophy.' });
+        } finally {
+            setPhilosophyLoading(false);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -286,6 +428,189 @@ const AboutManager = () => {
                     {loading ? 'Saving...' : 'Save Info'}
                 </button>
             </form>
+
+            {/* Design Philosophy Section */}
+            <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '40px 0' }} />
+
+            <div className="admin-grid-layout" style={{ marginTop: '20px' }}>
+                {(editingPhilosophyIndex !== null || addingNewPhilosophy) && (
+                    <div id="philosophy-editor-section" className="admin-card editor-main-card" style={{ maxWidth: '800px', marginBottom: '30px' }}>
+                        <h3>{addingNewPhilosophy ? 'Add New Design Philosophy' : `Edit Design Philosophy Step ${philosophies[editingPhilosophyIndex]?.stepNumber || philosophies[editingPhilosophyIndex]?.step_number}`}</h3>
+                        <form onSubmit={handleSubmitPhilosophy} className="admin-form-inline">
+                            {addingNewPhilosophy && (
+                                <div className="form-group">
+                                    <label>Step Number / Identifier</label>
+                                    <input
+                                        type="text"
+                                        className="admin-input"
+                                        value={philosophyFormData.stepNumber}
+                                        onChange={(e) => setPhilosophyFormData({ ...philosophyFormData, stepNumber: e.target.value })}
+                                        required
+                                        placeholder="e.g. 04"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="form-group">
+                                <label>Philosophy Title</label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    value={philosophyFormData.title}
+                                    onChange={(e) => setPhilosophyFormData({ ...philosophyFormData, title: e.target.value })}
+                                    required
+                                    placeholder="e.g. Bespoke Customization"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Upload Icon/Image File</label>
+                                <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '5px' }}>
+                                    <strong>Recommended:</strong> 120x120 px (1:1 square, transparent PNG preferred).
+                                </span>
+                                <input
+                                    id="philosophy-image-file"
+                                    type="file"
+                                    accept="image/*"
+                                    className="admin-input"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            setPhilosophyImageFile(e.target.files[0]);
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            <div style={{ textAlign: 'center', margin: '15px 0', color: '#94a3b8', fontWeight: 600, fontSize: '0.85rem' }}>- OR -</div>
+
+                            <div className="form-group">
+                                <label>Icon/Image Path or URL</label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    value={philosophyFormData.image}
+                                    onChange={(e) => setPhilosophyFormData({ ...philosophyFormData, image: e.target.value })}
+                                    placeholder="e.g. /photo/values_step1.png"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Description</label>
+                                <textarea
+                                    className="admin-input"
+                                    style={{ height: '100px', resize: 'vertical' }}
+                                    value={philosophyFormData.description}
+                                    onChange={(e) => setPhilosophyFormData({ ...philosophyFormData, description: e.target.value })}
+                                    required
+                                    placeholder="Provide detailed explanation for this design philosophy..."
+                                />
+                            </div>
+
+                            <div className="form-actions" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                                <button type="submit" className="admin-btn-primary" disabled={philosophyLoading}>
+                                    <i className="fas fa-save"></i> {philosophyLoading ? 'Saving...' : (addingNewPhilosophy ? 'Add Philosophy' : 'Save Changes')}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="admin-btn-secondary"
+                                    onClick={() => {
+                                        setEditingPhilosophyIndex(null);
+                                        setAddingNewPhilosophy(false);
+                                        setPhilosophyFormData({ stepNumber: '', title: '', image: '', description: '' });
+                                        setPhilosophyImageFile(null);
+                                        const fileInput = document.getElementById('philosophy-image-file');
+                                        if (fileInput) fileInput.value = '';
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                )}
+
+                <div className="admin-card table-card" style={{ maxWidth: '1000px', marginTop: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h3 style={{ margin: 0 }}>Design Philosophy Steps</h3>
+                        <button type="button" className="admin-btn-primary" onClick={handleAddNewPhilosophyClick}>
+                            <i className="fas fa-plus-circle"></i> Add New Philosophy
+                        </button>
+                    </div>
+                    <div className="admin-table-container">
+                        <table className="admin-table">
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '80px' }}>Step</th>
+                                    <th style={{ width: '110px' }}>Icon</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th style={{ width: '180px' }}>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {philosophies.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="5" className="text-center">No philosophies found. Click Add New Philosophy to create one.</td>
+                                    </tr>
+                                ) : (
+                                    philosophies.map((phi, index) => (
+                                        <tr key={phi.id || index} className={editingPhilosophyIndex === index ? 'row-editing' : ''}>
+                                            <td style={{ fontWeight: 'bold', color: '#d4af37', fontSize: '1.1rem' }}>
+                                                {phi.stepNumber || phi.step_number}
+                                            </td>
+                                            <td>
+                                                <img
+                                                    src={getStorageUrl(phi.image)}
+                                                    alt={phi.title}
+                                                    style={{ width: '80px', height: '80px', objectFit: 'contain', background: '#f8fafc', padding: '4px', borderRadius: '4px' }}
+                                                    onError={(e) => {
+                                                        e.target.src = "/photo/values_step1.png";
+                                                    }}
+                                                />
+                                            </td>
+                                            <td style={{ fontWeight: 600 }}>{phi.title}</td>
+                                            <td>
+                                                <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0, whiteSpace: 'pre-line' }}>
+                                                    {phi.description}
+                                                </p>
+                                            </td>
+                                            <td>
+                                                <div className="action-buttons">
+                                                    <button
+                                                        type="button"
+                                                        className="action-btn edit-btn"
+                                                        onClick={() => handleEditPhilosophy(phi, index)}
+                                                        title="Edit Philosophy"
+                                                    >
+                                                        <i className="fas fa-edit"></i> Edit
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="action-btn delete-btn"
+                                                        onClick={() => handleDeletePhilosophyClick(phi.id)}
+                                                        title="Delete Philosophy"
+                                                        style={{ marginLeft: '8px' }}
+                                                    >
+                                                        <i className="fas fa-trash-alt"></i> Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <ConfirmModal
+                isOpen={philosophyConfirmOpen}
+                title="Remove Design Philosophy"
+                message="Are you sure you want to remove this design philosophy? It will immediately stop appearing on the About Us page."
+                onConfirm={handleConfirmDeletePhilosophy}
+                onCancel={() => setPhilosophyConfirmOpen(false)}
+            />
 
             {/* Image Cropper Modal */}
             {imageToCrop && (

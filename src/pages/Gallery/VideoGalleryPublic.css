@@ -39,7 +39,7 @@
     height: 100%;
     background-size: cover;
     background-position: center;
-    filter: brightness(0.45);
+    filter: brightness(0.55);
     transform: scale(1.05);
     animation: zoomOutEffect 15s ease-out forwards;
 }

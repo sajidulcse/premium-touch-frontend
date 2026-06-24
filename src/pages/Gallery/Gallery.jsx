@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api, { getStorageUrl, BASE_URL } from '../../api/axios';
+import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
 import './Gallery.css';
 
 const Gallery = () => {
+    const [catLoading, setCatLoading] = useState(true);
     const [loading, setLoading] = useState(true);
     const [featuredProjects, setFeaturedProjects] = useState([]);
     const [settings, setSettings] = useState(null);
@@ -12,12 +13,25 @@ const Gallery = () => {
     const [videoPreview, setVideoPreview] = useState(null);
 
     useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                const siteData = await getSiteInfo();
+                setSettings(siteData);
+            } catch (error) {
+                console.error("Error fetching site settings:", error);
+            } finally {
+                setCatLoading(false);
+            }
+        };
+        fetchInitialData();
+    }, []);
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
-                const [projRes, handRes, siteRes] = await Promise.all([
+                const [projRes, handRes] = await Promise.all([
                     api.get('/projects?category=all&area=all'),
-                    api.get('/handover-snapshots'),
-                    api.get('/site-info')
+                    api.get('/handover-snapshots')
                 ]);
 
                 // 1. Featured projects list (first 6 with images)
@@ -42,9 +56,6 @@ const Gallery = () => {
                 } else {
                     setHandoverPreview("https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80");
                 }
-
-                // 4. Site Settings
-                setSettings(siteRes.data);
 
                 // 5. Video Preview
                 let vidPrev = null;
@@ -73,10 +84,7 @@ const Gallery = () => {
             } catch (err) {
                 console.error("Error loading gallery landing data:", err);
             } finally {
-                // Keep the Loading Gallery loader active for a subtle beat to guarantee visual feedback
-                setTimeout(() => {
-                    setLoading(false);
-                }, 800);
+                setLoading(false);
             }
         };
 
@@ -91,7 +99,7 @@ const Gallery = () => {
         return null;
     };
 
-    if (loading) {
+    if (catLoading) {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
@@ -131,79 +139,86 @@ const Gallery = () => {
                         <div className="gl-section-line"></div>
                     </div>
 
-                    <div className="gl-categories-grid">
-                        {/* Card 1: Photo Gallery */}
-                        <div className="gl-category-card">
-                            <Link to="/photo-gallery" className="gl-card-link-wrapper">
-                                <div className="gl-card-image-wrap">
-                                    <img
-                                        src={photoPreview || "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80"}
-                                        alt="Photo Gallery Preview"
-                                        className="gl-card-image"
-                                    />
-                                    <div className="gl-card-overlay"></div>
-                                </div>
-                            </Link>
-                            <div className="gl-card-content">
-                                <Link to="/photo-gallery" className="gl-card-title-link">
-                                    <h3 className="gl-card-title">Photo Gallery</h3>
-                                </Link>
-                                <p className="gl-card-desc">Curated high-resolution perspectives of our finest interior designs and layouts.</p>
-                                <Link to="/photo-gallery" className="gl-card-btn">
-                                    <span>VIEW PHOTOS</span>
-                                    <i className="fas fa-arrow-right"></i>
-                                </Link>
-                            </div>
+                    {loading ? (
+                        <div className="loading-state" style={{ height: '300px', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                            <div className="loader"></div>
+                            <div className="loader-text" style={{ marginTop: '15px', color: '#666', fontSize: '14px' }}>Loading Gallery Content...</div>
                         </div>
+                    ) : (
+                        <div className="gl-categories-grid">
+                            {/* Card 1: Photo Gallery */}
+                            <div className="gl-category-card">
+                                <Link to="/photo-gallery" className="gl-card-link-wrapper">
+                                    <div className="gl-card-image-wrap">
+                                        <img
+                                            src={photoPreview || "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80"}
+                                            alt="Photo Gallery Preview"
+                                            className="gl-card-image"
+                                        />
+                                        <div className="gl-card-overlay"></div>
+                                    </div>
+                                </Link>
+                                <div className="gl-card-content">
+                                    <Link to="/photo-gallery" className="gl-card-title-link">
+                                        <h3 className="gl-card-title">Photo Gallery</h3>
+                                    </Link>
+                                    <p className="gl-card-desc">Curated high-resolution perspectives of our finest interior designs and layouts.</p>
+                                    <Link to="/photo-gallery" className="gl-card-btn">
+                                        <span>VIEW PHOTOS</span>
+                                        <i className="fas fa-arrow-right"></i>
+                                    </Link>
+                                </div>
+                            </div>
 
-                        {/* Card 2: Video Gallery */}
-                        <div className="gl-category-card">
-                            <Link to="/video-gallery" className="gl-card-link-wrapper">
-                                <div className="gl-card-image-wrap">
-                                    <img
-                                        src={videoPreview || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80"}
-                                        alt="Video Gallery Preview"
-                                        className="gl-card-image"
-                                    />
-                                    <div className="gl-card-overlay"></div>
+                            {/* Card 2: Video Gallery */}
+                            <div className="gl-category-card">
+                                <Link to="/video-gallery" className="gl-card-link-wrapper">
+                                    <div className="gl-card-image-wrap">
+                                        <img
+                                            src={videoPreview || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80"}
+                                            alt="Video Gallery Preview"
+                                            className="gl-card-image"
+                                        />
+                                        <div className="gl-card-overlay"></div>
+                                    </div>
+                                </Link>
+                                <div className="gl-card-content">
+                                    <Link to="/video-gallery" className="gl-card-title-link">
+                                        <h3 className="gl-card-title">Video Gallery</h3>
+                                    </Link>
+                                    <p className="gl-card-desc">Cinematic architectural walkthroughs detailing materials, textures, and scales.</p>
+                                    <Link to="/video-gallery" className="gl-card-btn">
+                                        <span>WATCH VIDEOS</span>
+                                        <i className="fas fa-play"></i>
+                                    </Link>
                                 </div>
-                            </Link>
-                            <div className="gl-card-content">
-                                <Link to="/video-gallery" className="gl-card-title-link">
-                                    <h3 className="gl-card-title">Video Gallery</h3>
-                                </Link>
-                                <p className="gl-card-desc">Cinematic architectural walkthroughs detailing materials, textures, and scales.</p>
-                                <Link to="/video-gallery" className="gl-card-btn">
-                                    <span>WATCH VIDEOS</span>
-                                    <i className="fas fa-play"></i>
-                                </Link>
                             </div>
-                        </div>
 
-                        {/* Card 3: Handover Snapshot */}
-                        <div className="gl-category-card">
-                            <Link to="/handover-snapshot" className="gl-card-link-wrapper">
-                                <div className="gl-card-image-wrap">
-                                    <img
-                                        src={handoverPreview || "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"}
-                                        alt="Handover Snapshot Preview"
-                                        className="gl-card-image"
-                                    />
-                                    <div className="gl-card-overlay"></div>
+                            {/* Card 3: Handover Snapshot */}
+                            <div className="gl-category-card">
+                                <Link to="/handover-snapshot" className="gl-card-link-wrapper">
+                                    <div className="gl-card-image-wrap">
+                                        <img
+                                            src={handoverPreview || "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80"}
+                                            alt="Handover Snapshot Preview"
+                                            className="gl-card-image"
+                                        />
+                                        <div className="gl-card-overlay"></div>
+                                    </div>
+                                </Link>
+                                <div className="gl-card-content">
+                                    <Link to="/handover-snapshot" className="gl-card-title-link">
+                                        <h3 className="gl-card-title">Handover Snapshot</h3>
+                                    </Link>
+                                    <p className="gl-card-desc">Authentic raw snapshots capturing the keys handover and completed project milestones.</p>
+                                    <Link to="/handover-snapshot" className="gl-card-btn">
+                                        <span>VIEW SNAPSHOTS</span>
+                                        <i className="fas fa-key"></i>
+                                    </Link>
                                 </div>
-                            </Link>
-                            <div className="gl-card-content">
-                                <Link to="/handover-snapshot" className="gl-card-title-link">
-                                    <h3 className="gl-card-title">Handover Snapshot</h3>
-                                </Link>
-                                <p className="gl-card-desc">Authentic raw snapshots capturing the keys handover and completed project milestones.</p>
-                                <Link to="/handover-snapshot" className="gl-card-btn">
-                                    <span>VIEW SNAPSHOTS</span>
-                                    <i className="fas fa-key"></i>
-                                </Link>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </section>
 

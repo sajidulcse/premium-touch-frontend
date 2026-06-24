@@ -124,7 +124,20 @@ const ProjectEditor = () => {
     }), []);
 
     const handleFileChange = (e) => {
-        setImages([...images, ...e.target.files]);
+        const selectedFiles = Array.from(e.target.files);
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const oversizedFiles = selectedFiles.filter(file => file.size > maxSize);
+        
+        if (oversizedFiles.length > 0) {
+            setAlert({ 
+                type: 'error', 
+                msg: `Failed to add images: ${oversizedFiles.map(f => f.name).join(', ')} exceed the 10MB size limit.` 
+            });
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        setImages([...images, ...selectedFiles]);
     };
 
     const handleRemoveNewImage = (index) => {
