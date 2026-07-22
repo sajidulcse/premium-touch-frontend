@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const BlogCategoryManager = () => {
+    const toast = useToast();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newCat, setNewCat] = useState({ name: '' });
     const [editing, setEditing] = useState(null);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
 
@@ -32,16 +33,16 @@ const BlogCategoryManager = () => {
         try {
             if (editing) {
                 await api.put(`/blog-categories/${editing.id}`, newCat);
-                setAlert({ type: 'success', msg: 'Category updated!' });
+                toast.success('Category updated!');
             } else {
                 await api.post('/blog-categories', newCat);
-                setAlert({ type: 'success', msg: 'Category created!' });
+                toast.success('Category created!');
             }
             setNewCat({ name: '' });
             setEditing(null);
             fetchCategories();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Operation failed.' });
+            toast.error('Operation failed.');
         }
     };
 
@@ -55,10 +56,10 @@ const BlogCategoryManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/blog-categories/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Category removed.' });
+            toast.success('Category removed.');
             fetchCategories();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Delete failed.' });
+            toast.error('Delete failed.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -72,13 +73,6 @@ const BlogCategoryManager = () => {
                     <p>Organize your stories by architectural and design styles.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-content-split">
                 <form onSubmit={handleSubmit} className="admin-form-card" style={{ flex: 1 }}>

@@ -1,0 +1,115 @@
+/* ============================================================
+   Estimator FAB — Premium Floating Action Tab
+   ============================================================ */
+
+.estimator-fab {
+  position: fixed;
+  right: -61px;
+  top: 35%;
+  transform: translateY(-50%) rotate(-90deg);
+  transform-origin: center center;
+  z-index: 99999;
+
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  /* Size */
+  padding: 8px 16px;
+
+  /* Brand accent */
+  background: #E85D25;
+  color: #ffffff;
+
+  /* Rounded top corners */
+  border-radius: 8px 8px 0 0;
+
+  /* Typography */
+  font-family: 'Inter', 'Outfit', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: none;
+  text-decoration: none;
+
+  /* Soft shadow */
+  box-shadow: -3px 2px 12px rgba(232, 93, 37, 0.38);
+
+  overflow: hidden;
+}
+
+/* Icon */
+.estimator-fab__icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.estimator-fab__icon svg {
+  width: 13px;
+  height: 13px;
+  fill: #ffffff;
+}
+
+/* Text */
+.estimator-fab__text {
+  line-height: 1;
+  color: #ffffff;
+}
+
+/* Pulse on load */
+@keyframes fab-pulse {
+  0%   { box-shadow: -3px 2px 12px rgba(232,93,37,.38), 0 0 0 0 rgba(232,93,37,.45); }
+  60%  { box-shadow: -3px 2px 12px rgba(232,93,37,.38), 0 0 0 10px rgba(232,93,37,0); }
+  100% { box-shadow: -3px 2px 12px rgba(232,93,37,.38), 0 0 0 0 rgba(232,93,37,0); }
+}
+
+.estimator-fab {
+  animation: fab-pulse 2.4s ease-out 1.5s 2;
+}
+
+/* ── Responsive ──────────────────────────────────────────────
+   The right offset = roughly half the element's rendered height
+   after rotation. As padding/font shrinks on smaller screens,
+   the offset reduces proportionally to keep the tab flush.
+   ─────────────────────────────────────────────────────────── */
+
+/* Tablet (≤ 1024px) — slightly smaller element */
+@media (max-width: 1024px) {
+  .estimator-fab {
+    right: -61px;
+    top: 33%;
+    padding: 7px 15px;
+    font-size: 0.72rem;
+    z-index: 998; /* below mobile nav-wrapper (z-index: 999) */
+  }
+}
+
+/* Large mobile (≤ 768px) */
+@media (max-width: 768px) {
+  .estimator-fab {
+    right: -58px;
+    top: 32%;
+    padding: 7px 13px;
+    font-size: 0.70rem;
+  }
+}
+
+/* Small mobile (≤ 480px) */
+@media (max-width: 480px) {
+  .estimator-fab {
+    right: -55px;
+    top: 30%;
+    padding: 6px 12px;
+    font-size: 0.67rem;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .estimator-fab__icon svg {
+    width: 11px;
+    height: 11px;
+  }
+}

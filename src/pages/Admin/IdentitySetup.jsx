@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import api, { getStorageUrl } from '../../api/axios';
+import { useToast } from '../../context/ToastContext';
 
 const IdentitySetup = () => {
+    const toast = useToast();
     const [identity, setIdentity] = useState({
         subtitle: 'OUR IDENTITY',
         title: 'Crafting Spaces, Defining Lifestyles',
@@ -10,7 +12,6 @@ const IdentitySetup = () => {
         image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=80'
     });
     const [imageFile, setImageFile] = useState(null);
-    const [alert, setAlert] = useState(null);
 
     useEffect(() => {
         const fetchIdentity = async () => {
@@ -28,7 +29,7 @@ const IdentitySetup = () => {
         e.preventDefault();
 
         if (!imageFile && !identity.image) {
-            setAlert({ type: 'error', msg: 'Please select an image file to upload or enter an image URL.' });
+            toast.error('Please select an image file to upload or enter an image URL.');
             return;
         }
 
@@ -47,10 +48,10 @@ const IdentitySetup = () => {
             setImageFile(null);
             const fileInput = document.getElementById('identity-image-file');
             if (fileInput) fileInput.value = '';
-            setAlert({ type: 'success', msg: 'Our Identity section updated successfully.' });
+            toast.success('Our Identity section updated successfully.');
         } catch (err) {
             console.error("Failed to save identity info:", err);
-            setAlert({ type: 'error', msg: 'Failed to update identity section.' });
+            toast.error('Failed to update identity section.');
         }
     };
 
@@ -62,13 +63,6 @@ const IdentitySetup = () => {
                     <p>Manage the intro stories, slogan texts, and parallax branding image for the home page welcome section.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-card editor-main-card" style={{ maxWidth: '800px' }}>
                 <h3>Configure Identity Section</h3>

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const PortfolioCategoryManager = () => {
+    const toast = useToast();
     const [portfolioRoot, setPortfolioRoot] = useState(null);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ name: '', parent_id: '', status: 1, position: 0 });
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -52,7 +53,7 @@ const PortfolioCategoryManager = () => {
             }
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to fetch portfolio categories.' });
+            toast.error('Failed to fetch portfolio categories.');
         } finally {
             setLoading(false);
         }
@@ -79,10 +80,10 @@ const PortfolioCategoryManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/admin/categories/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Portfolio category removed.' });
+            toast.success('Portfolio category removed.');
             fetchCategories();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Failed to delete category.' });
+            toast.error('Failed to delete category.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -100,16 +101,16 @@ const PortfolioCategoryManager = () => {
 
             if (editingId) {
                 await api.put(`/admin/categories/${editingId}`, dataToSubmit);
-                setAlert({ type: 'success', msg: 'Category updated successfully.' });
+                toast.success('Category updated successfully.');
             } else {
                 await api.post('/admin/categories', dataToSubmit);
-                setAlert({ type: 'success', msg: 'Portfolio category created successfully.' });
+                toast.success('Portfolio category created successfully.');
             }
             setEditingId(null);
             setFormData({ name: '', parent_id: portfolioRoot.id.toString(), status: 1, position: 0 });
             fetchCategories();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Failed to save category.' });
+            toast.error('Failed to save category.');
         }
     };
 
@@ -154,13 +155,6 @@ const PortfolioCategoryManager = () => {
                     <p>Manage categories and subcategories used exclusively for your Design Portfolios.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-grid-layout">
                 <div className="admin-card editor-main-card">

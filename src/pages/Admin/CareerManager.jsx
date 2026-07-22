@@ -4,8 +4,10 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
+import { useToast } from '../../context/ToastContext';
 
 const CareerManager = () => {
+    const toast = useToast();
     const [openings, setOpenings] = useState([]);
     const [formData, setFormData] = useState({
         title: '',
@@ -18,7 +20,6 @@ const CareerManager = () => {
     });
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
 
@@ -59,11 +60,11 @@ const CareerManager = () => {
         data.append('career_email', careerEmail);
         try {
             await api.post('/site-info', data);
-            setAlert({ type: 'success', msg: 'Application email updated successfully!' });
+            toast.success('Application email updated successfully!');
             clearClientCache();
         } catch (err) {
             console.error("Error saving career settings:", err);
-            setAlert({ type: 'error', msg: 'Failed to update application email.' });
+            toast.error('Failed to update application email.');
         } finally {
             setSettingsLoading(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -85,14 +86,13 @@ const CareerManager = () => {
             }));
         } catch (err) {
             console.error("Failed to fetch openings:", err);
-            setAlert({ type: 'error', msg: 'Failed to load career openings from server.' });
+            toast.error('Failed to load career openings from server.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleEdit = (job) => {
-        console.log("Edit clicked, job data:", job);
         setEditingId(job.id);
         setFormData({
             title: job.title || '',
@@ -100,15 +100,6 @@ const CareerManager = () => {
             location: job.location || '',
             exp: job.exp || '',
             desc: job.desc || '',
-            status: !!job.status,
-            position: job.position || 0
-        });
-        console.log("Form data updated to:", {
-            title: job.title,
-            type: job.type,
-            location: job.location,
-            exp: job.exp,
-            desc: job.desc,
             status: !!job.status,
             position: job.position || 0
         });
@@ -125,14 +116,14 @@ const CareerManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/career-openings/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Vacancy deleted successfully.' });
+            toast.success('Vacancy deleted successfully.');
             fetchOpenings();
             if (editingId === deleteTargetId) {
                 handleCancelEdit();
             }
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to delete vacancy.' });
+            toast.error('Failed to delete vacancy.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -169,10 +160,10 @@ const CareerManager = () => {
         try {
             if (editingId) {
                 await api.put(`/career-openings/${editingId}`, payload);
-                setAlert({ type: 'success', msg: 'Vacancy updated successfully.' });
+                toast.success('Vacancy updated successfully.');
             } else {
                 await api.post('/career-openings', payload);
-                setAlert({ type: 'success', msg: 'Vacancy added successfully.' });
+                toast.success('Vacancy added successfully.');
             }
             handleCancelEdit();
             fetchOpenings();
@@ -185,7 +176,7 @@ const CareerManager = () => {
                 const list = Object.values(validationErrors).flat().join(' ');
                 errorText = `${serverMsg} ${list}`;
             }
-            setAlert({ type: 'error', msg: errorText });
+            toast.error(errorText);
         } finally {
             setLoading(false);
         }
@@ -199,13 +190,6 @@ const CareerManager = () => {
                     <p>Manage the vacancies advertised on the Careers page. Turn them on/off dynamically.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             {/* Career settings card */}
             <form onSubmit={handleSettingsSubmit} className="admin-card" style={{ maxWidth: '700px', marginBottom: '30px' }}>
@@ -232,10 +216,12 @@ const CareerManager = () => {
             </form>
 
             <div className="admin-grid-layout">
-                {/* Form Editor Card */}
-                <div className="admin-card editor-main-card">
-                    <h3>{editingId ? 'Edit Vacancy' : 'Add New Vacancy'}</h3>
-                    <form onSubmit={handleSubmit} className="admin-form-card" style={{ padding: 0, border: 'none', background: 'none' }}>
+                {/* Form Editor Container With Background Highlight & Generous Padding */}
+                <div className="admin-card editor-main-card" style={{ background: '#ffffff', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)', borderRadius: '16px', padding: '32px' }}>
+                    <h3 style={{ margin: '0 0 24px 0', fontSize: '1.25rem', color: '#0f172a', fontWeight: 'bold', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                        {editingId ? 'Edit Vacancy' : 'Add New Vacancy'}
+                    </h3>
+                    <form onSubmit={handleSubmit} style={{ padding: 0, border: 'none', background: 'none' }}>
                         
                         <div className="form-group">
                             <label>Job Title *</label>

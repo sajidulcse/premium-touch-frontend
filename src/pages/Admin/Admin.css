@@ -39,12 +39,36 @@ html.admin-html {
     width: 260px;
     background: var(--admin-primary);
     color: #fff;
-    padding: 30px 0;
+    padding: 15px 0 10px;
     display: flex;
     flex-direction: column;
     position: fixed;
     height: 100vh;
+    box-sizing: border-box;
     z-index: 100;
+    overflow: hidden;
+}
+
+/* Custom subtle scrollbar for admin sidebar */
+.admin-sidebar::-webkit-scrollbar,
+.sidebar-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track,
+.sidebar-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb,
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background: rgba(201, 164, 92, 0.3);
+    border-radius: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover,
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: var(--admin-gold);
 }
 
 .sidebar-logo {
@@ -65,7 +89,6 @@ html.admin-html {
     list-style: none;
     padding: 0;
     margin: 0;
-    flex: 1;
 }
 
 .sidebar-menu li a {
@@ -91,8 +114,10 @@ html.admin-html {
 }
 
 .sidebar-footer {
-    padding: 20px 30px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(15, 23, 42, 0.5);
+    margin-bottom: 4px;
 }
 
 .logout-btn-sidebar {
@@ -143,25 +168,77 @@ html.admin-html {
     margin: 0;
 }
 
-/* Cards & Components */
+/* Forms & Card Grid */
+.admin-card,
+.admin-form-card,
+.editor-main-card,
+.list-sidebar-card,
+.form-group,
+.admin-input,
+.admin-select,
+.admin-textarea {
+    box-sizing: border-box !important;
+}
+
 .admin-card {
     background: var(--admin-card-bg);
     padding: 30px;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     margin-bottom: 30px;
+    width: 100%;
+    overflow: hidden;
 }
 
-/* Forms */
+.admin-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 30px;
+    align-items: start;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 1100px) {
+    .admin-grid-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
 .admin-form-card {
     background: #fff;
     padding: 40px;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-group {
     margin-bottom: 25px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-group label {
@@ -175,6 +252,8 @@ html.admin-html {
 .admin-select,
 .admin-textarea {
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 12px 15px;
     border: 1px solid var(--admin-border);
     border-radius: 10px;
@@ -189,6 +268,41 @@ html.admin-html {
     outline: none;
     border-color: var(--admin-gold);
     box-shadow: 0 0 0 4px rgba(201, 164, 92, 0.1);
+}
+
+/* Quill Editor Container */
+.quill-container {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.quill-container .ql-toolbar {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-color: var(--admin-border);
+    background: #f8fafc;
+    box-sizing: border-box;
+}
+
+.quill-container .ql-container {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-color: var(--admin-border);
+    min-height: 180px;
+    background: #fff;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+/* Hide native browser password reveal/eye icons (Edge, Chrome, IE) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input::-webkit-contacts-auto-fill-button,
+input::-webkit-credentials-auto-fill-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 .admin-btn-primary {
@@ -482,9 +596,13 @@ html.admin-html {
 /* Sidebar Submenu & Scroll */
 .sidebar-scroll {
     flex: 1;
-    overflow-y: auto;
+    min-height: 0;
+    max-height: calc(100vh - 130px);
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    overscroll-behavior-y: contain;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    scrollbar-color: rgba(201, 164, 92, 0.4) transparent;
 }
 
 .sidebar-scroll::-webkit-scrollbar {

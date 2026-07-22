@@ -3,6 +3,7 @@ import api, { BASE_URL, clearClientCache, getStorageUrl } from '../../api/axios'
 import Cropper from 'react-easy-crop';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import './Admin.css';
+import { useToast } from '../../context/ToastContext';
 
 const getCroppedImg = (imageSrc, pixelCrop) => {
     return new Promise((resolve, reject) => {
@@ -48,6 +49,7 @@ const getCroppedImg = (imageSrc, pixelCrop) => {
 };
 
 const AboutManager = () => {
+    const toast = useToast();
     const [settings, setSettings] = useState({
         about_page_description: ''
     });
@@ -55,7 +57,6 @@ const AboutManager = () => {
     const [officeImagePreview, setOfficeImagePreview] = useState(null);
     const [clearOfficeImage, setClearOfficeImage] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
 
     // Cropping states
     const [imageToCrop, setImageToCrop] = useState(null);
@@ -76,11 +77,11 @@ const AboutManager = () => {
     const fetchPhilosophies = async () => {
         try {
             const res = await api.get('/design-philosophies');
-            const sorted = res.data.sort((a, b) => a.step_number.localeCompare(b.step_number));
+            const sorted = res.data.sort((a, b) => (a.step_number || '').localeCompare(b.step_number || ''));
             setPhilosophies(sorted);
         } catch (err) {
             console.error("Failed to fetch design philosophies:", err);
-            setAlert({ type: 'error', msg: 'Failed to load design philosophies from database.' });
+            toast.error('Failed to load design philosophies from database.');
         }
     };
 
@@ -89,18 +90,23 @@ const AboutManager = () => {
         fetchPhilosophies();
     }, []);
 
+    const DEFAULT_DESCRIPTION = "We are a boutique interior and architectural design studio dedicated to creating elegant, functional, and modern spaces. Our focus is blending luxury aesthetics with daily utility to transform spaces into highly personalized sanctuaries.";
+    const DEFAULT_OFFICE_IMAGE = "/photo/about_studio.png";
+
     const fetchSettings = async () => {
         try {
             const res = await api.get('/site-info');
             const data = res.data;
             setSettings({
-                about_page_description: data.about_page_description || ''
+                about_page_description: data.about_page_description || DEFAULT_DESCRIPTION
             });
             if (data.about_page_office_image) {
-                const root = BASE_URL.replace(/\/api$/, '');
-                setOfficeImagePreview(`${root}/public/uploads/about/${data.about_page_office_image}`);
+                const imgPath = data.about_page_office_image.startsWith('uploads/') 
+                    ? data.about_page_office_image 
+                    : `uploads/about/${data.about_page_office_image}`;
+                setOfficeImagePreview(getStorageUrl(imgPath));
             } else {
-                setOfficeImagePreview(null);
+                setOfficeImagePreview(DEFAULT_OFFICE_IMAGE);
             }
             setOfficeImageFile(null);
             setClearOfficeImage(false);
@@ -114,7 +120,7 @@ const AboutManager = () => {
         if (!file) return;
 
         if (file.size > 10 * 1024 * 1024) {
-            setAlert({ type: 'error', msg: 'Image exceeds the 10MB limit.' });
+            toast.error('Image exceeds the 10MB limit.');
             return;
         }
 
@@ -123,12 +129,11 @@ const AboutManager = () => {
             setImageToCrop(reader.result);
         });
         reader.readAsDataURL(file);
-        setAlert(null);
     };
 
     const handleRemoveImage = () => {
         setOfficeImageFile(null);
-        setOfficeImagePreview(null);
+        setOfficeImagePreview(DEFAULT_OFFICE_IMAGE);
         setClearOfficeImage(true);
     };
 
@@ -149,7 +154,7 @@ const AboutManager = () => {
             setCrop({ x: 0, y: 0 });
         } catch (err) {
             console.error("Failed to crop image:", err);
-            setAlert({ type: 'error', msg: 'Failed to process image cropping.' });
+            toast.error('Failed to process image cropping.');
             setImageToCrop(null);
         }
     };
@@ -174,11 +179,11 @@ const AboutManager = () => {
         try {
             await api.post('/site-info', data);
             clearClientCache();
-            setAlert({ type: 'success', msg: 'About details updated successfully!' });
+            toast.success('About details updated successfully!');
             fetchSettings();
         } catch (err) {
             console.error("Error saving about info:", err);
-            setAlert({ type: 'error', msg: 'Failed to update about details.' });
+            toast.error('Failed to update about details.');
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
@@ -236,10 +241,10 @@ const AboutManager = () => {
         try {
             await api.delete(`/design-philosophies/${deletePhilosophyTargetId}`);
             setPhilosophies(philosophies.filter(p => p.id !== deletePhilosophyTargetId));
-            setAlert({ type: 'success', msg: 'Design philosophy removed successfully.' });
+            toast.success('Design philosophy removed successfully.');
         } catch (err) {
             console.error("Failed to delete philosophy:", err);
-            setAlert({ type: 'error', msg: 'Failed to remove design philosophy.' });
+            toast.error('Failed to remove design philosophy.');
         } finally {
             setPhilosophyConfirmOpen(false);
             setDeletePhilosophyTargetId(null);
@@ -257,7 +262,7 @@ const AboutManager = () => {
         if (editingPhilosophyIndex === null && !addingNewPhilosophy) return;
 
         if (!philosophyImageFile && !philosophyFormData.image) {
-            setAlert({ type: 'error', msg: 'Please select an image file to upload or enter an image path/URL.' });
+            toast.error('Please select an image file to upload or enter an image path/URL.');
             return;
         }
 
@@ -275,10 +280,10 @@ const AboutManager = () => {
                 submitData.append('step_number', philosophyFormData.stepNumber);
                 const res = await api.post('/design-philosophies', submitData);
                 const updated = [...philosophies, res.data.philosophy].sort((a, b) => 
-                    a.step_number.localeCompare(b.step_number)
+                    (a.step_number || '').localeCompare(b.step_number || '')
                 );
                 setPhilosophies(updated);
-                setAlert({ type: 'success', msg: 'New design philosophy added successfully.' });
+                toast.success('New design philosophy added successfully.');
             } else {
                 const targetPhi = philosophies[editingPhilosophyIndex];
                 const res = await api.post(`/design-philosophies/${targetPhi.id}`, submitData);
@@ -286,7 +291,7 @@ const AboutManager = () => {
                     idx === editingPhilosophyIndex ? res.data.philosophy : p
                 );
                 setPhilosophies(updated);
-                setAlert({ type: 'success', msg: `Design philosophy ${targetPhi.stepNumber || targetPhi.step_number} updated successfully.` });
+                toast.success(`Design philosophy ${targetPhi.stepNumber || targetPhi.step_number} updated successfully.`);
             }
 
             setEditingPhilosophyIndex(null);
@@ -297,7 +302,7 @@ const AboutManager = () => {
             if (fileInput) fileInput.value = '';
         } catch (err) {
             console.error("Failed to save design philosophy:", err);
-            setAlert({ type: 'error', msg: 'Failed to save design philosophy.' });
+            toast.error('Failed to save design philosophy.');
         } finally {
             setPhilosophyLoading(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -312,13 +317,6 @@ const AboutManager = () => {
                     <p>Configure the profile descriptions and design studio imagery displayed on the About page.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <form onSubmit={handleSubmit} className="admin-form-card" style={{ maxWidth: '800px' }}>
                 <h3>About the Studio</h3>
@@ -432,9 +430,10 @@ const AboutManager = () => {
             {/* Design Philosophy Section */}
             <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '40px 0' }} />
 
-            <div className="admin-grid-layout" style={{ marginTop: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', marginTop: '20px' }}>
+                {/* Form Card On Top (Up) */}
                 {(editingPhilosophyIndex !== null || addingNewPhilosophy) && (
-                    <div id="philosophy-editor-section" className="admin-card editor-main-card" style={{ maxWidth: '800px', marginBottom: '30px' }}>
+                    <div id="philosophy-editor-section" className="admin-card editor-main-card" style={{ width: '100%', marginBottom: '0px' }}>
                         <h3>{addingNewPhilosophy ? 'Add New Design Philosophy' : `Edit Design Philosophy Step ${philosophies[editingPhilosophyIndex]?.stepNumber || philosophies[editingPhilosophyIndex]?.step_number}`}</h3>
                         <form onSubmit={handleSubmitPhilosophy} className="admin-form-inline">
                             {addingNewPhilosophy && (
@@ -529,7 +528,8 @@ const AboutManager = () => {
                     </div>
                 )}
 
-                <div className="admin-card table-card" style={{ maxWidth: '1000px', marginTop: '20px' }}>
+                {/* Table Card On Bottom */}
+                <div className="admin-card table-card" style={{ width: '100%', marginTop: '0px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                         <h3 style={{ margin: 0 }}>Design Philosophy Steps</h3>
                         <button type="button" className="admin-btn-primary" onClick={handleAddNewPhilosophyClick}>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
+import api, { getSiteInfo, BASE_URL } from '../../api/axios';
 import './Contact.css';
 
 const Contact = () => {
@@ -17,21 +17,16 @@ const Contact = () => {
     const [loadingInfo, setLoadingInfo] = useState(true);
 
     // Form states
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        message: '',
-        // Honeypot field for bot spam prevention
-        website_spam_check: ''
-    });
-    
+    const [fields, setFields] = useState([]);
+    const [formData, setFormData] = useState({ website_spam_check: '' });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null); // 'success' or 'error'
+    const [loadingFields, setLoadingFields] = useState(true);
 
     useEffect(() => {
         fetchSiteInfo();
+        fetchActiveFields();
     }, []);
 
     useEffect(() => {
@@ -60,13 +55,28 @@ const Contact = () => {
         }
     };
 
+    const fetchActiveFields = async () => {
+        try {
+            const res = await api.get('/form-fields/active');
+            setFields(res.data);
+            const initialForm = { website_spam_check: '' };
+            res.data.forEach(field => {
+                initialForm[field.field_name] = '';
+            });
+            setFormData(initialForm);
+        } catch (err) {
+            console.error("Failed to load active form fields:", err);
+        } finally {
+            setLoadingFields(false);
+        }
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
-        // Clear error when user types
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -77,24 +87,16 @@ const Contact = () => {
 
     const validateForm = () => {
         const newErrors = {};
-        if (!formData.name.trim()) newErrors.name = 'Full name is required';
-        
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email address is required';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Please enter a valid email address';
-        }
-
-        if (!formData.phone.trim()) {
-            newErrors.phone = 'Phone number is required';
-        } else if (!/^[0-9+\s-]{8,15}$/.test(formData.phone.trim())) {
-            newErrors.phone = 'Please enter a valid phone number';
-        }
-
-        if (!formData.message.trim()) {
-            newErrors.message = 'Please share some details about your project';
-        }
-
+        fields.forEach(field => {
+            const val = String(formData[field.field_name] || '').trim();
+            if (field.is_required && !val) {
+                newErrors[field.field_name] = `${field.label} is required`;
+            } else if (field.type === 'email' && val && !/\S+@\S+\.\S+/.test(val)) {
+                newErrors[field.field_name] = 'Please enter a valid email address';
+            } else if (field.type === 'tel' && val && !/^[0-9+\s-]{8,15}$/.test(val)) {
+                newErrors[field.field_name] = 'Please enter a valid phone number';
+            }
+        });
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -102,10 +104,10 @@ const Contact = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // 1. Bot spam prevention check (Honeypot)
+        // Honeypot spam check
         if (formData.website_spam_check) {
             console.warn("Spam detected!");
-            setSubmitStatus('success'); // Silently pretend success to confuse bots
+            setSubmitStatus('success');
             return;
         }
 
@@ -115,25 +117,96 @@ const Contact = () => {
         setSubmitStatus(null);
 
         try {
-            // Since there is no dedicated contact resource in the backend API yet,
-            // we simulate a secure and fast API submission.
-            // When a backend route is ready, this can simply do: await api.post('/contact', formData)
-            await new Promise((resolve) => setTimeout(resolve, 800));
+            await api.post('/consultation-requests', {
+                ...formData,
+                source: 'contact_page'
+            });
             
             setSubmitStatus('success');
-            setFormData({
-                name: '',
-                email: '',
-                phone: '',
-                message: '',
-                website_spam_check: ''
+            const cleared = { website_spam_check: '' };
+            fields.forEach(field => {
+                cleared[field.field_name] = '';
             });
+            setFormData(cleared);
         } catch (err) {
             console.error("Error submitting contact form:", err);
             setSubmitStatus('error');
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const renderField = (field) => {
+        const hasErr = errors[field.field_name];
+        return (
+            <div className={`form-group ${hasErr ? 'has-error' : ''}`} key={field.id}>
+                <label htmlFor={`field-${field.field_name}`}>
+                    {field.label} {field.is_required && '*'}
+                </label>
+                {field.type === 'select' ? (
+                    <select
+                        id={`field-${field.field_name}`}
+                        name={field.field_name}
+                        value={formData[field.field_name] || ''}
+                        onChange={handleInputChange}
+                        required={field.is_required}
+                    >
+                        <option value="">-- Select {field.label} --</option>
+                        {field.options?.map((opt, idx) => (
+                            <option key={idx} value={opt}>{opt}</option>
+                        ))}
+                    </select>
+                ) : field.type === 'textarea' ? (
+                    <textarea
+                        id={`field-${field.field_name}`}
+                        name={field.field_name}
+                        value={formData[field.field_name] || ''}
+                        onChange={handleInputChange}
+                        placeholder={field.placeholder || ''}
+                        rows="5"
+                        required={field.is_required}
+                    ></textarea>
+                ) : (
+                    <input
+                        id={`field-${field.field_name}`}
+                        type={field.type}
+                        name={field.field_name}
+                        value={formData[field.field_name] || ''}
+                        onChange={handleInputChange}
+                        placeholder={field.placeholder || ''}
+                        required={field.is_required}
+                    />
+                )}
+                {hasErr && <span className="error-message">{hasErr}</span>}
+            </div>
+        );
+    };
+
+    const renderDynamicFields = () => {
+        const elements = [];
+        let i = 0;
+        while (i < fields.length) {
+            const field = fields[i];
+            if (field.type === 'textarea') {
+                elements.push(renderField(field));
+                i++;
+            } else {
+                const nextField = fields[i + 1];
+                if (nextField && nextField.type !== 'textarea') {
+                    elements.push(
+                        <div className="form-group-row" key={`group-${field.id}-${nextField.id}`}>
+                            {renderField(field)}
+                            {renderField(nextField)}
+                        </div>
+                    );
+                    i += 2;
+                } else {
+                    elements.push(renderField(field));
+                    i++;
+                }
+            }
+        }
+        return elements;
     };
 
     const phoneNumber = siteInfo.phone || '+880 1711-223344';
@@ -267,6 +340,11 @@ const Contact = () => {
                                     <p>Thank you for reaching out to Premium Touch. Our studio design representative will contact you within 24 hours to schedule your free consultation.</p>
                                     <button onClick={() => setSubmitStatus(null)} className="btn-success-reset">Send Another Message</button>
                                 </div>
+                            ) : loadingFields ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '200px', gap: '10px' }}>
+                                    <span className="spinner" style={{ width: '30px', height: '30px', border: '3px solid rgba(197, 160, 89, 0.1)', borderTopColor: '#c5a059', animation: 'spin 1s linear infinite', borderRadius: '50%' }}></span>
+                                    <p style={{ color: '#64748b', fontSize: '0.85rem', fontStyle: 'italic' }}>Initializing consultation form...</p>
+                                </div>
                             ) : (
                                 <form onSubmit={handleSubmit} className="luxury-form" noValidate>
                                     {/* Honeypot hidden input for anti-spam bots */}
@@ -281,69 +359,13 @@ const Contact = () => {
                                     />
 
                                     {submitStatus === 'error' && (
-                                        <div className="submit-error-alert">
+                                        <div className="submit-error-alert" style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#fef2f2', border: '1px solid #fee2e2', padding: '12px 15px', borderRadius: '8px', color: '#b91c1c', marginBottom: '20px', fontSize: '0.88rem' }}>
                                             <i className="fas fa-exclamation-circle"></i>
                                             <span>Failed to submit. Please verify details and try again.</span>
                                         </div>
                                     )}
 
-                                    <div className="form-group-row">
-                                        <div className={`form-group ${errors.name ? 'has-error' : ''}`}>
-                                            <label htmlFor="name">Full Name</label>
-                                            <input 
-                                                type="text" 
-                                                id="name"
-                                                name="name" 
-                                                value={formData.name}
-                                                onChange={handleInputChange}
-                                                placeholder="e.g. John Doe"
-                                                required
-                                            />
-                                            {errors.name && <span className="error-message">{errors.name}</span>}
-                                        </div>
-
-                                        <div className={`form-group ${errors.phone ? 'has-error' : ''}`}>
-                                            <label htmlFor="phone">Phone Number</label>
-                                            <input 
-                                                type="tel" 
-                                                id="phone"
-                                                name="phone" 
-                                                value={formData.phone}
-                                                onChange={handleInputChange}
-                                                placeholder="e.g. +880 1711000000"
-                                                required
-                                            />
-                                            {errors.phone && <span className="error-message">{errors.phone}</span>}
-                                        </div>
-                                    </div>
-
-                                    <div className={`form-group ${errors.email ? 'has-error' : ''}`}>
-                                        <label htmlFor="email">Email Address</label>
-                                        <input 
-                                            type="email" 
-                                            id="email"
-                                            name="email" 
-                                            value={formData.email}
-                                            onChange={handleInputChange}
-                                            placeholder="e.g. john@example.com"
-                                            required
-                                        />
-                                        {errors.email && <span className="error-message">{errors.email}</span>}
-                                    </div>
-
-                                    <div className={`form-group ${errors.message ? 'has-error' : ''}`}>
-                                        <label htmlFor="message">Any questions about your project?</label>
-                                        <textarea 
-                                            id="message"
-                                            name="message" 
-                                            value={formData.message}
-                                            onChange={handleInputChange}
-                                            placeholder="Ask us anything! Feel free to share a question, an idea, or describe your vision here..."
-                                            rows="5"
-                                            required
-                                        ></textarea>
-                                        {errors.message && <span className="error-message">{errors.message}</span>}
-                                    </div>
+                                    {renderDynamicFields()}
 
                                     <button 
                                         type="submit" 

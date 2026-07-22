@@ -3,14 +3,15 @@ import { useNavigate, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const ProjectManager = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
     const navigate = useNavigate();
+    const toast = useToast();
 
     useEffect(() => {
         fetchProjects();
@@ -38,10 +39,10 @@ const ProjectManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/projects/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Project archived successfully.' });
+            toast.success('Project archived successfully.');
             fetchProjects();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Failed to delete project.' });
+            toast.error('Failed to delete project.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -58,13 +59,6 @@ const ProjectManager = () => {
                     <i className="fas fa-plus"></i> New Project
                 </button>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-table-container">
                 <table className="admin-table">

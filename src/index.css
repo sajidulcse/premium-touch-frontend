@@ -11,3 +11,9 @@
 .ql-editor-content p:last-child {
     margin-bottom: 0;
 }
+
+/* Hide floating action buttons/widgets when lightbox is open */
+body.lightbox-open .estimator-fab,
+body.lightbox-open .contact-fab-container {
+    display: none !important;
+}

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const ServiceCategoryManager = () => {
+    const toast = useToast();
     const [serviceRoot, setServiceRoot] = useState(null);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ name: '', status: 1, position: 0 });
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -44,7 +45,7 @@ const ServiceCategoryManager = () => {
             setCategories(root?.children || []);
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to fetch service categories.' });
+            toast.error('Failed to fetch service categories.');
         } finally {
             setLoading(false);
         }
@@ -70,10 +71,10 @@ const ServiceCategoryManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/admin/categories/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Service category removed.' });
+            toast.success('Service category removed.');
             fetchCategories();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Failed to delete category.' });
+            toast.error('Failed to delete category.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -91,16 +92,16 @@ const ServiceCategoryManager = () => {
 
             if (editingId) {
                 await api.put(`/admin/categories/${editingId}`, dataToSubmit);
-                setAlert({ type: 'success', msg: 'Category updated successfully.' });
+                toast.success('Category updated successfully.');
             } else {
                 await api.post('/admin/categories', dataToSubmit);
-                setAlert({ type: 'success', msg: 'Service category created successfully.' });
+                toast.success('Service category created successfully.');
             }
             setEditingId(null);
             setFormData({ name: '', status: 1, position: 0 });
             fetchCategories();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Failed to save category.' });
+            toast.error('Failed to save category.');
         }
     };
 
@@ -112,13 +113,6 @@ const ServiceCategoryManager = () => {
                     <p>Manage categories used to classify your premium services.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-grid-layout">
                 <div className="admin-card editor-main-card">

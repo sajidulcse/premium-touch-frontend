@@ -5,6 +5,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 // Utility to clean HTML - removes newlines and whitespace between tags.
 const cleanHtml = (html) => {
@@ -19,6 +20,7 @@ const cleanHtml = (html) => {
 const PortfolioEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const toast = useToast();
     const [portfolio, setPortfolio] = useState({
         title: '',
         description: '',
@@ -33,7 +35,6 @@ const PortfolioEditor = () => {
     const [faqs, setFaqs] = useState([]);
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(!!id);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteImgId, setDeleteImgId] = useState(null);
 
@@ -84,7 +85,7 @@ const PortfolioEditor = () => {
             }
         } catch (err) {
             console.error("Error fetching portfolio:", err);
-            setAlert({ type: 'error', msg: 'Portfolio not found.' });
+            toast.error('Portfolio not found.');
         } finally {
             setDataLoading(false);
         }
@@ -157,10 +158,10 @@ const PortfolioEditor = () => {
         try {
             await api.delete(`/portfolios/images/${deleteImgId}`);
             setExistingImages(existingImages.filter(img => img.id !== deleteImgId));
-            setAlert({ type: 'success', msg: 'Image removed from portfolio.' });
+            toast.success('Image removed from portfolio.');
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to delete image.' });
+            toast.error('Failed to delete image.');
         } finally {
             setDeleteImgId(null);
         }
@@ -177,10 +178,10 @@ const PortfolioEditor = () => {
                 ...img,
                 is_thumbnail: img.id === imgId
             })));
-            setAlert({ type: 'success', msg: 'Thumbnail updated.' });
+            toast.success('Thumbnail updated.');
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to update thumbnail.' });
+            toast.error('Failed to update thumbnail.');
         }
     };
 
@@ -189,39 +190,39 @@ const PortfolioEditor = () => {
 
         // Required validation checks
         if (!portfolio.title || portfolio.title.trim() === '') {
-            setAlert({ type: 'error', msg: 'Portfolio Title is required.' });
+            toast.error('Portfolio Title is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         const cleanedDescription = cleanHtml(portfolio.description);
         if (!cleanedDescription || cleanedDescription === '<p><br></p>' || cleanedDescription.replace(/<[^>]*>/g, '').trim() === '') {
-            setAlert({ type: 'error', msg: 'Description is required.' });
+            toast.error('Description is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (!portfolio.sub_category_id || portfolio.sub_category_id === '') {
-            setAlert({ type: 'error', msg: 'Sub Category is required.' });
+            toast.error('Sub Category is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (childCategoryOptions.length > 0 && (!portfolio.child_category_id || portfolio.child_category_id === '')) {
-            setAlert({ type: 'error', msg: 'Child Category is required for this sub-category.' });
+            toast.error('Child Category is required for this sub-category.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (id) {
             if (existingImages.length + images.length === 0) {
-                setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
+                toast.error('At least one gallery image is required.');
                 window.scrollTo(0, 0);
                 return;
             }
         } else {
             if (images.length === 0) {
-                setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
+                toast.error('At least one gallery image is required.');
                 window.scrollTo(0, 0);
                 return;
             }
@@ -246,11 +247,11 @@ const PortfolioEditor = () => {
             if (id) {
                 formData.append('_method', 'PUT');
                 await api.post(`/portfolios/${id}`, formData);
-                setAlert({ type: 'success', msg: 'Portfolio updated successfully!' });
+                toast.success('Portfolio updated successfully!');
                 setTimeout(() => navigate('/admin/portfolios'), 1500);
             } else {
                 await api.post('/portfolios', formData);
-                setAlert({ type: 'success', msg: 'Portfolio created successfully!' });
+                toast.success('Portfolio created successfully!');
                 setTimeout(() => navigate('/admin/portfolios'), 1500);
             }
         } catch (err) {
@@ -264,7 +265,7 @@ const PortfolioEditor = () => {
                 finalMsg += ` ${details}`;
             }
 
-            setAlert({ type: 'error', msg: finalMsg });
+            toast.error(finalMsg);
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
@@ -282,13 +283,6 @@ const PortfolioEditor = () => {
                     Cancel
                 </button>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             {dataLoading ? (
                 <div className="admin-loading-screen">

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const HandoverSnapshot = () => {
+    const toast = useToast();
     const [snapshots, setSnapshots] = useState([]);
     const [formData, setFormData] = useState({ title: '', client: '', date: '', position: 0 });
     const [imageFiles, setImageFiles] = useState([]);
@@ -11,7 +13,6 @@ const HandoverSnapshot = () => {
     const [existingImageDeleted, setExistingImageDeleted] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
 
@@ -34,7 +35,7 @@ const HandoverSnapshot = () => {
             }));
         } catch (err) {
             console.error("Failed to fetch handover snapshots:", err);
-            setAlert({ type: 'error', msg: 'Failed to load snapshots from server.' });
+            toast.error('Failed to load snapshots from server.');
         } finally {
             setLoading(false);
         }
@@ -48,14 +49,13 @@ const HandoverSnapshot = () => {
         const validFiles = [];
         for (const file of files) {
             if (file.size > 10 * 1024 * 1024) {
-                setAlert({ type: 'error', msg: `Image "${file.name}" exceeds the 10MB limit.` });
+                toast.error(`Image "${file.name}" exceeds the 10MB limit.`);
                 return;
             }
             validFiles.push(file);
         }
 
         setImageFiles([...imageFiles, ...validFiles]);
-        setAlert(null); // Clear any size warning
     };
 
     const handleRemoveNewImage = (index) => {
@@ -86,11 +86,11 @@ const HandoverSnapshot = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/handover-snapshots/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Handover Snapshot deleted.' });
+            toast.success('Handover Snapshot deleted.');
             fetchSnapshots();
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to delete snapshot.' });
+            toast.error('Failed to delete snapshot.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -100,12 +100,12 @@ const HandoverSnapshot = () => {
         e.preventDefault();
 
         if (!editingId && imageFiles.length === 0) {
-            setAlert({ type: 'error', msg: 'Please select at least one image to upload.' });
+            toast.error('Please select at least one image to upload.');
             return;
         }
 
         if (editingId && existingImageDeleted && imageFiles.length === 0) {
-            setAlert({ type: 'error', msg: 'Cannot save snapshot without an image. Please upload a replacement image.' });
+            toast.error('Cannot save snapshot without an image. Please upload a replacement image.');
             return;
         }
 
@@ -131,10 +131,10 @@ const HandoverSnapshot = () => {
         try {
             if (editingId) {
                 await api.post(`/handover-snapshots/${editingId}`, submitData);
-                setAlert({ type: 'success', msg: 'Snapshot updated successfully.' });
+                toast.success('Snapshot updated successfully.');
             } else {
                 await api.post('/handover-snapshots', submitData);
-                setAlert({ type: 'success', msg: imageFiles.length > 1 ? 'Snapshots added successfully.' : 'Snapshot added successfully.' });
+                toast.success(imageFiles.length > 1 ? 'Snapshots added successfully.' : 'Snapshot added successfully.');
             }
             // Clear form
             setEditingId(null);
@@ -153,7 +153,7 @@ const HandoverSnapshot = () => {
                 const list = Object.values(validationErrors).flat().join(' ');
                 errorText = `${serverMsg} ${list}`;
             }
-            setAlert({ type: 'error', msg: errorText });
+            toast.error(errorText);
         } finally {
             setLoading(false);
         }
@@ -167,13 +167,6 @@ const HandoverSnapshot = () => {
                     <p>Manage and upload photos of completed project handovers.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-grid-layout">
                 <div className="admin-card editor-main-card">

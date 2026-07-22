@@ -5,6 +5,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 // Utility to clean HTML - removes newlines and whitespace between tags.
 const cleanHtml = (html) => {
@@ -20,6 +21,7 @@ const ProjectEditor = () => {
     const { slug } = useParams();
     const id = slug;
     const navigate = useNavigate();
+    const toast = useToast();
     const [project, setProject] = useState({
         title: '',
         description: '',
@@ -38,7 +40,6 @@ const ProjectEditor = () => {
     const [existingImages, setExistingImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(!!id);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteImgId, setDeleteImgId] = useState(null);
 
@@ -91,7 +92,7 @@ const ProjectEditor = () => {
             }
         } catch (err) {
             console.error("Error fetching project:", err);
-            setAlert({ type: 'error', msg: 'Project not found.' });
+            toast.error('Project not found.');
         } finally {
             setDataLoading(false);
         }
@@ -129,10 +130,7 @@ const ProjectEditor = () => {
         const oversizedFiles = selectedFiles.filter(file => file.size > maxSize);
         
         if (oversizedFiles.length > 0) {
-            setAlert({ 
-                type: 'error', 
-                msg: `Failed to add images: ${oversizedFiles.map(f => f.name).join(', ')} exceed the 10MB size limit.` 
-            });
+            toast.error(`Failed to add images: ${oversizedFiles.map(f => f.name).join(', ')} exceed the 10MB size limit.`);
             window.scrollTo(0, 0);
             return;
         }
@@ -155,10 +153,10 @@ const ProjectEditor = () => {
         try {
             await api.delete(`/projects/images/${deleteImgId}`);
             setExistingImages(existingImages.filter(img => img.id !== deleteImgId));
-            setAlert({ type: 'success', msg: 'Image removed from project.' });
+            toast.success('Image removed from project.');
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to delete image.' });
+            toast.error('Failed to delete image.');
         } finally {
             setDeleteImgId(null);
         }
@@ -175,10 +173,10 @@ const ProjectEditor = () => {
                 ...img,
                 is_thumbnail: img.id === imgId
             })));
-            setAlert({ type: 'success', msg: 'Thumbnail updated.' });
+            toast.success('Thumbnail updated.');
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to update thumbnail.' });
+            toast.error('Failed to update thumbnail.');
         }
     };
 
@@ -187,63 +185,63 @@ const ProjectEditor = () => {
 
         // Required validation checks
         if (!project.title || project.title.trim() === '') {
-            setAlert({ type: 'error', msg: 'Project Title is required.' });
+            toast.error('Project Title is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         const cleanedDescription = cleanHtml(project.description);
         if (!cleanedDescription || cleanedDescription === '<p><br></p>' || cleanedDescription.replace(/<[^>]*>/g, '').trim() === '') {
-            setAlert({ type: 'error', msg: 'Description is required.' });
+            toast.error('Description is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (!project.sub_category_id || project.sub_category_id === '') {
-            setAlert({ type: 'error', msg: 'Sub Category is required.' });
+            toast.error('Sub Category is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (childCategoryOptions.length > 0 && (!project.child_category_id || project.child_category_id === '')) {
-            setAlert({ type: 'error', msg: 'Child Category is required for this sub-category.' });
+            toast.error('Child Category is required for this sub-category.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (!project.location || project.location.trim() === '') {
-            setAlert({ type: 'error', msg: 'Location is required.' });
+            toast.error('Location is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (!project.client_name || project.client_name.trim() === '') {
-            setAlert({ type: 'error', msg: 'Client Name is required.' });
+            toast.error('Client Name is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (!project.completion_date || project.completion_date === '') {
-            setAlert({ type: 'error', msg: 'Completion Date is required.' });
+            toast.error('Completion Date is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (!project.duration || project.duration.trim() === '') {
-            setAlert({ type: 'error', msg: 'Duration is required.' });
+            toast.error('Duration is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         if (!project.floor_area || project.floor_area.trim() === '') {
-            setAlert({ type: 'error', msg: 'Floor Area is required.' });
+            toast.error('Floor Area is required.');
             window.scrollTo(0, 0);
             return;
         }
 
         const totalImages = existingImages.length + images.length;
         if (totalImages === 0) {
-            setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
+            toast.error('At least one gallery image is required.');
             window.scrollTo(0, 0);
             return;
         }
@@ -268,11 +266,11 @@ const ProjectEditor = () => {
             if (id) {
                 formData.append('_method', 'PUT');
                 await api.post(`/projects/${id}`, formData);
-                setAlert({ type: 'success', msg: 'Project updated successfully!' });
+                toast.success('Project updated successfully!');
                 setTimeout(() => navigate('/admin/projects'), 1500);
             } else {
                 await api.post('/projects', formData);
-                setAlert({ type: 'success', msg: 'Project created successfully!' });
+                toast.success('Project created successfully!');
                 setTimeout(() => navigate('/admin/projects'), 1500);
             }
         } catch (err) {
@@ -286,7 +284,7 @@ const ProjectEditor = () => {
                 finalMsg += ` ${details}`;
             }
 
-            setAlert({ type: 'error', msg: finalMsg });
+            toast.error(finalMsg);
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
@@ -304,13 +302,6 @@ const ProjectEditor = () => {
                     Cancel
                 </button>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             {dataLoading ? (
                 <div className="admin-loading-screen">

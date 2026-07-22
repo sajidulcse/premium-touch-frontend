@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import api, { getStorageUrl } from '../../api/axios';
+import { useToast } from '../../context/ToastContext';
 
 const HeroSetup = () => {
+    const toast = useToast();
     const [slides, setSlides] = useState([]);
     const [formData, setFormData] = useState({ subtitle: '', title: '', desc: '', image: '' });
     const [imageFile, setImageFile] = useState(null);
     const [editingId, setEditingId] = useState(null);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
 
@@ -19,7 +20,7 @@ const HeroSetup = () => {
                 setSlides(res.data);
             } catch (err) {
                 console.error("Failed to fetch slides:", err);
-                setAlert({ type: 'error', msg: 'Failed to load slides from database.' });
+                toast.error('Failed to load slides from database.');
             }
         };
         fetchSlides();
@@ -48,10 +49,10 @@ const HeroSetup = () => {
         try {
             await api.delete(`/home-hero-slides/${deleteTargetId}`);
             setSlides(slides.filter(s => s.id !== deleteTargetId));
-            setAlert({ type: 'success', msg: 'Hero slide removed successfully.' });
+            toast.success('Hero slide removed successfully.');
         } catch (err) {
             console.error("Failed to delete slide:", err);
-            setAlert({ type: 'error', msg: 'Failed to remove hero slide.' });
+            toast.error('Failed to remove hero slide.');
         } finally {
             setConfirmOpen(false);
             setDeleteTargetId(null);
@@ -65,7 +66,7 @@ const HeroSetup = () => {
         e.preventDefault();
 
         if (!imageFile && !formData.image) {
-            setAlert({ type: 'error', msg: 'Please select an image file to upload or enter an image URL.' });
+            toast.error('Please select an image file to upload or enter an image URL.');
             return;
         }
 
@@ -82,11 +83,11 @@ const HeroSetup = () => {
             if (editingId) {
                 const res = await api.post(`/home-hero-slides/${editingId}`, submitData);
                 setSlides(slides.map(s => s.id === editingId ? res.data.slide : s));
-                setAlert({ type: 'success', msg: 'Hero slide updated successfully.' });
+                toast.success('Hero slide updated successfully.');
             } else {
                 const res = await api.post('/home-hero-slides', submitData);
                 setSlides([...slides, res.data.slide]);
-                setAlert({ type: 'success', msg: 'New hero slide added.' });
+                toast.success('New hero slide added.');
             }
             setFormData({ subtitle: '', title: '', desc: '', image: '' });
             setImageFile(null);
@@ -95,7 +96,7 @@ const HeroSetup = () => {
             setEditingId(null);
         } catch (err) {
             console.error("Failed to save slide:", err);
-            setAlert({ type: 'error', msg: 'Failed to save hero slide.' });
+            toast.error('Failed to save hero slide.');
         }
     };
 
@@ -107,13 +108,6 @@ const HeroSetup = () => {
                     <p>Manage home page hero banner slides, imagery, and overlay text content.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-card editor-main-card">
                     <h3>{editingId ? 'Edit Hero Slide' : 'Add New Hero Slide'}</h3>

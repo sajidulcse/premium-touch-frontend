@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import api, { getStorageUrl } from '../../api/axios';
+import { useToast } from '../../context/ToastContext';
 
 const ReviewsSetup = () => {
+    const toast = useToast();
     const [reviews, setReviews] = useState([]);
     const [formData, setFormData] = useState({ quote: '', author: '', location: '', image: '' });
     const [imageFile, setImageFile] = useState(null);
     const [editingId, setEditingId] = useState(null);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
 
@@ -19,7 +20,7 @@ const ReviewsSetup = () => {
                 setReviews(res.data);
             } catch (err) {
                 console.error("Failed to fetch reviews:", err);
-                setAlert({ type: 'error', msg: 'Failed to load reviews from database.' });
+                toast.error('Failed to load reviews from database.');
             }
         };
         fetchReviews();
@@ -48,10 +49,10 @@ const ReviewsSetup = () => {
         try {
             await api.delete(`/client-reviews/${deleteTargetId}`);
             setReviews(reviews.filter(r => r.id !== deleteTargetId));
-            setAlert({ type: 'success', msg: 'Client review removed successfully.' });
+            toast.success('Client review removed successfully.');
         } catch (err) {
             console.error("Failed to delete review:", err);
-            setAlert({ type: 'error', msg: 'Failed to delete client review.' });
+            toast.error('Failed to delete client review.');
         } finally {
             setConfirmOpen(false);
             setDeleteTargetId(null);
@@ -79,11 +80,11 @@ const ReviewsSetup = () => {
             if (editingId) {
                 const res = await api.post(`/client-reviews/${editingId}`, submitData);
                 setReviews(reviews.map(r => r.id === editingId ? res.data.review : r));
-                setAlert({ type: 'success', msg: 'Client review updated successfully.' });
+                toast.success('Client review updated successfully.');
             } else {
                 const res = await api.post('/client-reviews', submitData);
                 setReviews([...reviews, res.data.review]);
-                setAlert({ type: 'success', msg: 'New client review added.' });
+                toast.success('New client review added.');
             }
             setFormData({ quote: '', author: '', location: '', image: '' });
             setImageFile(null);
@@ -92,7 +93,7 @@ const ReviewsSetup = () => {
             setEditingId(null);
         } catch (err) {
             console.error("Failed to save client review:", err);
-            setAlert({ type: 'error', msg: 'Failed to save client review.' });
+            toast.error('Failed to save client review.');
         }
     };
 
@@ -104,13 +105,6 @@ const ReviewsSetup = () => {
                     <p>Manage testimonials, quotes, client names, and project locations shown on the home page slider.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-card editor-main-card">
                     <h3>{editingId ? 'Edit Client Review' : 'Add New Client Review'}</h3>

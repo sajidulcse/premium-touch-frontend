@@ -3,14 +3,15 @@ import { useNavigate, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const PortfolioManager = () => {
     const [portfolios, setPortfolios] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
     const navigate = useNavigate();
+    const toast = useToast();
 
     useEffect(() => {
         fetchPortfolios();
@@ -38,10 +39,10 @@ const PortfolioManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/portfolios/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Portfolio archived successfully.' });
+            toast.success('Portfolio archived successfully.');
             fetchPortfolios();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Failed to delete portfolio.' });
+            toast.error('Failed to delete portfolio.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -58,13 +59,6 @@ const PortfolioManager = () => {
                     <i className="fas fa-plus"></i> New Portfolio
                 </button>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-table-container">
                 <table className="admin-table">
