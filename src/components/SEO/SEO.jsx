@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { getSiteInfo, BASE_URL } from '../../api/axios';
 
 const DEFAULT_SITE_TITLE = 'Premium Touch Interior Decor Studio';
 const DEFAULT_DESCRIPTION = 'Premium Touch is a premier luxury interior design & decor studio. We craft bespoke residential and commercial spaces with exceptional elegance, modern craftsmanship, and tailored luxury.';
@@ -16,11 +17,29 @@ const SEO = ({
   description = DEFAULT_DESCRIPTION,
   keywords = DEFAULT_KEYWORDS,
   canonical,
-  ogImage = DEFAULT_OG_IMAGE,
+  ogImage,
   ogType = 'website',
   noindex = false,
   jsonLd = null,
 }) => {
+  const [dynamicOgImage, setDynamicOgImage] = useState(ogImage || DEFAULT_OG_IMAGE);
+
+  useEffect(() => {
+    if (!ogImage) {
+      getSiteInfo().then(data => {
+        if (data?.og_image) {
+          const root = BASE_URL.replace('/api', '');
+          const url = data.og_image.startsWith('http') 
+            ? data.og_image 
+            : `${root}/public/uploads/logo/${data.og_image}`;
+          setDynamicOgImage(url);
+        }
+      }).catch(() => {});
+    } else {
+      setDynamicOgImage(ogImage);
+    }
+  }, [ogImage]);
+
   const pageTitle = title 
     ? `${title} | ${DEFAULT_SITE_TITLE}` 
     : `${DEFAULT_SITE_TITLE} | Luxury Interior Design & Architecture Studio`;
@@ -29,9 +48,10 @@ const SEO = ({
     ? (canonical.startsWith('http') ? canonical : `${DEFAULT_SITE_URL}${canonical}`)
     : (typeof window !== 'undefined' ? window.location.href : DEFAULT_SITE_URL);
 
-  const fullOgImage = ogImage.startsWith('http') 
-    ? ogImage 
-    : `${DEFAULT_SITE_URL}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;
+  const activeOgImage = dynamicOgImage || DEFAULT_OG_IMAGE;
+  const fullOgImage = activeOgImage.startsWith('http') 
+    ? activeOgImage 
+    : `${DEFAULT_SITE_URL}${activeOgImage.startsWith('/') ? '' : '/'}${activeOgImage}`;
 
   const jsonLdArray = Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [];
 
