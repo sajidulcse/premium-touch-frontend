@@ -1,33 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
+import api from '../../api/axios';
 
 const VideoGallery = () => {
+    const toast = useToast();
     const [videos, setVideos] = useState([]);
     const [formData, setFormData] = useState({ title: '', url: '', description: '', position: 1 });
     const [editingId, setEditingId] = useState(null);
     const [activeVideo, setActiveVideo] = useState(null);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
-
-    // Initial mock data if empty
-    const defaultVideos = [
-        {
-            id: 'vid-1',
-            title: 'Modern Living Room Walkthrough',
-            url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            description: 'A cinematic look into our recently completed duplex living area in Gulshan.',
-            position: 1
-        },
-        {
-            id: 'vid-2',
-            title: 'Premium Penthouse Interior Tour',
-            url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-            description: 'Showcasing the custom lighting designs and marble selections.',
-            position: 2
-        }
-    ];
+    const [loading, setLoading] = useState(false);
 
     const calculateNextPosition = (videoList) => {
         if (!videoList || videoList.length === 0) return 1;
@@ -35,29 +20,41 @@ const VideoGallery = () => {
         return Math.max(...positions) + 1;
     };
 
-    const resetForm = (videoList) => {
+    const fetchVideos = async () => {
+        try {
+            setLoading(true);
+            let res;
+            try {
+                res = await api.get('/admin/videos');
+            } catch (e) {
+                res = await api.get('/videos');
+            }
+            const data = Array.isArray(res.data) ? res.data : (res.data.data || []);
+            setVideos(data);
+            const nextPos = calculateNextPosition(data);
+            if (!editingId) {
+                setFormData(prev => ({ ...prev, position: nextPos }));
+            }
+        } catch (err) {
+            console.error('Failed to fetch videos:', err);
+            toast.error('Failed to load video gallery.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchVideos();
+    }, []);
+
+    const resetForm = (videoList = videos) => {
         const nextPos = calculateNextPosition(videoList);
         setFormData({ title: '', url: '', description: '', position: nextPos });
         setEditingId(null);
     };
 
-    useEffect(() => {
-        const saved = localStorage.getItem('premium_touch_videos');
-        let currentVideos = [];
-        if (saved) {
-            currentVideos = JSON.parse(saved);
-        } else {
-            localStorage.setItem('premium_touch_videos', JSON.stringify(defaultVideos));
-            currentVideos = defaultVideos;
-        }
-        setVideos(currentVideos);
-        
-        // Auto set initial position
-        const nextPos = calculateNextPosition(currentVideos);
-        setFormData(prev => ({ ...prev, position: nextPos }));
-    }, []);
-
     const getEmbedUrlAndThumbnail = (url) => {
+        if (!url) return { embedUrl: '', thumbnailUrl: '' };
         let embedUrl = '';
         let thumbnailUrl = '';
         
@@ -78,18 +75,13 @@ const VideoGallery = () => {
         return { embedUrl, thumbnailUrl };
     };
 
-    const saveToLocalStorage = (updatedList) => {
-        localStorage.setItem('premium_touch_videos', JSON.stringify(updatedList));
-        setVideos(updatedList);
-    };
-
     const handleEdit = (vid) => {
         setEditingId(vid.id);
         setFormData({
-            title: vid.title,
-            url: vid.url,
+            title: vid.title || '',
+            url: vid.url || '',
             description: vid.description || '',
-            position: vid.position || 0
+            position: vid.position || 1
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -99,40 +91,56 @@ const VideoGallery = () => {
         setConfirmOpen(true);
     };
 
-    const handleConfirmDelete = () => {
-        const filtered = videos.filter(v => v.id !== deleteTargetId);
-        saveToLocalStorage(filtered);
-        setConfirmOpen(false);
-        setDeleteTargetId(null);
-        setAlert({ type: 'success', msg: 'Video removed from gallery.' });
-        resetForm(filtered);
+    const handleConfirmDelete = async () => {
+        if (!deleteTargetId) return;
+        try {
+            try {
+                await api.delete(`/admin/videos/${deleteTargetId}`);
+            } catch (e) {
+                await api.delete(`/videos/${deleteTargetId}`);
+            }
+            toast.success('Video removed from gallery.');
+            setConfirmOpen(false);
+            setDeleteTargetId(null);
+            fetchVideos();
+            resetForm();
+        } catch (err) {
+            console.error('Delete video error:', err);
+            toast.error(err.response?.data?.message || 'Failed to delete video.');
+        }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
         const { embedUrl } = getEmbedUrlAndThumbnail(formData.url);
         if (!embedUrl) {
-            setAlert({ type: 'error', msg: 'Please provide a valid YouTube or Vimeo URL.' });
+            toast.error('Please provide a valid YouTube or Vimeo URL.');
             return;
         }
 
-        let updated = [];
-        if (editingId) {
-            updated = videos.map(v => v.id === editingId ? { ...v, ...formData } : v);
-            saveToLocalStorage(updated);
-            setAlert({ type: 'success', msg: 'Video link updated successfully.' });
-        } else {
-            const newVideo = {
-                id: `vid-${Date.now()}`,
-                ...formData
-            };
-            updated = [...videos, newVideo];
-            saveToLocalStorage(updated);
-            setAlert({ type: 'success', msg: 'New video added to gallery.' });
+        try {
+            if (editingId) {
+                try {
+                    await api.post(`/admin/videos/${editingId}`, formData);
+                } catch (e) {
+                    await api.post(`/videos/${editingId}`, formData);
+                }
+                toast.success('Video link updated successfully.');
+            } else {
+                try {
+                    await api.post('/admin/videos', formData);
+                } catch (e) {
+                    await api.post('/videos', formData);
+                }
+                toast.success('New video added to gallery.');
+            }
+            fetchVideos();
+            resetForm();
+        } catch (err) {
+            console.error('Save video error:', err);
+            toast.error(err.response?.data?.message || 'Failed to save video.');
         }
-
-        resetForm(updated);
     };
 
     return (
@@ -143,13 +151,6 @@ const VideoGallery = () => {
                     <p>Manage walkthrough and design tour video assets.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-grid-layout">
                 <div className="admin-card editor-main-card">
@@ -223,40 +224,46 @@ const VideoGallery = () => {
 
                 <div className="admin-card" style={{ marginTop: '30px', padding: '25px' }}>
                     <h3>Active Videos</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                        {videos.map((vid) => {
-                            const { thumbnailUrl, embedUrl } = getEmbedUrlAndThumbnail(vid.url);
-                            return (
-                                <div key={vid.id} style={{ borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>
-                                    <div style={{ position: 'relative', height: '160px', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => setActiveVideo(embedUrl)}>
-                                        {thumbnailUrl ? (
-                                            <img src={thumbnailUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
-                                        ) : (
-                                            <div style={{ color: '#fff' }}><i className="fas fa-video fa-2x"></i></div>
-                                        )}
-                                        <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.6)', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                                            <i className="fas fa-play" style={{ marginLeft: '4px' }}></i>
+                    {loading ? (
+                        <p style={{ color: '#64748b', fontStyle: 'italic', marginTop: '15px' }}>Loading videos...</p>
+                    ) : videos.length === 0 ? (
+                        <p style={{ color: '#94a3b8', fontStyle: 'italic', marginTop: '15px' }}>No videos found in gallery.</p>
+                    ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                            {videos.map((vid) => {
+                                const { thumbnailUrl, embedUrl } = getEmbedUrlAndThumbnail(vid.url);
+                                return (
+                                    <div key={vid.id} style={{ borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>
+                                        <div style={{ position: 'relative', height: '160px', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => setActiveVideo(embedUrl)}>
+                                            {thumbnailUrl ? (
+                                                <img src={thumbnailUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
+                                            ) : (
+                                                <div style={{ color: '#fff' }}><i className="fas fa-video fa-2x"></i></div>
+                                            )}
+                                            <div style={{ position: 'absolute', background: 'rgba(0,0,0,0.6)', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                                                <i className="fas fa-play" style={{ marginLeft: '4px' }}></i>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div style={{ padding: '15px' }}>
-                                        <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#0f172a', fontWeight: 'bold' }}>{vid.title}</h4>
-                                        <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#64748b', minHeight: '36px' }}>{vid.description}</p>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Order: {vid.position}</span>
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                <button onClick={() => handleEdit(vid)} className="action-btn edit-btn" style={{ padding: '6px 10px', fontSize: '12px' }}>
-                                                    <i className="fas fa-edit"></i>
-                                                </button>
-                                                <button onClick={() => handleDeleteClick(vid.id)} className="action-btn delete-btn" style={{ padding: '6px 10px', fontSize: '12px' }}>
-                                                    <i className="fas fa-trash-alt"></i>
-                                                </button>
+                                        <div style={{ padding: '15px' }}>
+                                            <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', color: '#0f172a', fontWeight: 'bold' }}>{vid.title}</h4>
+                                            <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#64748b', minHeight: '36px' }}>{vid.description}</p>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '11px', color: '#94a3b8' }}>Order: {vid.position}</span>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button onClick={() => handleEdit(vid)} className="action-btn edit-btn" style={{ padding: '6px 10px', fontSize: '12px' }}>
+                                                        <i className="fas fa-edit"></i>
+                                                    </button>
+                                                    <button onClick={() => handleDeleteClick(vid.id)} className="action-btn delete-btn" style={{ padding: '6px 10px', fontSize: '12px' }}>
+                                                        <i className="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 

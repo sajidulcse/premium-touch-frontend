@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import api, { BASE_URL } from '../../api/axios';
+import { useAuth } from '../../context/AuthContext';
 import './Admin.css';
 
 const AdminLayout = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const admin = JSON.parse(localStorage.getItem('admin'));
+    const { user: authUser, logout } = useAuth();
+    const admin = authUser || JSON.parse(localStorage.getItem('admin') || sessionStorage.getItem('admin') || 'null');
 
     // Blog submenu toggle
     const [blogMenuOpen, setBlogMenuOpen] = useState(
@@ -36,7 +38,17 @@ const AdminLayout = ({ children }) => {
     const [homeMenuOpen, setHomeMenuOpen] = useState(
         location.pathname.includes('/admin/home')
     );
+    // Cost Estimator submenu toggle
+    const [estimatorMenuOpen, setEstimatorMenuOpen] = useState(
+        location.pathname.includes('/admin/estimator')
+    );
+
+    // System settings submenu toggle
+    const [systemMenuOpen, setSystemMenuOpen] = useState(
+        location.pathname.includes('/admin/users') || location.pathname.includes('/admin/roles') || location.pathname.includes('/admin/system-settings')
+    );
     const [siteInfo, setSiteInfo] = useState({ site_name: 'Premium Touch', logo: '' });
+
 
     useEffect(() => {
         const fetchSiteInfo = async () => {
@@ -58,8 +70,8 @@ const AdminLayout = ({ children }) => {
         return () => document.body.classList.remove('admin-body');
     }, [admin, navigate, location]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('admin');
+    const handleLogout = async () => {
+        await logout();
         navigate('/admin-login');
     };
 
@@ -94,6 +106,62 @@ const AdminLayout = ({ children }) => {
                                 <i className="fas fa-chart-line"></i>
                                 <span>Dashboard</span>
                             </NavLink>
+                        </li>
+
+                        <li>
+                            <NavLink to="/admin/consultations" className={({ isActive }) => isActive ? 'active' : ''}>
+                                <i className="fas fa-handshake"></i>
+                                <span>Consultation Leads</span>
+                            </NavLink>
+                        </li>
+
+                        <li className={`has-submenu ${estimatorMenuOpen ? 'open' : ''}`}>
+                            <div className="menu-item-toggle" onClick={() => setEstimatorMenuOpen(!estimatorMenuOpen)}>
+                                <i className="fas fa-calculator"></i>
+                                <span>Cost Estimator</span>
+                                <i className={`fas fa-chevron-${estimatorMenuOpen ? 'up' : 'down'} arrow`}></i>
+                            </div>
+
+                            {estimatorMenuOpen && (
+                                <ul className="submenu-list">
+                                    <li>
+                                        <NavLink to="/admin/estimator/leads" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-clipboard-list"></i>
+                                            <span>Estimator Leads</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/estimator/packages" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-cubes"></i>
+                                            <span>Packages</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/estimator/rooms" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-door-open"></i>
+                                            <span>Rooms</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/estimator/addons" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-puzzle-piece"></i>
+                                            <span>Add-ons</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/estimator/settings" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-file-pdf"></i>
+                                            <span>PDF & Settings</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/estimator/reports" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-chart-bar"></i>
+                                            <span>Analytics & Reports</span>
+                                        </NavLink>
+                                    </li>
+                                </ul>
+                            )}
                         </li>
 
                         <li className={`has-submenu ${projectMenuOpen ? 'open' : ''}`}>
@@ -346,7 +414,89 @@ const AdminLayout = ({ children }) => {
                             )}
                         </li>
 
-                        <li className="menu-divider">System</li>
+                        <li className="menu-divider">System & Security</li>
+
+                        <li className={`has-submenu ${systemMenuOpen ? 'open' : ''}`}>
+                            <div className="menu-item-toggle" onClick={() => setSystemMenuOpen(!systemMenuOpen)}>
+                                <i className="fas fa-shield-alt"></i>
+                                <span>System & Security</span>
+                                <i className={`fas fa-chevron-${systemMenuOpen ? 'up' : 'down'} arrow`}></i>
+                            </div>
+
+                            {systemMenuOpen && (
+                                <ul className="submenu-list">
+                                    <li>
+                                        <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-users-cog"></i>
+                                            <span>User Management</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink to="/admin/roles" className={({ isActive }) => isActive ? 'active' : ''}>
+                                            <i className="fas fa-user-shield"></i>
+                                            <span>Role & Permissions</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink 
+                                            to="/admin/system-settings?tab=smtp" 
+                                            className={() => {
+                                                const tab = new URLSearchParams(location.search).get('tab');
+                                                return location.pathname === '/admin/system-settings' && (tab === 'smtp' || !tab) ? 'active' : '';
+                                            }}
+                                        >
+                                            <i className="fas fa-envelope-open-text"></i>
+                                            <span>SMTP Configurations</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink 
+                                            to="/admin/system-settings?tab=sms" 
+                                            className={() => location.pathname === '/admin/system-settings' && new URLSearchParams(location.search).get('tab') === 'sms' ? 'active' : ''}
+                                        >
+                                            <i className="fas fa-sms"></i>
+                                            <span>SMS Gateway</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink 
+                                            to="/admin/system-settings?tab=audit" 
+                                            className={() => location.pathname === '/admin/system-settings' && new URLSearchParams(location.search).get('tab') === 'audit' ? 'active' : ''}
+                                        >
+                                            <i className="fas fa-history"></i>
+                                            <span>Login Activities</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink 
+                                            to="/admin/system-settings?tab=activity" 
+                                            className={() => location.pathname === '/admin/system-settings' && new URLSearchParams(location.search).get('tab') === 'activity' ? 'active' : ''}
+                                        >
+                                            <i className="fas fa-clipboard-list"></i>
+                                            <span>Activity Logs</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink 
+                                            to="/admin/system-settings?tab=security" 
+                                            className={() => location.pathname === '/admin/system-settings' && new URLSearchParams(location.search).get('tab') === 'security' ? 'active' : ''}
+                                        >
+                                            <i className="fas fa-shield-alt"></i>
+                                            <span>Security Insights</span>
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink 
+                                            to="/admin/system-settings?tab=marketing" 
+                                            className={() => location.pathname === '/admin/system-settings' && new URLSearchParams(location.search).get('tab') === 'marketing' ? 'active' : ''}
+                                        >
+                                            <i className="fas fa-chart-line"></i>
+                                            <span>Marketing & Analytics</span>
+                                        </NavLink>
+                                    </li>
+                                </ul>
+                            )}
+                        </li>
 
                         <li>
                             <NavLink to="/" className="">
@@ -354,6 +504,7 @@ const AdminLayout = ({ children }) => {
                                 <span>View Site</span>
                             </NavLink>
                         </li>
+
                     </ul>
                 </div>
 
@@ -361,10 +512,6 @@ const AdminLayout = ({ children }) => {
                     <button onClick={handleLogout} className="logout-btn-sidebar">
                         <i className="fas fa-sign-out-alt"></i> Logout
                     </button>
-                    <div className="admin-status">
-                        <span className="dot online"></span>
-                        {admin?.name}
-                    </div>
                 </div>
             </aside>
 

@@ -7,10 +7,20 @@ export const getStorageUrl = (path) => {
     if (path.startsWith('http')) return path;
     if (path.startsWith('/photo/') || path.startsWith('photo/')) return path;
 
-    // Use current BASE_URL to derive the public storage path
-    // For your setup: http://localhost/premium_touch/premium-touch-backend/public/storage/
     const root = BASE_URL.replace(/\/api$/, '');
-    const cleanPath = path.replace(/^\//, '');
+    let cleanPath = path.replace(/^\//, '');
+
+    if (cleanPath.startsWith('public/')) {
+        cleanPath = cleanPath.replace(/^public\//, '');
+    }
+
+    if (cleanPath.startsWith('uploads/')) {
+        return `${root}/public/${cleanPath}`;
+    }
+
+    if (cleanPath.startsWith('storage/')) {
+        return `${root}/public/${cleanPath}`;
+    }
 
     return `${root}/public/storage/${cleanPath}`;
 };
@@ -66,15 +76,32 @@ export const clearClientCache = () => {
     sessionStorage.removeItem('premium_touch_footer');
 };
 
-// Add interceptor to include admin token/ID if stored
+// Add interceptor to include Sanctum Bearer Token
 api.interceptors.request.use(config => {
-    const admin = localStorage.getItem('admin');
-    if (admin) {
-        // Since we are using a simplified session (localstorage), 
-        // we can add a custom header if the backend checks it.
-        // For now, we'll just keep it simple.
+    const token = localStorage.getItem('admin_token') || sessionStorage.getItem('admin_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 });
+
+// Add interceptor to handle 401 Unauthorized and redirect for admin panel requests
+api.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('admin');
+            localStorage.removeItem('admin_token');
+            sessionStorage.removeItem('admin');
+            sessionStorage.removeItem('admin_token');
+            // Only redirect if navigating an admin page
+            if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin-login') {
+                window.location.href = '/admin-login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 
 export default api;

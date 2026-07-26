@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 
 // Scroll to Top on route change helper
@@ -36,6 +36,8 @@ import Navbar from './components/Navbar/Navbar'
 import StatsAndCTA from './components/StatsAndCTA/StatsAndCTA'
 import ContactCTA from "./components/ContactCTA/ContactCTA";
 import Footer from "./components/Footer/Footer";
+import ContactFAB from './components/ContactFAB/ContactFAB';
+import EstimatorFAB from './components/EstimatorFAB/EstimatorFAB';
 import BlogList from './pages/Blog/BlogList';
 import BlogDetail from './pages/Blog/BlogDetail';
 import CategoryBlogList from './pages/Blog/CategoryBlogList';
@@ -86,12 +88,44 @@ import HeroSetup from './pages/Admin/HeroSetup';
 import IdentitySetup from './pages/Admin/IdentitySetup';
 import ProcessSetup from './pages/Admin/ProcessSetup';
 import ReviewsSetup from './pages/Admin/ReviewsSetup';
+import ConsultationManager from './pages/Admin/ConsultationManager';
+import FormManager from './pages/Admin/FormManager';
+
+// Estimator Components
+import EstimatorPage from './pages/Estimator/EstimatorPage';
+import EstimatorPackages from './pages/Admin/Estimator/EstimatorPackages';
+import EstimatorRooms from './pages/Admin/Estimator/EstimatorRooms';
+import EstimatorAddons from './pages/Admin/Estimator/EstimatorAddons';
+import EstimatorLeads from './pages/Admin/Estimator/EstimatorLeads';
+import EstimatorSettings from './pages/Admin/Estimator/EstimatorSettings';
+import EstimatorReports from './pages/Admin/Estimator/EstimatorReports';
+
+import UserManager from './pages/Admin/UserManager';
+import RoleManager from './pages/Admin/RoleManager';
+import SystemSettings from './pages/Admin/SystemSettings';
+import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
+import NotFound from './pages/NotFound/NotFound';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { initAnalytics } from './analytics/analyticsService';
+import useAnalyticsTracker from './analytics/useAnalyticsTracker';
+import ConsultationModal from './components/ConsultationModal/ConsultationModal';
+import { ToastProvider } from './context/ToastContext';
 
 const AppContent = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.includes('/admin');
+  const [isConsultationOpen, setIsConsultationOpen] = useState(false);
+
+  // Activate SPA Analytics Page View Tracking
+  useAnalyticsTracker();
+
+  useEffect(() => {
+    const handleOpen = () => setIsConsultationOpen(true);
+    window.addEventListener('open-consultation', handleOpen);
+    return () => window.removeEventListener('open-consultation', handleOpen);
+  }, []);
 
   return (
     <>
@@ -138,57 +172,115 @@ const AppContent = () => {
             <Route path=":subCategorySlug" element={<AboutOverview />} />
           </Route>
           
+          {/* Public Cost Estimator Route (placed before catch-all slug) */}
+          <Route path="/estimator" element={<EstimatorPage />} />
+          
           {/* Default catch-all for dynamic root categories */}
           <Route path="/:categorySlug" element={<ProjectList />} />
 
           {/* Admin Routes with Layout */}
           <Route path="/admin-login" element={<Login />} />
-          <Route path="/admin/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />
-          <Route path="/admin/blogs" element={<AdminLayout><BlogManager /></AdminLayout>} />
-          <Route path="/admin/blogs/new" element={<AdminLayout><BlogEditor /></AdminLayout>} />
-          <Route path="/admin/blogs/edit/:id" element={<AdminLayout><BlogEditor /></AdminLayout>} />
-          <Route path="/admin/blog-categories" element={<AdminLayout><BlogCategoryManager /></AdminLayout>} />
-          <Route path="/admin/comments" element={<AdminLayout><CommentManager /></AdminLayout>} />
-          <Route path="/admin/projects" element={<AdminLayout><ProjectManager /></AdminLayout>} />
-          <Route path="/admin/projects/new" element={<AdminLayout><ProjectEditor /></AdminLayout>} />
-          <Route path="/admin/projects/edit/:slug" element={<AdminLayout><ProjectEditor /></AdminLayout>} />
-          <Route path="/admin/project-categories" element={<AdminLayout><ProjectCategoryManager /></AdminLayout>} />
-          <Route path="/admin/portfolios" element={<AdminLayout><PortfolioManager /></AdminLayout>} />
-          <Route path="/admin/portfolios/new" element={<AdminLayout><PortfolioEditor /></AdminLayout>} />
-          <Route path="/admin/portfolios/edit/:id" element={<AdminLayout><PortfolioEditor /></AdminLayout>} />
-          <Route path="/admin/portfolio-categories" element={<AdminLayout><PortfolioCategoryManager /></AdminLayout>} />
-          <Route path="/admin/categories" element={<AdminLayout><CategoryManager /></AdminLayout>} />
-          <Route path="/admin/services" element={<AdminLayout><ServiceManager /></AdminLayout>} />
-          <Route path="/admin/services/new" element={<AdminLayout><ServiceEditor /></AdminLayout>} />
-          <Route path="/admin/services/edit/:id" element={<AdminLayout><ServiceEditor /></AdminLayout>} />
-          <Route path="/admin/service-categories" element={<AdminLayout><ServiceCategoryManager /></AdminLayout>} />
-          <Route path="/admin/gallery/photos" element={<AdminLayout><PhotoGallery /></AdminLayout>} />
-          <Route path="/admin/gallery/videos" element={<AdminLayout><VideoGallery /></AdminLayout>} />
-          <Route path="/admin/gallery/handover" element={<AdminLayout><HandoverSnapshot /></AdminLayout>} />
-          <Route path="/admin/about" element={<AdminLayout><AboutManager /></AdminLayout>} />
-          <Route path="/admin/about/overview" element={<AdminLayout><AboutManager /></AdminLayout>} />
-          <Route path="/admin/about/team" element={<AdminLayout><TeamManager /></AdminLayout>} />
-          <Route path="/admin/about/career" element={<AdminLayout><CareerManager /></AdminLayout>} />
-          <Route path="/admin/profile" element={<AdminLayout><Profile /></AdminLayout>} />
-          <Route path="/admin/settings" element={<AdminLayout><SettingsManager /></AdminLayout>} />
-          <Route path="/admin/home/hero" element={<AdminLayout><HeroSetup /></AdminLayout>} />
-          <Route path="/admin/home/identity" element={<AdminLayout><IdentitySetup /></AdminLayout>} />
-          <Route path="/admin/home/process" element={<AdminLayout><ProcessSetup /></AdminLayout>} />
-          <Route path="/admin/home/reviews" element={<AdminLayout><ReviewsSetup /></AdminLayout>} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute permission="dashboard.view"><AdminLayout><Dashboard /></AdminLayout></ProtectedRoute>} />
+          
+          {/* Estimator Admin Routes */}
+          <Route path="/admin/estimator/packages" element={<ProtectedRoute permission="estimator.settings.manage"><AdminLayout><EstimatorPackages /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/estimator/rooms" element={<ProtectedRoute permission="estimator.settings.manage"><AdminLayout><EstimatorRooms /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/estimator/addons" element={<ProtectedRoute permission="estimator.settings.manage"><AdminLayout><EstimatorAddons /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/estimator/leads" element={<ProtectedRoute permission="estimator.leads.view"><AdminLayout><EstimatorLeads /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/estimator/settings" element={<ProtectedRoute permission="estimator.settings.manage"><AdminLayout><EstimatorSettings /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/estimator/reports" element={<ProtectedRoute permission="estimator.leads.view"><AdminLayout><EstimatorReports /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/blogs" element={<ProtectedRoute permission="blogs.view"><AdminLayout><BlogManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blogs/new" element={<ProtectedRoute permission="blogs.create"><AdminLayout><BlogEditor /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blogs/edit/:id" element={<ProtectedRoute permission="blogs.edit"><AdminLayout><BlogEditor /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/blog-categories" element={<ProtectedRoute permission="blog_categories.view"><AdminLayout><BlogCategoryManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/comments" element={<ProtectedRoute permission="comments.view"><AdminLayout><CommentManager /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/projects" element={<ProtectedRoute permission="projects.view"><AdminLayout><ProjectManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/projects/new" element={<ProtectedRoute permission="projects.create"><AdminLayout><ProjectEditor /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/projects/edit/:slug" element={<ProtectedRoute permission="projects.edit"><AdminLayout><ProjectEditor /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/project-categories" element={<ProtectedRoute permission="categories.view"><AdminLayout><ProjectCategoryManager /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/portfolios" element={<ProtectedRoute permission="portfolios.view"><AdminLayout><PortfolioManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/portfolios/new" element={<ProtectedRoute permission="portfolios.create"><AdminLayout><PortfolioEditor /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/portfolios/edit/:id" element={<ProtectedRoute permission="portfolios.edit"><AdminLayout><PortfolioEditor /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/portfolio-categories" element={<ProtectedRoute permission="categories.view"><AdminLayout><PortfolioCategoryManager /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/categories" element={<ProtectedRoute permission="categories.view"><AdminLayout><CategoryManager /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/services" element={<ProtectedRoute permission="services.view"><AdminLayout><ServiceManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/services/new" element={<ProtectedRoute permission="services.create"><AdminLayout><ServiceEditor /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/services/edit/:id" element={<ProtectedRoute permission="services.edit"><AdminLayout><ServiceEditor /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/service-categories" element={<ProtectedRoute permission="categories.view"><AdminLayout><ServiceCategoryManager /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/gallery/photos" element={<ProtectedRoute permission="gallery.view"><AdminLayout><PhotoGallery /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/gallery/videos" element={<ProtectedRoute permission="gallery.view"><AdminLayout><VideoGallery /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/gallery/handover" element={<ProtectedRoute permission="gallery.view"><AdminLayout><HandoverSnapshot /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/about" element={<ProtectedRoute permission="settings.edit"><AdminLayout><AboutManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/about/overview" element={<ProtectedRoute permission="settings.edit"><AdminLayout><AboutManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/about/team" element={<ProtectedRoute permission="team.view"><AdminLayout><TeamManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/about/career" element={<ProtectedRoute permission="careers.view"><AdminLayout><CareerManager /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/profile" element={<ProtectedRoute><AdminLayout><Profile /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute permission="settings.view"><AdminLayout><SettingsManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/system-settings" element={<ProtectedRoute permission="settings.view"><AdminLayout><SystemSettings /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/home/hero" element={<ProtectedRoute permission="homepage.manage"><AdminLayout><HeroSetup /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/home/identity" element={<ProtectedRoute permission="homepage.manage"><AdminLayout><IdentitySetup /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/home/process" element={<ProtectedRoute permission="homepage.manage"><AdminLayout><ProcessSetup /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/home/reviews" element={<ProtectedRoute permission="homepage.manage"><AdminLayout><ReviewsSetup /></AdminLayout></ProtectedRoute>} />
+          
+          <Route path="/admin/consultations" element={<ProtectedRoute permission="consultations.view"><AdminLayout><ConsultationManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/form-fields" element={<ProtectedRoute permission="form_fields.manage"><AdminLayout><FormManager /></AdminLayout></ProtectedRoute>} />
+          
+          {/* User & Role Management (Super Admin only) */}
+          <Route path="/admin/users" element={<ProtectedRoute permission="users.view"><AdminLayout><UserManager /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/roles" element={<ProtectedRoute permission="roles.view"><AdminLayout><RoleManager /></AdminLayout></ProtectedRoute>} />
+          
+          {/* Wildcard 404 Fallback Route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {!isAdminRoute && <StatsAndCTA />}
       {!isAdminRoute && <ContactCTA />}
       {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <ContactFAB />}
+      {!isAdminRoute && <EstimatorFAB />}
+      <ConsultationModal isOpen={isConsultationOpen} onClose={() => setIsConsultationOpen(false)} />
     </>
   );
 };
 
 const App = () => {
+  useEffect(() => {
+    // Fetch site info from backend which now includes dynamic analytics config from DB
+    const bootstrap = async () => {
+      try {
+        const { getSiteInfo } = await import('./api/axios');
+        const siteData = await getSiteInfo();
+        // Pass dynamic config from DB to analytics initializer
+        initAnalytics({
+          analytics_enabled: siteData?.analytics_enabled,
+          gtm_id: siteData?.gtm_id,
+          meta_pixel_id: siteData?.meta_pixel_id
+        });
+      } catch {
+        // Fallback: initialize using .env values if API fails
+        initAnalytics();
+      }
+    };
+    bootstrap();
+  }, []);
+
   return (
     <Router>
-      <ScrollToTop />
-      <AppContent />
+      <AuthProvider>
+        <ToastProvider>
+          <ScrollToTop />
+          <AppContent />
+        </ToastProvider>
+      </AuthProvider>
     </Router>
   )
 }

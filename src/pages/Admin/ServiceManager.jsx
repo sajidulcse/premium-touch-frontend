@@ -3,13 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 const ServiceManager = () => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
     const navigate = useNavigate();
+    const toast = useToast();
 
     useEffect(() => {
         fetchServices();
@@ -37,10 +38,10 @@ const ServiceManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/services/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Service archived successfully.' });
+            toast.success('Service archived successfully.');
             fetchServices();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Failed to delete service.' });
+            toast.error('Failed to delete service.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -57,13 +58,6 @@ const ServiceManager = () => {
                     <i className="fas fa-plus"></i> New Service
                 </button>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-table-container">
                 <table className="admin-table">

@@ -154,7 +154,16 @@ const StatsAndCTA = () => {
                         <h2>Ready to Build Your Dream Space?</h2>
                         <p>Let's collaborate to bring signature craftsmanship, luxury details, and state-of-the-art aesthetics to your property.</p>
                         <div className="gl-cta-buttons">
-                            <Link to="/contact#contact-form" className="gl-cta-btn-primary">START A PROJECT</Link>
+                            <a 
+                                href="#start-project"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    window.dispatchEvent(new Event('open-consultation'));
+                                }}
+                                className="gl-cta-btn-primary"
+                            >
+                                START A PROJECT
+                            </a>
                             <Link to="/portfolio" className="gl-cta-btn-secondary">EXPLORE WORKS</Link>
                         </div>
                     </div>

@@ -5,6 +5,8 @@ import 'react-quill/dist/quill.snow.css';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 
 // Utility to clean HTML - removes newlines and whitespace between tags.
 const cleanHtml = (html) => {
@@ -19,11 +21,14 @@ const cleanHtml = (html) => {
 const BlogEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const toast = useToast();
+    const { user } = useAuth();
+
     const [blog, setBlog] = useState({
         title: '',
         content: '',
         status: 'published',
-        author: 'Admin',
+        author: user?.name || 'Admin',
         blog_category_id: ''
     });
     const [categories, setCategories] = useState([]);
@@ -31,7 +36,6 @@ const BlogEditor = () => {
     const [existingImages, setExistingImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(!!id); // Separate state for data fetching
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmConfig, setConfirmConfig] = useState({ title: '', message: '', type: 'danger', confirmText: 'Delete', onConfirm: () => {} });
     const quillRef = React.useRef(null);
@@ -42,6 +46,18 @@ const BlogEditor = () => {
             fetchBlogDetail();
         }
     }, [id]);
+
+    // Auto-fill author name from logged in admin user
+    useEffect(() => {
+        if (user?.name) {
+            setBlog(prev => {
+                if (!id || !prev.author || prev.author === 'Admin') {
+                    return { ...prev, author: user.name };
+                }
+                return prev;
+            });
+        }
+    }, [user, id]);
 
     const fetchCategories = async () => {
         try {
@@ -58,19 +74,19 @@ const BlogEditor = () => {
             const res = await api.get(`/admin-blogs/${id}`);
             const currentBlog = res.data;
             if (currentBlog) {
-                // Set the main blog data
+                // Set the main blog data, defaulting author to logged in admin if author is generic/Admin
                 setBlog({
                     title: currentBlog.title || '',
                     content: cleanHtml(currentBlog.content || ''),
                     status: currentBlog.status || 'published',
-                    author: currentBlog.author || 'Admin',
+                    author: (currentBlog.author && currentBlog.author !== 'Admin') ? currentBlog.author : (user?.name || currentBlog.author || 'Admin'),
                     blog_category_id: currentBlog.blog_category_id ? currentBlog.blog_category_id.toString() : ''
                 });
                 setExistingImages(currentBlog.images || []);
             }
         } catch (err) {
             console.error("Error fetching blog:", err);
-            setAlert({ type: 'error', msg: 'Failed to find this story in our archives.' });
+            toast.error('Failed to find this story in our archives.');
         } finally {
             setDataLoading(false);
         }
@@ -81,7 +97,7 @@ const BlogEditor = () => {
         if (!dataLoading && blog.blog_category_id && categories.length > 0) {
             const catExists = categories.some(c => c.id.toString() === blog.blog_category_id);
             if (catExists) {
-                // Force triggering a re-render for the select if needed, though React should handle it
+                // Force triggering a re-render for the select if needed
             }
         }
     }, [dataLoading, categories, blog.blog_category_id]);
@@ -183,10 +199,7 @@ const BlogEditor = () => {
         const oversizedFiles = selectedFiles.filter(file => file.size > maxSize);
         
         if (oversizedFiles.length > 0) {
-            setAlert({ 
-                type: 'error', 
-                msg: `Failed to add images: ${oversizedFiles.map(f => f.name).join(', ')} exceed the 10MB size limit.` 
-            });
+            toast.error(`Failed to add images: ${oversizedFiles.map(f => f.name).join(', ')} exceed the 10MB size limit.`);
             window.scrollTo(0, 0);
             return;
         }
@@ -214,10 +227,10 @@ const BlogEditor = () => {
         try {
             await api.delete(`/blogs/images/${imgId}`);
             setExistingImages(existingImages.filter(img => img.id !== imgId));
-            setAlert({ type: 'success', msg: 'Image removed from gallery.' });
+            toast.success('Image removed from gallery.');
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to delete image.' });
+            toast.error('Failed to delete image.');
         }
     };
 
@@ -237,11 +250,11 @@ const BlogEditor = () => {
             if (id) {
                 formData.append('_method', 'PUT');
                 await api.post(`/blogs/${id}`, formData);
-                setAlert({ type: 'success', msg: 'Blog updated successfully!' });
+                toast.success('Blog updated successfully!');
                 setTimeout(() => navigate('/admin/blogs'), 1500);
             } else {
                 await api.post('/blogs', formData);
-                setAlert({ type: 'success', msg: 'Blog created successfully!' });
+                toast.success('Blog created successfully!');
                 setTimeout(() => navigate('/admin/blogs'), 1500);
             }
         } catch (err) {
@@ -253,7 +266,7 @@ const BlogEditor = () => {
             if (validationErrors) {
                 finalMsg = Object.values(validationErrors).flat().join(' ');
             }
-            setAlert({ type: 'error', msg: finalMsg });
+            toast.error(finalMsg);
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
@@ -290,13 +303,6 @@ const BlogEditor = () => {
                     Cancel & Return
                 </button>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             {dataLoading ? (
                 <div className="admin-loading-screen">
@@ -399,7 +405,8 @@ const BlogEditor = () => {
                                 type="text"
                                 className="admin-input"
                                 value={blog.author}
-                                onChange={(e) => setBlog({ ...blog, author: e.target.value })}
+                                disabled
+                                style={{ background: 'rgba(255, 255, 255, 0.03)', cursor: 'not-allowed', color: '#94a3b8' }}
                             />
                         </div>
 

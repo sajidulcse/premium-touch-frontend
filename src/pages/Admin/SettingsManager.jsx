@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api, { BASE_URL, clearClientCache } from '../../api/axios';
 import './Admin.css';
+import { useToast } from '../../context/ToastContext';
 
 const SettingsManager = () => {
+    const toast = useToast();
     const [settings, setSettings] = useState({
         site_name: '',
         tagline: '',
@@ -34,7 +36,6 @@ const SettingsManager = () => {
     const [ctaBg, setCtaBg] = useState(null);
     const [ctaBgPreview, setCtaBgPreview] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
 
     // Dynamic root for uploads (matches Navbar.jsx logic)
     const getUploadUrl = (type, filename) => {
@@ -115,7 +116,7 @@ const SettingsManager = () => {
         try {
             await api.post('/site-info', data);
             clearClientCache();
-            setAlert({ type: 'success', msg: 'Global settings updated successfully!' });
+            toast.success('Global settings updated successfully!');
             // Clear local file state after success but keep previews until refresh
             setLogo(null);
             setHeaderBg(null);
@@ -123,7 +124,7 @@ const SettingsManager = () => {
             fetchSettings();
         } catch (err) {
             console.error("Error saving settings:", err);
-            setAlert({ type: 'error', msg: 'Failed to update settings.' });
+            toast.error('Failed to update settings.');
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
@@ -138,13 +139,6 @@ const SettingsManager = () => {
                     <p>Manage global branding, contact details, and technical integrations.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <form onSubmit={handleSubmit} className="admin-form-card">
                 <div className="settings-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>

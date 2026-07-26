@@ -3,6 +3,7 @@ import api, { getStorageUrl } from '../../api/axios';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import Cropper from 'react-easy-crop';
 import './Admin.css';
+import { useToast } from '../../context/ToastContext';
 
 const getCroppedImg = (imageSrc, pixelCrop) => {
     return new Promise((resolve, reject) => {
@@ -48,6 +49,7 @@ const getCroppedImg = (imageSrc, pixelCrop) => {
 };
 
 const TeamManager = () => {
+    const toast = useToast();
     const [members, setMembers] = useState([]);
     const [formData, setFormData] = useState({
         name: '',
@@ -67,7 +69,6 @@ const TeamManager = () => {
     const [editingId, setEditingId] = useState(null);
     const [clearImage, setClearImage] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
 
@@ -96,7 +97,7 @@ const TeamManager = () => {
             }));
         } catch (err) {
             console.error("Failed to fetch team members:", err);
-            setAlert({ type: 'error', msg: 'Failed to load team members from server.' });
+            toast.error('Failed to load team members from server.');
         } finally {
             setLoading(false);
         }
@@ -107,7 +108,7 @@ const TeamManager = () => {
         if (!file) return;
 
         if (file.size > 10 * 1024 * 1024) {
-            setAlert({ type: 'error', msg: 'Image exceeds the 10MB limit.' });
+            toast.error('Image exceeds the 10MB limit.');
             return;
         }
 
@@ -116,7 +117,6 @@ const TeamManager = () => {
             setImageToCrop(reader.result);
         });
         reader.readAsDataURL(file);
-        setAlert(null);
     };
 
     const handleRemoveImage = () => {
@@ -144,7 +144,7 @@ const TeamManager = () => {
             setCrop({ x: 0, y: 0 });
         } catch (err) {
             console.error("Failed to crop image:", err);
-            setAlert({ type: 'error', msg: 'Failed to process image cropping.' });
+            toast.error('Failed to process image cropping.');
             setImageToCrop(null);
         }
     };
@@ -186,14 +186,14 @@ const TeamManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/team-members/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Team member deleted successfully.' });
+            toast.success('Team member deleted successfully.');
             fetchMembers();
             if (editingId === deleteTargetId) {
                 handleCancelEdit();
             }
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to delete team member.' });
+            toast.error('Failed to delete team member.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -247,10 +247,10 @@ const TeamManager = () => {
         try {
             if (editingId) {
                 await api.post(`/team-members/${editingId}`, submitData);
-                setAlert({ type: 'success', msg: 'Team member updated successfully.' });
+                toast.success('Team member updated successfully.');
             } else {
                 await api.post('/team-members', submitData);
-                setAlert({ type: 'success', msg: 'Team member added successfully.' });
+                toast.success('Team member added successfully.');
             }
             handleCancelEdit();
             fetchMembers();
@@ -263,7 +263,7 @@ const TeamManager = () => {
                 const list = Object.values(validationErrors).flat().join(' ');
                 errorText = `${serverMsg} ${list}`;
             }
-            setAlert({ type: 'error', msg: errorText });
+            toast.error(errorText);
         } finally {
             setLoading(false);
         }
@@ -277,13 +277,6 @@ const TeamManager = () => {
                     <p>Manage the profile cards for Executive Leadership and the Design Studio Collaborators.</p>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-grid-layout">
                 {/* Form Editor Card */}

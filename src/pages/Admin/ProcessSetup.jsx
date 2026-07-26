@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 import api, { getStorageUrl } from '../../api/axios';
+import { useToast } from '../../context/ToastContext';
 
 const ProcessSetup = () => {
+    const toast = useToast();
     const [steps, setSteps] = useState([]);
     const [formData, setFormData] = useState({ stepNumber: '', title: '', image: '', description: '' });
     const [imageFile, setImageFile] = useState(null);
     const [editingIndex, setEditingIndex] = useState(null);
     const [addingNew, setAddingNew] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
 
@@ -21,7 +22,7 @@ const ProcessSetup = () => {
             setSteps(sorted);
         } catch (err) {
             console.error("Failed to fetch process steps:", err);
-            setAlert({ type: 'error', msg: 'Failed to load process steps from database.' });
+            toast.error('Failed to load process steps from database.');
         }
     };
 
@@ -68,10 +69,10 @@ const ProcessSetup = () => {
         try {
             await api.delete(`/process-steps/${deleteTargetId}`);
             setSteps(steps.filter(s => s.id !== deleteTargetId));
-            setAlert({ type: 'success', msg: 'Process step removed successfully.' });
+            toast.success('Process step removed successfully.');
         } catch (err) {
             console.error("Failed to delete step:", err);
-            setAlert({ type: 'error', msg: 'Failed to remove process step.' });
+            toast.error('Failed to remove process step.');
         } finally {
             setConfirmOpen(false);
             setDeleteTargetId(null);
@@ -88,7 +89,7 @@ const ProcessSetup = () => {
         if (editingIndex === null && !addingNew) return;
 
         if (!imageFile && !formData.image) {
-            setAlert({ type: 'error', msg: 'Please select an image file to upload or enter an image path/URL.' });
+            toast.error('Please select an image file to upload or enter an image path/URL.');
             return;
         }
 
@@ -108,7 +109,7 @@ const ProcessSetup = () => {
                     a.step_number.localeCompare(b.step_number)
                 );
                 setSteps(newSteps);
-                setAlert({ type: 'success', msg: 'New creative process step added.' });
+                toast.success('New creative process step added.');
             } else {
                 const targetStep = steps[editingIndex];
                 const res = await api.post(`/process-steps/${targetStep.id}`, submitData);
@@ -116,7 +117,7 @@ const ProcessSetup = () => {
                     idx === editingIndex ? res.data.step : s
                 );
                 setSteps(updated);
-                setAlert({ type: 'success', msg: `Process step ${targetStep.stepNumber} updated successfully.` });
+                toast.success(`Process step ${targetStep.stepNumber} updated successfully.`);
             }
 
             setEditingIndex(null);
@@ -127,7 +128,7 @@ const ProcessSetup = () => {
             if (fileInput) fileInput.value = '';
         } catch (err) {
             console.error("Failed to save process step:", err);
-            setAlert({ type: 'error', msg: 'Failed to save process step.' });
+            toast.error('Failed to save process step.');
         }
     };
 
@@ -144,13 +145,6 @@ const ProcessSetup = () => {
                     </button>
                 </div>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             <div className="admin-grid-layout">
                 {(editingIndex !== null || addingNew) && (

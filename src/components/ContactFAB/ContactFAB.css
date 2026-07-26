@@ -1,0 +1,228 @@
+/* Contact Floating Action Button (FAB) */
+.contact-fab-container {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Trigger Button */
+.contact-fab-trigger {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #E85D25; /* Accent Orange */
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 30px rgba(232, 93, 37, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+.contact-fab-trigger:hover {
+    transform: scale(1.05) translateY(-2px);
+    background-color: #cf4f1d;
+    box-shadow: 0 12px 35px rgba(232, 93, 37, 0.55);
+}
+
+.contact-fab-trigger:active {
+    transform: scale(0.95);
+}
+
+.trigger-icon-wrap {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trigger-icon-open,
+.trigger-icon-close {
+    position: absolute;
+    font-size: 24px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Toggle Open/Close Icons */
+.contact-fab-container.active .trigger-icon-open {
+    opacity: 0;
+    transform: rotate(90deg) scale(0);
+}
+
+.contact-fab-container:not(.active) .trigger-icon-close {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0);
+}
+
+.contact-fab-container.active .trigger-icon-close {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+}
+
+.contact-fab-container:not(.active) .trigger-icon-open {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+}
+
+/* Pulse Notification Dot */
+.trigger-notification-dot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background-color: #10b981; /* Emerald green */
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: pulseNotify 2s infinite;
+}
+
+@keyframes pulseNotify {
+    0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+/* Options Container */
+.contact-fab-options {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    pointer-events: none;
+    margin-bottom: 5px;
+}
+
+.contact-fab-container.active .contact-fab-options {
+    pointer-events: auto;
+}
+
+/* Option Buttons */
+.fab-option-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    position: relative;
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.3s ease;
+}
+
+.contact-fab-container.active .fab-option-btn {
+    opacity: 1;
+}
+
+/* Option Button Specific Colors */
+.whatsapp-btn {
+    background-color: #25D366;
+}
+.whatsapp-btn:hover {
+    background-color: #20ba5a;
+}
+
+.messenger-btn {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+}
+.messenger-btn:hover {
+    background: linear-gradient(135deg, #00b4e6, #0060d6);
+}
+
+.phone-btn {
+    background-color: #E85D25;
+}
+.phone-btn:hover {
+    background-color: #cf4f1d;
+}
+
+.email-btn {
+    background-color: #64748b;
+}
+.email-btn:hover {
+    background-color: #475569;
+}
+
+.fab-option-btn i {
+    font-size: 20px;
+}
+
+/* Floating Tooltip Labels */
+.fab-option-label {
+    position: absolute;
+    right: 65px;
+    background-color: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fab-option-btn:hover .fab-option-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .contact-fab-container {
+        right: 20px;
+        bottom: 20px;
+        gap: 10px;
+    }
+    
+    .contact-fab-trigger {
+        width: 52px;
+        height: 52px;
+    }
+    
+    .fab-option-btn {
+        width: 42px;
+        height: 42px;
+    }
+    
+    .fab-option-btn i {
+        font-size: 18px;
+    }
+    
+    .fab-option-label {
+        right: 55px;
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}

@@ -3,14 +3,15 @@ import { useNavigate, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const BlogManager = () => {
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
     const navigate = useNavigate();
+    const toast = useToast();
 
     useEffect(() => {
         fetchBlogs();
@@ -36,14 +37,18 @@ const BlogManager = () => {
     const handleConfirmDelete = async () => {
         setConfirmOpen(false);
         if (!deleteTargetId) return;
+        const targetId = deleteTargetId;
+        setDeleteTargetId(null);
+
+        // Instant Optimistic UI Update: Remove blog immediately without page reload or spinner
+        setBlogs(prev => prev.filter(b => b.id !== targetId));
+        toast.success('Story removed from archives.');
+
         try {
-            await api.delete(`/blogs/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Story removed from archives.' });
-            fetchBlogs();
+            await api.delete(`/blogs/${targetId}`);
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Could not delete.' });
-        } finally {
-            setDeleteTargetId(null);
+            toast.error('Could not delete.');
+            fetchBlogs(); // Rollback on error
         }
     };
 
@@ -59,12 +64,7 @@ const BlogManager = () => {
                 </button>
             </div>
 
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
+
 
             <div className="admin-table-container">
                 <table className="admin-table">
@@ -95,12 +95,12 @@ const BlogManager = () => {
                                             )}
                                         </div>
                                     </td>
-                                    <td>
+                                    <td className="blog-title-cell">
                                         <Link to={`/admin/blogs/edit/${blog.id}`} className="table-title-link">
                                             <strong>{blog.title}</strong>
                                         </Link>
                                         <div className="table-small-info">
-                                            {new Date(blog.created_at).toLocaleDateString()} • By {blog.author}
+                                            {new Date(blog.created_at).toLocaleDateString()} &bull; {blog.author}
                                         </div>
                                     </td>
                                     <td>

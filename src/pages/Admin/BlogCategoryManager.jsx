@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 const BlogCategoryManager = () => {
+    const toast = useToast();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [newCat, setNewCat] = useState({ name: '' });
     const [editing, setEditing] = useState(null);
-    const [alert, setAlert] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTargetId, setDeleteTargetId] = useState(null);
 
@@ -32,16 +33,16 @@ const BlogCategoryManager = () => {
         try {
             if (editing) {
                 await api.put(`/blog-categories/${editing.id}`, newCat);
-                setAlert({ type: 'success', msg: 'Category updated!' });
+                toast.success('Category updated!');
             } else {
                 await api.post('/blog-categories', newCat);
-                setAlert({ type: 'success', msg: 'Category created!' });
+                toast.success('Category created!');
             }
             setNewCat({ name: '' });
             setEditing(null);
             fetchCategories();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Operation failed.' });
+            toast.error('Operation failed.');
         }
     };
 
@@ -55,10 +56,10 @@ const BlogCategoryManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/blog-categories/${deleteTargetId}`);
-            setAlert({ type: 'success', msg: 'Category removed.' });
+            toast.success('Category removed.');
             fetchCategories();
         } catch (err) {
-            setAlert({ type: 'error', msg: 'Delete failed.' });
+            toast.error('Delete failed.');
         } finally {
             setDeleteTargetId(null);
         }
@@ -73,41 +74,41 @@ const BlogCategoryManager = () => {
                 </div>
             </div>
 
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
-
-            <div className="admin-content-split">
-                <form onSubmit={handleSubmit} className="admin-form-card" style={{ flex: 1 }}>
+            <div className="admin-grid-layout">
+                <div className="admin-card editor-main-card">
                     <h3>{editing ? 'Edit Category' : 'Create New Category'}</h3>
-                    <div className="form-group">
-                        <label>Category Name</label>
-                        <input
-                            type="text"
-                            className="admin-input"
-                            placeholder="e.g. Duplex House Design"
-                            value={newCat.name}
-                            onChange={(e) => setNewCat({ name: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <div className="form-actions">
-                        <button type="submit" className="admin-btn-primary">
-                            {editing ? 'Update Category' : 'Save Category'}
-                        </button>
-                        {editing && (
-                            <button type="button" className="admin-btn-secondary" onClick={() => { setEditing(null); setNewCat({ name: '' }); }}>
-                                Cancel
+                    <form onSubmit={handleSubmit} className="admin-form-inline">
+                        <div className="form-group">
+                            <label>Category Name</label>
+                            <input
+                                type="text"
+                                className="admin-input"
+                                placeholder="e.g. Duplex House Design"
+                                value={newCat.name}
+                                onChange={(e) => setNewCat({ name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="form-actions">
+                            <button type="submit" className="admin-btn-primary">
+                                {editing ? 'Update Category' : 'Save Category'}
                             </button>
-                        )}
-                    </div>
-                </form>
+                            {editing && (
+                                <button
+                                    type="button"
+                                    className="admin-btn-secondary"
+                                    onClick={() => { setEditing(null); setNewCat({ name: '' }); }}
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </div>
 
-                <div className="admin-table-card" style={{ flex: 2 }}>
-                    <table>
+                <div className="admin-card admin-table-container" style={{ marginTop: '30px' }}>
+                    <h3>Blog Categories</h3>
+                    <table className="admin-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -117,29 +118,47 @@ const BlogCategoryManager = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {categories.map(cat => (
-                                <tr key={cat.id}>
-                                    <td><strong>{cat.name}</strong></td>
-                                    <td><code>{cat.slug}</code></td>
-                                    <td><span className="count-badge">{cat.blogs_count}</span></td>
-                                    <td>
-                                        <div className="table-actions">
-                                            <button className="action-btn edit" onClick={() => { setEditing(cat); setNewCat({ name: cat.name }); }}>
-                                                <i className="fas fa-edit"></i>
-                                            </button>
-                                            <button className="action-btn delete" onClick={() => handleDeleteClick(cat.id)}>
-                                                <i className="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                            {loading ? (
+                                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px' }}>Loading categories...</td></tr>
+                            ) : categories.length === 0 ? (
+                                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px' }}>No categories found. Add your first one!</td></tr>
+                            ) : (
+                                categories.map(cat => (
+                                    <tr key={cat.id}>
+                                        <td>
+                                            <div className="cat-name-cell">
+                                                <strong>{cat.name}</strong>
+                                            </div>
+                                        </td>
+                                        <td><code>{cat.slug}</code></td>
+                                        <td>{cat.blogs_count ?? 0}</td>
+                                        <td>
+                                            <div className="action-row">
+                                                <button
+                                                    className="action-btn edit-btn"
+                                                    title="Edit"
+                                                    onClick={() => { setEditing(cat); setNewCat({ name: cat.name }); }}
+                                                >
+                                                    <i className="fas fa-edit"></i>
+                                                </button>
+                                                <button
+                                                    className="action-btn delete-btn"
+                                                    title="Delete"
+                                                    onClick={() => handleDeleteClick(cat.id)}
+                                                >
+                                                    <i className="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <ConfirmModal 
+            <ConfirmModal
                 isOpen={confirmOpen}
                 title="Delete Blog Category"
                 message="Are you sure you want to delete this blog category?"

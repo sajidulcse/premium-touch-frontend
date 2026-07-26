@@ -29,7 +29,10 @@ const AboutOverview = () => {
             <section className="about-story-section">
                 <div className="story-image-box">
                     <img 
-                        src={settings?.about_page_office_image ? `${BASE_URL.replace(/\/api$/, '')}/public/uploads/about/${settings.about_page_office_image}` : "/photo/about_studio.png"} 
+                        src={settings?.about_page_office_image 
+                            ? getStorageUrl(settings.about_page_office_image.startsWith('uploads/') ? settings.about_page_office_image : `uploads/about/${settings.about_page_office_image}`) 
+                            : "/photo/about_studio.png"
+                        } 
                         alt="Design Studio Showroom" 
                         className="story-img"
                         loading="eager"

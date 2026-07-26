@@ -50,17 +50,11 @@ const VideoGalleryPublic = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // Fetch videos from localStorage (populated via admin)
-                const saved = localStorage.getItem('premium_touch_videos');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    if (parsed.length > 0) {
-                        setVideos(parsed.sort((a, b) => (a.position || 0) - (b.position || 0)));
-                    } else {
-                        setVideos(defaultVideos);
-                    }
+                const res = await api.get('/videos');
+                const data = Array.isArray(res.data) ? res.data : (res.data.data || []);
+                if (data.length > 0) {
+                    setVideos(data.sort((a, b) => (a.position || 0) - (b.position || 0)));
                 } else {
-                    localStorage.setItem('premium_touch_videos', JSON.stringify(defaultVideos));
                     setVideos(defaultVideos);
                 }
             } catch (err) {

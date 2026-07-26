@@ -344,7 +344,16 @@ const Home = () => {
                             <h1 className="hero-slide-title">{slide.title}</h1>
                             <p className="hero-slide-desc">{slide.desc}</p>
                             <div className="hero-slide-actions">
-                                <Link to="/contact#contact-form" className="hero-btn-primary">START A PROJECT</Link>
+                                <a 
+                                    href="#start-project"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        window.dispatchEvent(new Event('open-consultation'));
+                                    }}
+                                    className="hero-btn-primary"
+                                >
+                                    START A PROJECT
+                                </a>
                                 <Link to="/portfolio" className="hero-btn-secondary">EXPLORE WORKS</Link>
                             </div>
                         </div>
@@ -473,9 +482,11 @@ const Home = () => {
 
                 <div className="home-projects-grid">
                     {displayProjects.map((project, index) => {
-                        const imageSrc = project.image 
-                            ? (project.image.startsWith('http') ? project.image : getStorageUrl(project.image))
-                            : (project.cover_image ? `${BASE_URL.replace(/\/api$/, '')}/public/uploads/portfolios/${project.cover_image}` : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80");
+                        const imageSrc = project.thumbnail 
+                            ? getStorageUrl(project.thumbnail.image_path) 
+                            : (project.images?.length > 0 
+                                ? getStorageUrl(project.images[0].image_path) 
+                                : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80");
                         
                         return (
                             <Link 

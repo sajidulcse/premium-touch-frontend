@@ -5,6 +5,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './Admin.css';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { useToast } from '../../context/ToastContext';
 
 // Utility to clean HTML - removes newlines and whitespace between tags.
 // This prevents ReactQuill from interpreting HTML source formatting 
@@ -21,6 +22,7 @@ const cleanHtml = (html) => {
 const ServiceEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const toast = useToast();
     const [service, setService] = useState({
         description: '',
         status: 'published',
@@ -32,7 +34,6 @@ const ServiceEditor = () => {
     const [faqs, setFaqs] = useState([]);
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(!!id);
-    const [alert, setAlert] = useState(null);
     const [mainCategoryId, setMainCategoryId] = useState('');
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteImgId, setDeleteImgId] = useState(null);
@@ -76,7 +77,7 @@ const ServiceEditor = () => {
             }
         } catch (err) {
             console.error("Error fetching service:", err);
-            setAlert({ type: 'error', msg: 'Service not found.' });
+            toast.error('Service not found.');
         } finally {
             setDataLoading(false);
         }
@@ -134,7 +135,7 @@ const ServiceEditor = () => {
 
     const handleDeleteExistingImage = (imgId) => {
         if (existingImages.length + images.length <= 1) {
-            setAlert({ type: 'error', msg: 'A service must have at least one gallery image.' });
+            toast.error('A service must have at least one gallery image.');
             window.scrollTo(0, 0);
             return;
         }
@@ -148,10 +149,10 @@ const ServiceEditor = () => {
         try {
             await api.delete(`/admin-services/images/${deleteImgId}`);
             setExistingImages(existingImages.filter(img => img.id !== deleteImgId));
-            setAlert({ type: 'success', msg: 'Image removed from service.' });
+            toast.success('Image removed from service.');
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to delete image.' });
+            toast.error('Failed to delete image.');
         } finally {
             setDeleteImgId(null);
         }
@@ -168,10 +169,10 @@ const ServiceEditor = () => {
                 ...img,
                 is_thumbnail: img.id === imgId
             })));
-            setAlert({ type: 'success', msg: 'Thumbnail updated.' });
+            toast.success('Thumbnail updated.');
         } catch (err) {
             console.error(err);
-            setAlert({ type: 'error', msg: 'Failed to update thumbnail.' });
+            toast.error('Failed to update thumbnail.');
         }
     };
 
@@ -184,21 +185,21 @@ const ServiceEditor = () => {
 
         // Required validation checks
         if (!cleanedDescription || cleanedDescription === '<p><br></p>' || cleanedDescription.replace(/<[^>]*>/g, '').trim() === '') {
-            setAlert({ type: 'error', msg: 'Description is required.' });
+            toast.error('Description is required.');
             setLoading(false);
             window.scrollTo(0, 0);
             return;
         }
 
         if (!service.sub_category_id) {
-            setAlert({ type: 'error', msg: 'Sub Category is required.' });
+            toast.error('Sub Category is required.');
             setLoading(false);
             window.scrollTo(0, 0);
             return;
         }
 
         if (existingImages.length + images.length === 0) {
-            setAlert({ type: 'error', msg: 'At least one gallery image is required.' });
+            toast.error('At least one gallery image is required.');
             setLoading(false);
             window.scrollTo(0, 0);
             return;
@@ -220,11 +221,11 @@ const ServiceEditor = () => {
             if (id) {
                 formData.append('_method', 'PUT');
                 await api.post(`/services/${id}`, formData);
-                setAlert({ type: 'success', msg: 'Service updated successfully!' });
+                toast.success('Service updated successfully!');
                 setTimeout(() => navigate('/admin/services'), 1500);
             } else {
                 await api.post('/services', formData);
-                setAlert({ type: 'success', msg: 'Service created successfully!' });
+                toast.success('Service created successfully!');
                 setTimeout(() => navigate('/admin/services'), 1500);
             }
         } catch (err) {
@@ -238,7 +239,7 @@ const ServiceEditor = () => {
                 finalMsg += ` ${details}`;
             }
 
-            setAlert({ type: 'error', msg: finalMsg });
+            toast.error(finalMsg);
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
@@ -256,13 +257,6 @@ const ServiceEditor = () => {
                     Cancel
                 </button>
             </div>
-
-            {alert && (
-                <div className={`admin-alert alert-${alert.type}`}>
-                    {alert.msg}
-                    <button className="close-alert" onClick={() => setAlert(null)}>&times;</button>
-                </div>
-            )}
 
             {dataLoading ? (
                 <div className="admin-loading-screen">
