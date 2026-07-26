@@ -11,10 +11,14 @@ import { generateEventId } from './uuid';
 /**
  * Initializes all client analytics scripts asynchronously.
  */
-export const initAnalytics = () => {
+export const initAnalytics = (settings = {}) => {
   try {
-    initGTM();
-    initMetaPixel();
+    const isEnabled = settings.analytics_enabled !== undefined && settings.analytics_enabled !== null
+      ? (settings.analytics_enabled === true || settings.analytics_enabled === '1' || settings.analytics_enabled === 1 || settings.analytics_enabled === 'true')
+      : null;
+
+    initGTM(settings.gtm_id || null, isEnabled);
+    initMetaPixel(settings.meta_pixel_id || null, isEnabled);
   } catch (err) {
     console.error('[Analytics Init Error]', err);
   }

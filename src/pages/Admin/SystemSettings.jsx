@@ -119,6 +119,18 @@ const SystemSettings = () => {
         return () => clearTimeout(handler);
     }, [searchInput]);
 
+    // Tab 6: Marketing & Analytics States
+    const [marketingData, setMarketingData] = useState({
+        analytics_enabled: '1',
+        gtm_id: '',
+        meta_pixel_id: '',
+        meta_capi_access_token: '',
+        meta_capi_test_event_code: '',
+        meta_capi_api_version: 'v19.0'
+    });
+    const [revealCapiToken, setRevealCapiToken] = useState(false);
+    const [marketingSubmitting, setMarketingSubmitting] = useState(false);
+
     useEffect(() => {
         if (activeTab === 'smtp' && hasPermission('settings.view')) {
             fetchMailSettings();
@@ -130,6 +142,8 @@ const SystemSettings = () => {
             fetchSecurityInsights();
         } else if (activeTab === 'sms' && hasPermission('settings.view')) {
             fetchSmsSettings();
+        } else if (activeTab === 'marketing' && hasPermission('settings.view')) {
+            fetchMarketingSettings();
         }
     }, [activeTab, logFilters.page, logFilters.status, activityFilters.page, activityFilters.action]);
 
@@ -358,18 +372,40 @@ const SystemSettings = () => {
         }
     };
 
+    // --- Tab 6: Marketing & Analytics API Calls ---
+    const fetchMarketingSettings = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/admin/settings/marketing');
+            setMarketingData(res.data);
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to retrieve marketing settings.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMarketingSubmit = async () => {
+        if (!hasPermission('settings.edit')) {
+            toast.error('Unauthorized to update marketing settings.');
+            return;
+        }
+        setMarketingSubmitting(true);
+        try {
+            const res = await api.post('/admin/settings/marketing', marketingData);
+            toast.success(res.data.message || 'Marketing settings saved successfully.');
+            fetchMarketingSettings();
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.message || 'Failed to save marketing settings.');
+        } finally {
+            setMarketingSubmitting(false);
+        }
+    };
+
     return (
         <div className="admin-container">
-            {/* Dynamic Toast Alert Notifications */}
-            {alert && (
-                <div key={alert.msg + alert.type} className={`admin-alert-toast ${alert.type === 'error' ? 'error' : 'success'}`}>
-                    <div className="toast-content-wrapper">
-                        <i className={`fas ${alert.type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}`}></i>
-                        <span>{alert.msg}</span>
-                    </div>
-                    <div className="toast-progress-bar"></div>
-                </div>
-            )}
 
             <div className="admin-header">
                 <div>
@@ -450,6 +486,20 @@ const SystemSettings = () => {
                         }}
                     >
                         <i className="fas fa-shield-alt" style={{ marginRight: '8px' }}></i>Security Insights
+                    </button>
+                )}
+                {hasPermission('settings.view') && (
+                    <button 
+                        className={`tab-btn ${activeTab === 'marketing' ? 'active' : ''}`}
+                        onClick={() => handleTabChange('marketing')}
+                        style={{
+                            background: 'none', border: 'none', outline: 'none', padding: '8px 16px', cursor: 'pointer',
+                            fontSize: '0.95rem', fontWeight: 600, color: activeTab === 'marketing' ? '#c9a45c' : '#64748b',
+                            borderBottom: activeTab === 'marketing' ? '2px solid #c9a45c' : '2px solid transparent',
+                            transition: 'all 0.2s ease-in-out'
+                        }}
+                    >
+                        <i className="fas fa-chart-line" style={{ marginRight: '8px' }}></i>Marketing & Analytics
                     </button>
                 )}
             </div>
@@ -1444,6 +1494,233 @@ const SystemSettings = () => {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Tab 6: Marketing & Analytics */}
+            {activeTab === 'marketing' && hasPermission('settings.view') && (
+                <div>
+                    {/* Header Status Row */}
+                    <div style={{ display: 'flex', gap: '16px', marginBottom: '28px', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: '180px', background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderRadius: '12px', padding: '18px 22px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 4px 14px rgba(0,0,0,0.15)', border: '1px solid #334155' }}>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(201,164,92,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <i className="fas fa-tag" style={{ color: '#c9a45c', fontSize: '1.2rem' }}></i>
+                            </div>
+                            <div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>GTM Container</p>
+                                <p style={{ color: marketingData.gtm_id ? '#c9a45c' : '#64748b', fontWeight: 700, margin: '3px 0 0', fontSize: '0.95rem', fontFamily: 'monospace' }}>{marketingData.gtm_id || 'Not configured'}</p>
+                            </div>
+                        </div>
+                        <div style={{ flex: 1, minWidth: '180px', background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderRadius: '12px', padding: '18px 22px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 4px 14px rgba(0,0,0,0.15)', border: '1px solid #334155' }}>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(30,144,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <i className="fab fa-meta" style={{ color: '#1877f2', fontSize: '1.2rem' }}></i>
+                            </div>
+                            <div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Meta Pixel</p>
+                                <p style={{ color: marketingData.meta_pixel_id ? '#c9a45c' : '#64748b', fontWeight: 700, margin: '3px 0 0', fontSize: '0.95rem', fontFamily: 'monospace' }}>{marketingData.meta_pixel_id || 'Not configured'}</p>
+                            </div>
+                        </div>
+                        <div style={{ flex: 1, minWidth: '180px', background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderRadius: '12px', padding: '18px 22px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 4px 14px rgba(0,0,0,0.15)', border: '1px solid #334155' }}>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: (marketingData.analytics_enabled === '1' || marketingData.analytics_enabled === 1 || marketingData.analytics_enabled === 'true' || marketingData.analytics_enabled === true) ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <i className="fas fa-broadcast-tower" style={{ color: (marketingData.analytics_enabled === '1' || marketingData.analytics_enabled === 1 || marketingData.analytics_enabled === 'true' || marketingData.analytics_enabled === true) ? '#10b981' : '#ef4444', fontSize: '1.2rem' }}></i>
+                            </div>
+                            <div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tracking Status</p>
+                                <p style={{ color: (marketingData.analytics_enabled === '1' || marketingData.analytics_enabled === 1 || marketingData.analytics_enabled === 'true' || marketingData.analytics_enabled === true) ? '#10b981' : '#ef4444', fontWeight: 700, margin: '3px 0 0', fontSize: '0.95rem' }}>
+                                    {(marketingData.analytics_enabled === '1' || marketingData.analytics_enabled === 1 || marketingData.analytics_enabled === 'true' || marketingData.analytics_enabled === true) ? '✓ Tracking Enabled' : '✗ Tracking Disabled'}
+                                </p>
+                            </div>
+                        </div>
+                        <div style={{ flex: 1, minWidth: '180px', background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderRadius: '12px', padding: '18px 22px', display: 'flex', alignItems: 'center', gap: '14px', boxShadow: '0 4px 14px rgba(0,0,0,0.15)', border: '1px solid #334155' }}>
+                            <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <i className="fas fa-server" style={{ color: '#8b5cf6', fontSize: '1.2rem' }}></i>
+                            </div>
+                            <div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>CAPI Server-Side</p>
+                                <p style={{ color: marketingData.meta_capi_access_token && marketingData.meta_capi_access_token !== '' ? '#10b981' : '#64748b', fontWeight: 700, margin: '3px 0 0', fontSize: '0.95rem' }}>{marketingData.meta_capi_access_token && marketingData.meta_capi_access_token !== '' ? '✓ Configured' : 'Not configured'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Master Switch */}
+                    <div className="admin-card" style={{ marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                            <div>
+                                <h3 style={{ fontSize: '1.1rem', color: '#0f172a', margin: '0 0 4px' }}>
+                                    <i className="fas fa-broadcast-tower" style={{ marginRight: '10px', color: '#c9a45c' }}></i>Master Analytics Switch
+                                </h3>
+                                <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>Globally enable or disable all client-side tracking (GTM, GA4, Meta Pixel) and server-side CAPI events.</p>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <span style={{ fontSize: '0.9rem', color: '#64748b' }}>{(marketingData.analytics_enabled === '1' || marketingData.analytics_enabled === 1 || marketingData.analytics_enabled === 'true' || marketingData.analytics_enabled === true) ? 'Enabled' : 'Disabled'}</span>
+                                <div
+                                    onClick={() => hasPermission('settings.edit') && setMarketingData(prev => ({ ...prev, analytics_enabled: (prev.analytics_enabled === '1' || prev.analytics_enabled === 1 || prev.analytics_enabled === 'true' || prev.analytics_enabled === true) ? '0' : '1' }))}
+                                    style={{
+                                        width: '52px', height: '28px', borderRadius: '14px', cursor: hasPermission('settings.edit') ? 'pointer' : 'not-allowed',
+                                        background: (marketingData.analytics_enabled === '1' || marketingData.analytics_enabled === 1 || marketingData.analytics_enabled === 'true' || marketingData.analytics_enabled === true) ? '#c9a45c' : '#cbd5e1',
+                                        transition: 'background 0.3s ease', position: 'relative', flexShrink: 0
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '22px', height: '22px', borderRadius: '50%', background: '#fff',
+                                        position: 'absolute', top: '3px',
+                                        left: (marketingData.analytics_enabled === '1' || marketingData.analytics_enabled === 1 || marketingData.analytics_enabled === 'true' || marketingData.analytics_enabled === true) ? '27px' : '3px',
+                                        transition: 'left 0.3s ease', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                    }} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* GTM & GA4 Section */}
+                    <div className="admin-card" style={{ marginBottom: '20px' }}>
+                        <div className="card-header" style={{ marginBottom: '20px' }}>
+                            <h3 style={{ fontSize: '1.1rem', color: '#0f172a', margin: '0 0 4px' }}>
+                                <i className="fas fa-tag" style={{ marginRight: '10px', color: '#c9a45c' }}></i>Google Tag Manager (GTM) & GA4
+                            </h3>
+                            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>Enter your GTM Container ID. GA4 is managed through GTM — set up a GA4 tag inside your GTM workspace.</p>
+                        </div>
+                        <div className="form-group">
+                            <label style={{ display: 'block', fontWeight: 600, color: '#334155', marginBottom: '8px' }}>GTM Container ID</label>
+                            <input
+                                type="text"
+                                className="admin-input"
+                                value={marketingData.gtm_id || ''}
+                                onChange={(e) => setMarketingData({ ...marketingData, gtm_id: e.target.value })}
+                                placeholder="GTM-XXXXXXX"
+                                disabled={!hasPermission('settings.edit')}
+                                style={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}
+                            />
+                            <p style={{ color: '#94a3b8', fontSize: '0.78rem', marginTop: '6px', margin: '6px 0 0' }}>
+                                <i className="fas fa-info-circle" style={{ marginRight: '5px' }}></i>
+                                Found in <strong>GTM → Admin → Container Settings</strong>. Format: <code style={{ background: '#f1f5f9', padding: '1px 5px', borderRadius: '4px' }}>GTM-XXXXXXX</code>
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Meta Pixel Section */}
+                    <div className="admin-card" style={{ marginBottom: '20px' }}>
+                        <div className="card-header" style={{ marginBottom: '20px' }}>
+                            <h3 style={{ fontSize: '1.1rem', color: '#0f172a', margin: '0 0 4px' }}>
+                                <i className="fab fa-meta" style={{ marginRight: '10px', color: '#1877f2' }}></i>Meta Pixel (Browser-Side)
+                            </h3>
+                            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>Your Meta Pixel ID for browser-side event tracking. Works alongside the server-side CAPI for full coverage.</p>
+                        </div>
+                        <div className="form-group">
+                            <label style={{ display: 'block', fontWeight: 600, color: '#334155', marginBottom: '8px' }}>Meta Pixel ID</label>
+                            <input
+                                type="text"
+                                className="admin-input"
+                                value={marketingData.meta_pixel_id || ''}
+                                onChange={(e) => setMarketingData({ ...marketingData, meta_pixel_id: e.target.value })}
+                                placeholder="123456789012345"
+                                disabled={!hasPermission('settings.edit')}
+                                style={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}
+                            />
+                            <p style={{ color: '#94a3b8', fontSize: '0.78rem', marginTop: '6px', margin: '6px 0 0' }}>
+                                <i className="fas fa-info-circle" style={{ marginRight: '5px' }}></i>
+                                Found in <strong>Meta Business Suite → Events Manager → Your Pixel</strong>.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Meta Conversions API Section */}
+                    <div className="admin-card" style={{ marginBottom: '24px' }}>
+                        <div className="card-header" style={{ marginBottom: '20px' }}>
+                            <h3 style={{ fontSize: '1.1rem', color: '#0f172a', margin: '0 0 4px' }}>
+                                <i className="fas fa-server" style={{ marginRight: '10px', color: '#8b5cf6' }}></i>Meta Conversions API (Server-Side / CAPI)
+                            </h3>
+                            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>Server-side events sent directly from Laravel backend. Provides reliable tracking even when ad blockers are active.</p>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                            <div className="form-group">
+                                <label style={{ display: 'block', fontWeight: 600, color: '#334155', marginBottom: '8px' }}>CAPI Access Token</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        type={revealCapiToken ? 'text' : 'password'}
+                                        className="admin-input"
+                                        value={marketingData.meta_capi_access_token || ''}
+                                        onChange={(e) => setMarketingData({ ...marketingData, meta_capi_access_token: e.target.value })}
+                                        placeholder="Enter your CAPI Access Token"
+                                        disabled={!hasPermission('settings.edit')}
+                                        style={{ fontFamily: 'monospace', paddingRight: '44px' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setRevealCapiToken(prev => !prev)}
+                                        style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                                    >
+                                        <i className={`fas ${revealCapiToken ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                    </button>
+                                </div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: '6px 0 0' }}>
+                                    <i className="fas fa-info-circle" style={{ marginRight: '5px' }}></i>
+                                    Found in <strong>Events Manager → Your Pixel → Settings → Conversions API</strong>. Kept masked for security.
+                                </p>
+                            </div>
+
+                            <div className="form-group">
+                                <label style={{ display: 'block', fontWeight: 600, color: '#334155', marginBottom: '8px' }}>CAPI API Version</label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    value={marketingData.meta_capi_api_version || 'v19.0'}
+                                    onChange={(e) => setMarketingData({ ...marketingData, meta_capi_api_version: e.target.value })}
+                                    placeholder="v19.0"
+                                    disabled={!hasPermission('settings.edit')}
+                                    style={{ fontFamily: 'monospace' }}
+                                />
+                                <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: '6px 0 0' }}>Default: <code style={{ background: '#f1f5f9', padding: '1px 5px', borderRadius: '4px' }}>v19.0</code></p>
+                            </div>
+
+                            <div className="form-group">
+                                <label style={{ display: 'block', fontWeight: 600, color: '#334155', marginBottom: '8px' }}>Test Event Code <span style={{ color: '#94a3b8', fontWeight: 400 }}>(Optional)</span></label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    value={marketingData.meta_capi_test_event_code || ''}
+                                    onChange={(e) => setMarketingData({ ...marketingData, meta_capi_test_event_code: e.target.value })}
+                                    placeholder="TEST12345"
+                                    disabled={!hasPermission('settings.edit')}
+                                    style={{ fontFamily: 'monospace' }}
+                                />
+                                <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: '6px 0 0' }}>
+                                    <i className="fas fa-flask" style={{ marginRight: '5px' }}></i>
+                                    Use this during testing from <strong>Events Manager → Test Events</strong>. Remove for production.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* How It Works Info Box */}
+                    <div style={{ background: 'linear-gradient(135deg, #f0f9ff, #e0f2fe)', border: '1px solid #bae6fd', borderRadius: '12px', padding: '18px 22px', marginBottom: '24px' }}>
+                        <h4 style={{ color: '#0369a1', fontSize: '0.95rem', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <i className="fas fa-lightbulb"></i> How it works
+                        </h4>
+                        <ul style={{ color: '#0369a1', fontSize: '0.85rem', margin: 0, paddingLeft: '18px', lineHeight: '1.8' }}>
+                            <li><strong>GTM Container ID</strong> — Loads Google Tag Manager on the website. Configure GA4 tags inside GTM.</li>
+                            <li><strong>Meta Pixel ID</strong> — Fires browser-side events (PageView, Lead, Purchase) for audience targeting.</li>
+                            <li><strong>Meta CAPI Access Token</strong> — Sends events server-side from Laravel for ad blocker–proof tracking.</li>
+                            <li><strong>Deduplication</strong> — Browser pixel and server events share the same <code style={{ background: '#bae6fd', padding: '1px 5px', borderRadius: '3px' }}>event_id</code> to prevent double-counting.</li>
+                        </ul>
+                    </div>
+
+                    {/* Save Button */}
+                    {hasPermission('settings.edit') && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={handleMarketingSubmit}
+                                disabled={marketingSubmitting}
+                                className="admin-btn-primary"
+                                style={{ padding: '12px 28px', fontSize: '0.95rem', display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '8px', background: marketingSubmitting ? '#94a3b8' : 'linear-gradient(135deg, #c9a45c, #e8c47a)', border: 'none', color: '#0f172a', fontWeight: 700, cursor: marketingSubmitting ? 'not-allowed' : 'pointer', boxShadow: '0 4px 14px rgba(201,164,92,0.35)', transition: 'all 0.2s ease' }}
+                            >
+                                {marketingSubmitting
+                                    ? <><i className="fas fa-spinner fa-spin"></i> Saving Settings...</>
+                                    : <><i className="fas fa-save"></i> Save Marketing Settings</>}
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -95,12 +95,12 @@ const BlogManager = () => {
                                             )}
                                         </div>
                                     </td>
-                                    <td>
+                                    <td className="blog-title-cell">
                                         <Link to={`/admin/blogs/edit/${blog.id}`} className="table-title-link">
                                             <strong>{blog.title}</strong>
                                         </Link>
                                         <div className="table-small-info">
-                                            {new Date(blog.created_at).toLocaleDateString()} • By {blog.author}
+                                            {new Date(blog.created_at).toLocaleDateString()} &bull; {blog.author}
                                         </div>
                                     </td>
                                     <td>

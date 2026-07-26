@@ -254,7 +254,23 @@ const AppContent = () => {
 
 const App = () => {
   useEffect(() => {
-    initAnalytics();
+    // Fetch site info from backend which now includes dynamic analytics config from DB
+    const bootstrap = async () => {
+      try {
+        const { getSiteInfo } = await import('./api/axios');
+        const siteData = await getSiteInfo();
+        // Pass dynamic config from DB to analytics initializer
+        initAnalytics({
+          analytics_enabled: siteData?.analytics_enabled,
+          gtm_id: siteData?.gtm_id,
+          meta_pixel_id: siteData?.meta_pixel_id
+        });
+      } catch {
+        // Fallback: initialize using .env values if API fails
+        initAnalytics();
+      }
+    };
+    bootstrap();
   }, []);
 
   return (

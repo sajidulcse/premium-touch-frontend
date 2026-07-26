@@ -485,6 +485,15 @@ const AdminLayout = ({ children }) => {
                                             <span>Security Insights</span>
                                         </NavLink>
                                     </li>
+                                    <li>
+                                        <NavLink 
+                                            to="/admin/system-settings?tab=marketing" 
+                                            className={() => location.pathname === '/admin/system-settings' && new URLSearchParams(location.search).get('tab') === 'marketing' ? 'active' : ''}
+                                        >
+                                            <i className="fas fa-chart-line"></i>
+                                            <span>Marketing & Analytics</span>
+                                        </NavLink>
+                                    </li>
                                 </ul>
                             )}
                         </li>

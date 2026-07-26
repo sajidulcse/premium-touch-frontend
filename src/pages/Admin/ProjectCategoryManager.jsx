@@ -23,34 +23,19 @@ const ProjectCategoryManager = () => {
         try {
             const res = await api.get('/admin/categories');
             let allCats = res.data;
-            
-            // Find or create "Projects" root category (parent_id = 0)
+
             let root = allCats.find(c => c.slug === 'projects' || c.name.toLowerCase() === 'projects');
             if (!root) {
-                const createRes = await api.post('/admin/categories', {
-                    name: 'Projects',
-                    parent_id: 0,
-                    status: 1,
-                    position: 0
-                });
+                const createRes = await api.post('/admin/categories', { name: 'Projects', parent_id: 0, status: 1, position: 0 });
                 root = createRes.data.category;
-                
-                // Re-fetch all to get nested structure correctly with the new root
                 const refetchRes = await api.get('/admin/categories');
                 allCats = refetchRes.data;
                 root = allCats.find(c => c.id === root.id);
             }
-            
+
             setProjectRoot(root);
             setCategories(root?.children || []);
-            
-            // Initialize default parent_id to the Projects root category ID
-            if (root) {
-                setFormData(prev => ({
-                    ...prev,
-                    parent_id: root.id.toString()
-                }));
-            }
+            if (root) setFormData(prev => ({ ...prev, parent_id: root.id.toString() }));
         } catch (err) {
             console.error(err);
             toast.error('Failed to fetch project categories.');
@@ -94,11 +79,7 @@ const ProjectCategoryManager = () => {
         if (!projectRoot) return;
 
         try {
-            const dataToSubmit = {
-                ...formData,
-                parent_id: parseInt(formData.parent_id)
-            };
-
+            const dataToSubmit = { ...formData, parent_id: parseInt(formData.parent_id) };
             if (editingId) {
                 await api.put(`/admin/categories/${editingId}`, dataToSubmit);
                 toast.success('Category updated successfully.');
@@ -118,7 +99,7 @@ const ProjectCategoryManager = () => {
         return items.map(cat => (
             <React.Fragment key={cat.id}>
                 <tr>
-                    <td style={{ paddingLeft: `${depth * 30 + 20}px` }}>
+                    <td style={{ paddingLeft: `${depth * 30 + 14}px` }}>
                         <div className="cat-name-cell">
                             {depth > 0 && <span className="cat-tree-branch">∟</span>}
                             <strong>{cat.name}</strong>
@@ -181,16 +162,12 @@ const ProjectCategoryManager = () => {
                                 required
                             >
                                 {projectRoot && (
-                                    <option value={projectRoot.id.toString()}>
-                                        Main Category
-                                    </option>
+                                    <option value={projectRoot.id.toString()}>Main Category</option>
                                 )}
                                 {categories
                                     .filter(c => c.id !== editingId)
                                     .map(cat => (
-                                        <option key={cat.id} value={cat.id.toString()}>
-                                            {cat.name}
-                                        </option>
+                                        <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
                                     ))}
                             </select>
                         </div>
@@ -262,7 +239,7 @@ const ProjectCategoryManager = () => {
                 </div>
             </div>
 
-            <ConfirmModal 
+            <ConfirmModal
                 isOpen={confirmOpen}
                 title="Delete Category"
                 message="Are you sure you want to delete this category? Subcategories will also be removed."

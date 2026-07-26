@@ -10,9 +10,12 @@ let isPixelInitialized = false;
 /**
  * Initializes Meta Pixel snippet asynchronously.
  */
-export const initMetaPixel = () => {
+export const initMetaPixel = (dynamicId = null, dynamicEnabled = null) => {
   try {
-    if (!IS_ENABLED || !PIXEL_ID || isPixelInitialized || typeof window === 'undefined') {
+    const pixelId = dynamicId !== null ? dynamicId : PIXEL_ID;
+    const isEnabled = dynamicEnabled !== null ? dynamicEnabled : IS_ENABLED;
+
+    if (!isEnabled || !pixelId || isPixelInitialized || typeof window === 'undefined') {
       return;
     }
 
@@ -40,7 +43,7 @@ export const initMetaPixel = () => {
     /* eslint-enable */
 
     if (window.fbq) {
-      window.fbq('init', PIXEL_ID);
+      window.fbq('init', pixelId);
       isPixelInitialized = true;
     }
   } catch (err) {

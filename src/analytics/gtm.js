@@ -10,9 +10,12 @@ let isGtmInitialized = false;
 /**
  * Initializes Google Tag Manager asynchronously without blocking render/Core Web Vitals.
  */
-export const initGTM = () => {
+export const initGTM = (dynamicId = null, dynamicEnabled = null) => {
   try {
-    if (!IS_ENABLED || !GTM_ID || isGtmInitialized || typeof window === 'undefined') {
+    const gtmId = dynamicId !== null ? dynamicId : GTM_ID;
+    const isEnabled = dynamicEnabled !== null ? dynamicEnabled : IS_ENABLED;
+
+    if (!isEnabled || !gtmId || isGtmInitialized || typeof window === 'undefined') {
       return;
     }
 
@@ -26,7 +29,7 @@ export const initGTM = () => {
     // Inject GTM script tag asynchronously
     const script = document.createElement('script');
     script.async = true;
-    script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(GTM_ID)}`;
+    script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(gtmId)}`;
     
     const firstScript = document.getElementsByTagName('script')[0];
     if (firstScript && firstScript.parentNode) {
