@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { BASE_URL, getCategories, getSiteInfo } from '../../api/axios';
+import { BASE_URL, getCategories, getSiteInfo, getStorageUrl } from '../../api/axios';
 import './AboutUs.css';
 
 const AboutLayout = () => {
@@ -55,8 +55,7 @@ const AboutLayout = () => {
 
     const getHeaderBgUrl = () => {
         if (settings?.header_bg) {
-            const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${settings.header_bg}`;
+            return getStorageUrl(`uploads/header/${settings.header_bg}`);
         }
         return null;
     };

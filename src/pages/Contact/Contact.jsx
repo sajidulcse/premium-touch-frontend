@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api, { getSiteInfo, BASE_URL } from '../../api/axios';
+import api, { getSiteInfo, BASE_URL, getStorageUrl } from '../../api/axios';
 import SEO from '../../components/SEO/SEO';
 import { getLocalBusinessSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Contact.css';
@@ -221,8 +221,7 @@ const Contact = () => {
             return null;
         }
         if (siteInfo?.header_bg) {
-            const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${siteInfo.header_bg}`;
+            return getStorageUrl(`uploads/header/${siteInfo.header_bg}`);
         }
         return '/photo/contact_hero.png';
     };
