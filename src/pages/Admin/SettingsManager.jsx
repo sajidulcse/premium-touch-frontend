@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api, { BASE_URL, clearClientCache } from '../../api/axios';
+import api, { BASE_URL, clearClientCache, getStorageUrl } from '../../api/axios';
 import './Admin.css';
 import { useToast } from '../../context/ToastContext';
 
@@ -43,16 +43,11 @@ const SettingsManager = () => {
     const [ctaBgPreview, setCtaBgPreview] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // Dynamic root for uploads (matches Navbar.jsx logic)
+    // Dynamic root for uploads (matches axios.js getStorageUrl logic)
     const getUploadUrl = (type, filename) => {
         if (!filename) return null;
-        const root = BASE_URL.replace('/api', '');
-
-        // We try to be robust: check if it's already a full URL or starts with /
         if (filename.startsWith('http') || filename.startsWith('data:')) return filename;
-
-        // Return path based on standard Laravel public uploads
-        return `${root}/public/uploads/${type}/${filename}`;
+        return getStorageUrl(`uploads/${type}/${filename}`);
     };
 
     useEffect(() => {

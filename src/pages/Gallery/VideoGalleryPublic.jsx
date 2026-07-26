@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api, { BASE_URL, getSiteInfo } from '../../api/axios';
+import api, { BASE_URL, getSiteInfo, getStorageUrl } from '../../api/axios';
 import './VideoGalleryPublic.css';
 
 const VideoGalleryPublic = () => {
