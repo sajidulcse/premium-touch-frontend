@@ -1,0 +1,20 @@
+# Premium Touch Interior Decor Studio Robots.txt (Google 2026 SEO Standard)
+User-agent: *
+Allow: /
+Allow: /services
+Allow: /portfolio
+Allow: /projects
+Allow: /blogs
+Allow: /gallery
+Allow: /contact
+Allow: /about-us
+Allow: /estimator
+
+# Disallow Admin & Internal System Routes
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /admin-login
+Disallow: /api/*
+
+# Sitemap Location
+Sitemap: https://premiumtouchbd.com/sitemap.xml

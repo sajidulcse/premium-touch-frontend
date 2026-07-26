@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getCreativeWorkSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Project.css';
 
 const ProjectDetail = ({ explicitSlug }) => {
@@ -98,8 +100,24 @@ const ProjectDetail = ({ explicitSlug }) => {
         project.child_category?.name
     ].filter(Boolean).join(' \u2022 ');
 
+    const projImg = project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.[0] ? getStorageUrl(project.images[0].image_path) : '/photo/hero/hero1.jpeg';
+
     return (
         <div className="project-detail-page">
+            <SEO 
+                title={`${project.title} - Architectural Project`}
+                description={project.short_description || project.title ? `${project.title} architectural project in ${project.location || 'Dhaka'} by Premium Touch.` : 'Architectural & interior design project by Premium Touch.'}
+                canonical={`/projects/view/${projectSlug}`}
+                ogImage={projImg}
+                jsonLd={[
+                    getCreativeWorkSchema({ title: project.title, image: projImg, description: project.description }),
+                    getBreadcrumbSchema([
+                        { name: 'Home', url: '/' },
+                        { name: 'Projects', url: '/projects' },
+                        { name: project.title, url: `/projects/view/${projectSlug}` }
+                    ])
+                ]}
+            />
             {/* Restored Hero Section */}
             <div className="pd-hero">
                 <div className="pd-hero-overlay"></div>

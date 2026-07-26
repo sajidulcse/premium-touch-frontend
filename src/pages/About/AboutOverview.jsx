@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import api, { BASE_URL, getStorageUrl } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getBreadcrumbSchema, getOrganizationSchema } from '../../utils/seoSchemas';
 
 const AboutOverview = () => {
     // Read cached site settings from the parent layout outlet context
@@ -23,8 +25,19 @@ const AboutOverview = () => {
         fetchPhilosophies();
     }, []);
 
+    const breadcrumbs = getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'About Us', url: '/about-us' }
+    ]);
+
     return (
         <div className="about-overview-wrapper">
+            <SEO 
+                title="About Our Studio & Design Philosophy"
+                description="Discover Premium Touch Interior Decor Studio. Learn about our architectural history, design philosophy, signature craftsmanship, and dedicated team of interior experts."
+                canonical="/about-us"
+                jsonLd={[getOrganizationSchema(), breadcrumbs]}
+            />
             {/* Studio Story Grid */}
             <section className="about-story-section">
                 <div className="story-image-box">

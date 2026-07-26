@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api, { getSiteInfo, BASE_URL } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getLocalBusinessSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Contact.css';
 
 const Contact = () => {
@@ -232,6 +234,18 @@ const Contact = () => {
 
     return (
         <div className="contact-page-wrapper">
+            <SEO 
+                title="Contact Us & Book Free Consultation"
+                description="Get in touch with Premium Touch Interior Decor Studio. Visit our Banani office, call our design team, or schedule your complimentary interior design consultation."
+                canonical="/contact"
+                jsonLd={[
+                    getLocalBusinessSchema(),
+                    getBreadcrumbSchema([
+                        { name: 'Home', url: '/' },
+                        { name: 'Contact', url: '/contact' }
+                    ])
+                ]}
+            />
             {/* Hero Section */}
             <section className="contact-hero pl-hero">
                 <div className="contact-hero-bg pl-hero-bg" style={headerStyle}></div>

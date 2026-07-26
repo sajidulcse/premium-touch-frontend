@@ -3,6 +3,8 @@ import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import api, { getStorageUrl, BASE_URL, getSiteInfo, getCategories } from '../../api/axios';
 import LazyImage from '../../components/LazyImage/LazyImage';
 import PortfolioDetail from './PortfolioDetail';
+import SEO from '../../components/SEO/SEO';
+import { getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Portfolio.css';
 
 const PortfolioList = () => {
@@ -244,6 +246,16 @@ const PortfolioList = () => {
 
     return (
         <div className="portfolio-page-wrapper">
+            <SEO 
+                title={pageTitle === 'Portfolio' ? 'Luxury Interior Design Portfolio' : `${pageTitle} Portfolio`}
+                description={`Explore ${pageTitle} portfolio showcase by Premium Touch. See our latest bespoke residential and commercial interior design transformations.`}
+                canonical={parentSlug && categorySlug ? `/portfolio/${parentSlug}/${categorySlug}` : categorySlug ? `/portfolio/${categorySlug}` : '/portfolio'}
+                jsonLd={getBreadcrumbSchema([
+                    { name: 'Home', url: '/' },
+                    { name: 'Portfolio', url: '/portfolio' },
+                    ...(categoryPath ? categoryPath.map(c => ({ name: c.name, url: `/portfolio/${c.slug}` })) : [])
+                ])}
+            />
             {/* Hero Section */}
             <section className="port-hero">
                 <div className="port-hero-bg" style={headerStyle}></div>

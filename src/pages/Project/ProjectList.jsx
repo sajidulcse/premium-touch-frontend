@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api, { getStorageUrl, BASE_URL, getSiteInfo, getCategories } from '../../api/axios';
 import ProjectDetail from './ProjectDetail';
+import SEO from '../../components/SEO/SEO';
+import { getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Project.css';
 
 const ProjectList = () => {
@@ -278,6 +280,16 @@ const ProjectList = () => {
 
     return (
         <div className="projects-page-wrapper">
+            <SEO 
+                title={pageTitle === 'Projects' ? 'Architecture & Interior Projects Showcase' : `${pageTitle} Projects`}
+                description={`Discover completed ${pageTitle} interior design and architectural projects by Premium Touch.`}
+                canonical={parentSlug && categorySlug ? `/projects/${parentSlug}/${categorySlug}` : categorySlug ? `/projects/${categorySlug}` : '/projects'}
+                jsonLd={getBreadcrumbSchema([
+                    { name: 'Home', url: '/' },
+                    { name: 'Projects', url: '/projects' },
+                    ...(categoryPath ? categoryPath.map(c => ({ name: c.name, url: `/projects/${c.slug}` })) : [])
+                ])}
+            />
             {/* Hero Section */}
             <section className="pl-hero">
                 <div className="pl-hero-bg" style={headerStyle}></div>

@@ -22,6 +22,7 @@ const ConsultationManager = () => {
         closed: 0
     });
     const [activeTab, setActiveTab] = useState(initialStatus || 'All'); // 'All', 'New', 'Contacted', 'Qualified', 'Closed'
+    const [searchTerm, setSearchTerm] = useState('');
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [internalNotes, setInternalNotes] = useState('');
     const [updatingStatus, setUpdatingStatus] = useState('');
@@ -90,10 +91,23 @@ const ConsultationManager = () => {
         }
     };
 
-    // Filter requests in memory based on activeTab for instant tab switching
-    const requests = activeTab === 'All'
-        ? allConsultations
-        : allConsultations.filter(r => (r.status || 'New').toLowerCase() === activeTab.toLowerCase());
+    // Filter requests in memory based on activeTab and searchTerm for instant results
+    const requests = allConsultations.filter(r => {
+        const matchesTab = activeTab === 'All' || (r.status || 'New').toLowerCase() === activeTab.toLowerCase();
+        if (!matchesTab) return false;
+        if (!searchTerm.trim()) return true;
+
+        const term = searchTerm.toLowerCase();
+        const nameMatch = (r.full_name || '').toLowerCase().includes(term);
+        const phoneMatch = (r.phone || '').toLowerCase().includes(term);
+        const emailMatch = (r.email || '').toLowerCase().includes(term);
+        const locationMatch = (r.location || '').toLowerCase().includes(term);
+        const projectMatch = (r.project_type || '').toLowerCase().includes(term);
+        const notesMatch = (r.notes || '').toLowerCase().includes(term);
+        const idMatch = `#cr-${String(r.id).padStart(3, '0')}`.toLowerCase().includes(term) || String(r.id).includes(term);
+
+        return nameMatch || phoneMatch || emailMatch || locationMatch || projectMatch || notesMatch || idMatch;
+    });
 
     const handleViewDetails = (req) => {
         setSelectedRequest(req);
@@ -221,21 +235,76 @@ const ConsultationManager = () => {
                 </div>
             </div>
 
-            {/* Filter Tabs */}
-            <div className="categories-chips" style={{ marginBottom: '25px' }}>
-                {['All', 'New', 'Contacted', 'Qualified', 'Closed'].map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => handleTabChange(tab)}
-                        className={`cat-chip ${activeTab.toLowerCase() === tab.toLowerCase() ? 'active' : ''}`}
-                        style={{ cursor: 'pointer', border: '1px solid #e2e8f0', fontFamily: 'inherit' }}
-                    >
-                        {tab} Requests
-                        <span className="chip-count" style={{ marginLeft: '8px' }}>
-                            {tab === 'All' ? metrics.total : metrics[tab.toLowerCase()]}
-                        </span>
-                    </button>
-                ))}
+            {/* Filter Tabs & Search Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '25px' }}>
+                <div className="categories-chips" style={{ marginBottom: 0 }}>
+                    {['All', 'New', 'Contacted', 'Qualified', 'Closed'].map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => handleTabChange(tab)}
+                            className={`cat-chip ${activeTab.toLowerCase() === tab.toLowerCase() ? 'active' : ''}`}
+                            style={{ cursor: 'pointer', border: '1px solid #e2e8f0', fontFamily: 'inherit' }}
+                        >
+                            {tab} Requests
+                            <span className="chip-count" style={{ marginLeft: '8px' }}>
+                                {tab === 'All' ? metrics.total : metrics[tab.toLowerCase()]}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Instant Search Bar */}
+                <div style={{ position: 'relative', width: '100%', maxWidth: '360px' }}>
+                    <i className="fas fa-search" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.9rem', pointerEvents: 'none' }}></i>
+                    <input
+                        type="text"
+                        placeholder="Search by Name, Phone, Email, Location..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            padding: '10px 40px 10px 38px',
+                            background: '#ffffff',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem',
+                            color: '#1e293b',
+                            outline: 'none',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                            transition: 'all 0.2s ease',
+                            fontFamily: 'inherit'
+                        }}
+                    />
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchTerm('')}
+                            style={{
+                                position: 'absolute',
+                                right: '12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                color: '#94a3b8',
+                                cursor: 'pointer',
+                                padding: '0',
+                                width: '24px',
+                                height: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '50%',
+                                fontSize: '0.85rem',
+                                transition: 'color 0.2s ease'
+                            }}
+                            title="Clear search"
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Requests Table */}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api, { BASE_URL, getStorageUrl } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Blog.css';
 
 const BlogList = () => {
@@ -30,6 +32,15 @@ const BlogList = () => {
 
     return (
         <div className="blog-container">
+            <SEO 
+                title="Interior Design Journal & Inspiration Blog"
+                description="Explore interior design trends, home decoration ideas, architectural concepts, and luxury living tips from Premium Touch Studio."
+                canonical="/blogs"
+                jsonLd={getBreadcrumbSchema([
+                    { name: 'Home', url: '/' },
+                    { name: 'Blog', url: '/blogs' }
+                ])}
+            />
             <header className="blog-header">
                 <span className="subtitle">Our Journal</span>
                 <h1>Interior Insights & Design <span className="highlight">Inspiration</span></h1>

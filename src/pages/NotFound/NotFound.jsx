@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import SEO from '../../components/SEO/SEO';
 import './NotFound.css';
 
 const NotFound = () => {
@@ -7,6 +8,11 @@ const NotFound = () => {
 
     return (
         <div className="notfound-container">
+            <SEO 
+                title="404 Page Not Found"
+                description="The requested page could not be found on Premium Touch Interior Decor Studio."
+                noindex={true}
+            />
             <div className="notfound-card">
                 <div className="notfound-icon-wrapper">
                     <i className="fas fa-compass notfound-icon"></i>

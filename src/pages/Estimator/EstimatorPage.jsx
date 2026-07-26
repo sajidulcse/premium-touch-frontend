@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useEstimator, EstimatorProvider } from './EstimatorContext';
 import { BASE_URL } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './EstimatorPage.css';
 
 // Validation Schema using Zod
@@ -893,6 +895,15 @@ const EstimatorWizard = () => {
 const EstimatorPage = () => {
     return (
         <EstimatorProvider>
+            <SEO 
+                title="Interior Design Cost Estimator"
+                description="Calculate your home interior design and renovation cost instantly with Premium Touch interactive budget calculator."
+                canonical="/estimator"
+                jsonLd={getBreadcrumbSchema([
+                    { name: 'Home', url: '/' },
+                    { name: 'Cost Estimator', url: '/estimator' }
+                ])}
+            />
             <EstimatorWizard />
         </EstimatorProvider>
     );
