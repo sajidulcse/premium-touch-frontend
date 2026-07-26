@@ -24,15 +24,18 @@ export const getStorageUrl = (path) => {
         cleanPath = cleanPath.replace(/^public\//, '');
     }
 
+    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1'));
+    const prefix = isLocalhost ? '/public/' : '/';
+
     if (cleanPath.startsWith('uploads/')) {
-        return `${root}/public/${cleanPath}`;
+        return `${root}${prefix}${cleanPath}`;
     }
 
     if (cleanPath.startsWith('storage/')) {
-        return `${root}/public/${cleanPath}`;
+        return `${root}${prefix}${cleanPath}`;
     }
 
-    return `${root}/public/storage/${cleanPath}`;
+    return `${root}${prefix}storage/${cleanPath}`;
 };
 
 const api = axios.create({
