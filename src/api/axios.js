@@ -51,31 +51,49 @@ let cache = {
     footer: null
 };
 
-const getCachedData = async (key, endpoint, sessionKey) => {
-    if (cache[key]) return cache[key];
+const getCachedData = async (key, endpoint, sessionKey, isArray = false) => {
+    if (cache[key] && (!isArray || Array.isArray(cache[key]))) return cache[key];
 
     const cached = sessionStorage.getItem(sessionKey);
     if (cached) {
-        cache[key] = JSON.parse(cached);
-        // Refresh quietly in background
-        api.get(endpoint).then(res => {
-            cache[key] = res.data;
-            sessionStorage.setItem(sessionKey, JSON.stringify(res.data));
-        }).catch(err => console.warn(`Silent refresh failed for ${endpoint}:`, err));
-        
-        return cache[key];
+        try {
+            const parsed = JSON.parse(cached);
+            if (!isArray || Array.isArray(parsed)) {
+                cache[key] = parsed;
+                // Refresh quietly in background
+                api.get(endpoint).then(res => {
+                    const freshData = res.data;
+                    if (!isArray || Array.isArray(freshData)) {
+                        cache[key] = freshData;
+                        sessionStorage.setItem(sessionKey, JSON.stringify(freshData));
+                    }
+                }).catch(err => console.warn(`Silent refresh failed for ${endpoint}:`, err));
+                
+                return cache[key];
+            }
+        } catch (e) {
+            sessionStorage.removeItem(sessionKey);
+        }
     }
 
-    const res = await api.get(endpoint);
-    cache[key] = res.data;
-    sessionStorage.setItem(sessionKey, JSON.stringify(res.data));
-    return cache[key];
+    try {
+        const res = await api.get(endpoint);
+        const freshData = res.data;
+        if (!isArray || Array.isArray(freshData)) {
+            cache[key] = freshData;
+            sessionStorage.setItem(sessionKey, JSON.stringify(freshData));
+            return cache[key];
+        }
+        return isArray ? [] : freshData;
+    } catch (err) {
+        return isArray ? [] : {};
+    }
 };
 
-export const getSiteInfo = () => getCachedData('siteInfo', '/site-info', 'premium_touch_site_info');
-export const getCategories = () => getCachedData('categories', '/categories', 'premium_touch_categories');
-export const getServices = () => getCachedData('services', '/services', 'premium_touch_services');
-export const getFooter = () => getCachedData('footer', '/footer', 'premium_touch_footer');
+export const getSiteInfo = () => getCachedData('siteInfo', '/site-info', 'premium_touch_site_info', false);
+export const getCategories = () => getCachedData('categories', '/categories', 'premium_touch_categories', true);
+export const getServices = () => getCachedData('services', '/services', 'premium_touch_services', true);
+export const getFooter = () => getCachedData('footer', '/footer', 'premium_touch_footer', true);
 
 // Clear cache when settings are saved in admin panel (or globally)
 export const clearClientCache = () => {
