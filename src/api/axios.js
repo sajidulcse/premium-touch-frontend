@@ -1,6 +1,16 @@
 import axios from 'axios';
 
-export const BASE_URL = 'http://localhost/premium_touch/premium-touch-backend/api';
+const getApiBaseUrl = () => {
+    if (import.meta.env.VITE_API_BASE_URL) {
+        return import.meta.env.VITE_API_BASE_URL;
+    }
+    if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+        return `${window.location.origin}/api`;
+    }
+    return 'http://localhost/premium_touch/premium-touch-backend/api';
+};
+
+export const BASE_URL = getApiBaseUrl();
 
 export const getStorageUrl = (path) => {
     if (!path) return '';
