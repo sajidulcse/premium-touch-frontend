@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getBlogPostingSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Blog.css';
 
 import { useAuth } from '../../context/AuthContext';
@@ -270,8 +272,32 @@ const BlogDetail = () => {
     const shareUrl = window.location.href;
     const shareTitle = blog.title;
 
+    const blogImg = blog.images?.[0] ? getStorageUrl(blog.images[0].image_path) : '/photo/hero/hero1.jpeg';
+    const blogExcerpt = blog.content ? blog.content.replace(/<[^>]*>?/gm, '').substring(0, 155) : blog.title;
+
     return (
         <div className="blog-detail-container">
+            <SEO 
+                title={blog.title}
+                description={blogExcerpt}
+                canonical={`/blog/${slug}`}
+                ogImage={blogImg}
+                ogType="article"
+                jsonLd={[
+                    getBlogPostingSchema({
+                        title: blog.title,
+                        featured_image: blogImg,
+                        created_at: blog.created_at,
+                        author: blog.author,
+                        excerpt: blogExcerpt
+                    }),
+                    getBreadcrumbSchema([
+                        { name: 'Home', url: '/' },
+                        { name: 'Blog', url: '/blogs' },
+                        { name: blog.title, url: `/blog/${slug}` }
+                    ])
+                ]}
+            />
             <div className="blog-detail-wrapper">
                 {/* Sidebar Column */}
                 <aside className="blog-sidebar">

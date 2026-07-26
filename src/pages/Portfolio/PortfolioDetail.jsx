@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import LazyImage from '../../components/LazyImage/LazyImage';
+import SEO from '../../components/SEO/SEO';
+import { getCreativeWorkSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Portfolio.css';
 
 const PortfolioDetail = ({ explicitSlug }) => {
@@ -110,8 +112,24 @@ const PortfolioDetail = ({ explicitSlug }) => {
         project.child_category?.name
     ].filter(Boolean).join(' \u2022 ');
 
+    const projectImg = project.thumbnail ? getStorageUrl(project.thumbnail.image_path) : project.images?.[0] ? getStorageUrl(project.images[0].image_path) : '/photo/hero/hero1.jpeg';
+
     return (
         <div className="project-detail-page">
+            <SEO 
+                title={`${project.title} - Portfolio`}
+                description={project.short_description || project.title ? `${project.title} portfolio item by Premium Touch Interior Decor Studio.` : 'Luxury interior design portfolio project by Premium Touch.'}
+                canonical={`/portfolio/view/${projectSlug}`}
+                ogImage={projectImg}
+                jsonLd={[
+                    getCreativeWorkSchema({ title: project.title, image: projectImg, description: project.description }),
+                    getBreadcrumbSchema([
+                        { name: 'Home', url: '/' },
+                        { name: 'Portfolio', url: '/portfolio' },
+                        { name: project.title, url: `/portfolio/view/${projectSlug}` }
+                    ])
+                ]}
+            />
             {/* Restored Hero Section */}
             <div className="pd-hero">
                 <div className="pd-hero-overlay"></div>

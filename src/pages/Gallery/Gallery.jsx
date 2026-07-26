@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Gallery.css';
 
 const Gallery = () => {
@@ -113,6 +115,15 @@ const Gallery = () => {
 
     return (
         <div className="gallery-landing-wrapper">
+            <SEO 
+                title="Design Gallery, Videos & Handover Snapshots"
+                description="Browse photos, video walkthroughs, and real project handover snapshots from Premium Touch Interior Decor Studio."
+                canonical="/gallery"
+                jsonLd={getBreadcrumbSchema([
+                    { name: 'Home', url: '/' },
+                    { name: 'Gallery', url: '/gallery' }
+                ])}
+            />
             {/* Hero Section */}
             <section className="gl-hero">
                 <div className="gl-hero-bg" style={heroBgStyle}></div>

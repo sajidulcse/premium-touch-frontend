@@ -127,6 +127,28 @@ const AppContent = () => {
     return () => window.removeEventListener('open-consultation', handleOpen);
   }, []);
 
+  // Dynamically update site favicon if configured in Site Settings
+  useEffect(() => {
+    import('./api/axios').then(({ getSiteInfo, BASE_URL }) => {
+      getSiteInfo().then(data => {
+        if (data?.favicon) {
+          const root = BASE_URL.replace('/api', '');
+          const faviconUrl = data.favicon.startsWith('http') 
+            ? data.favicon 
+            : `${root}/public/uploads/logo/${data.favicon}`;
+          
+          let link = document.querySelector("link[rel~='icon']");
+          if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.getElementsByTagName('head')[0].appendChild(link);
+          }
+          link.href = faviconUrl;
+        }
+      }).catch(() => {});
+    });
+  }, []);
+
   return (
     <>
       {!isAdminRoute && <Navbar />}

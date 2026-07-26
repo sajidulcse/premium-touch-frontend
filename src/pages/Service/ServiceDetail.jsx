@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getServiceSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './ServiceDetail.css';
 
 const ServiceDetail = () => {
@@ -110,8 +112,25 @@ const ServiceDetail = () => {
     const cleanPhone = phoneNumber.replace(/[^0-9+]/g, '');
     const emailAddress = siteInfo.email || 'contact@premiumtouch.com';
 
+    const serviceTitle = service.sub_category?.name || service.title || 'Interior Design Service';
+    const serviceImg = service.thumbnail ? getStorageUrl(service.thumbnail.image_path) : '/photo/hero/hero1.jpeg';
+
     return (
         <div className="sd-page-wrapper">
+            <SEO 
+                title={`${serviceTitle} Service`}
+                description={`Professional ${serviceTitle} service by Premium Touch Interior Decor Studio. Custom luxury interiors, expert spatial planning, and high-end finishes.`}
+                canonical={`/services/${id}`}
+                ogImage={serviceImg}
+                jsonLd={[
+                    getServiceSchema({ title: serviceTitle, description: service.description }),
+                    getBreadcrumbSchema([
+                        { name: 'Home', url: '/' },
+                        { name: 'Services', url: '/services' },
+                        { name: serviceTitle, url: `/services/${id}` }
+                    ])
+                ]}
+            />
             
             <div className="sd-main-container">
                 

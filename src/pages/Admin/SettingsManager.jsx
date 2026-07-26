@@ -18,6 +18,7 @@ const SettingsManager = () => {
         instagram_page_url: '',
         linkedin_page_url: '',
         logo: '',
+        favicon: '',
         header_bg: '',
         cta_bg: '',
         stat_1_num: '',
@@ -31,6 +32,8 @@ const SettingsManager = () => {
     });
     const [logo, setLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
+    const [favicon, setFavicon] = useState(null);
+    const [faviconPreview, setFaviconPreview] = useState(null);
     const [headerBg, setHeaderBg] = useState(null);
     const [headerPreview, setHeaderPreview] = useState(null);
     const [ctaBg, setCtaBg] = useState(null);
@@ -62,6 +65,9 @@ const SettingsManager = () => {
             if (data.logo) {
                 setLogoPreview(getUploadUrl('logo', data.logo));
             }
+            if (data.favicon) {
+                setFaviconPreview(getUploadUrl('logo', data.favicon));
+            }
             if (data.header_bg) {
                 setHeaderPreview(getUploadUrl('header', data.header_bg));
             }
@@ -78,6 +84,14 @@ const SettingsManager = () => {
         if (file) {
             setLogo(file);
             setLogoPreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleFaviconChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFavicon(file);
+            setFaviconPreview(URL.createObjectURL(file));
         }
     };
 
@@ -104,12 +118,13 @@ const SettingsManager = () => {
 
         // Only append text settings
         Object.keys(settings).forEach(key => {
-            if (key !== 'logo' && key !== 'header_bg' && key !== 'cta_bg' && key !== 'updated_at' && key !== 'created_at' && key !== 'id') {
+            if (key !== 'logo' && key !== 'favicon' && key !== 'header_bg' && key !== 'cta_bg' && key !== 'updated_at' && key !== 'created_at' && key !== 'id') {
                 data.append(key, settings[key] || '');
             }
         });
 
         if (logo) data.append('logo', logo);
+        if (favicon) data.append('favicon', favicon);
         if (headerBg) data.append('header_bg', headerBg);
         if (ctaBg) data.append('cta_bg', ctaBg);
 
@@ -119,6 +134,7 @@ const SettingsManager = () => {
             toast.success('Global settings updated successfully!');
             // Clear local file state after success but keep previews until refresh
             setLogo(null);
+            setFavicon(null);
             setHeaderBg(null);
             setCtaBg(null);
             fetchSettings();
@@ -188,6 +204,26 @@ const SettingsManager = () => {
                                 <div style={{ flex: 1 }}>
                                     <input type="file" onChange={handleLogoChange} className="admin-input" accept="image/*" />
                                     <small style={{ color: '#64748b', display: 'block', marginTop: '5px' }}>Square logo (e.g. 512x512px) works best.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="form-group" style={{ marginTop: '20px' }}>
+                            <label>Website Favicon (Browser Tab Icon)</label>
+                            <div className="logo-edit-preview" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                                <div className="preview-box" style={{ width: '64px', height: '64px', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', overflow: 'hidden', padding: '6px' }}>
+                                    {faviconPreview ? (
+                                        <img src={faviconPreview} alt="Favicon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    ) : (
+                                        <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                                            <i className="fas fa-icons" style={{ fontSize: '18px' }}></i>
+                                            <p style={{ fontSize: '9px', marginTop: '3px' }}>Favicon</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <input type="file" onChange={handleFaviconChange} className="admin-input" accept="image/*,.ico" />
+                                    <small style={{ color: '#64748b', display: 'block', marginTop: '5px' }}>Square PNG or ICO (e.g. 32x32px or 64x64px) recommended.</small>
                                 </div>
                             </div>
                         </div>

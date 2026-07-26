@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api, { getStorageUrl, BASE_URL, getSiteInfo, getCategories } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Service.css'; // Reusing the project list grid styling
 
 const ServiceList = () => {
@@ -138,6 +140,16 @@ const ServiceList = () => {
 
     return (
         <div className="projects-page-wrapper">
+            <SEO 
+                title={pageTitle === 'Services' ? 'Interior & Architecture Services' : `${pageTitle} Services`}
+                description={`Explore ${pageTitle} offered by Premium Touch Interior Decor Studio. Luxury residential, commercial, and bespoke interior design solutions.`}
+                canonical={categorySlug ? `/services/${categorySlug}` : '/services'}
+                jsonLd={getBreadcrumbSchema([
+                    { name: 'Home', url: '/' },
+                    { name: 'Services', url: '/services' },
+                    ...(categoryPath ? categoryPath.map(c => ({ name: c.name, url: `/services/${c.slug}` })) : [])
+                ])}
+            />
             {/* Hero Section */}
             <section className="pl-hero">
                 <div className="pl-hero-bg" style={headerStyle}></div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api, { getSiteInfo, getServices, getStorageUrl, BASE_URL } from '../../api/axios';
+import SEO from '../../components/SEO/SEO';
+import { getOrganizationSchema, getLocalBusinessSchema } from '../../utils/seoSchemas';
 import './Home.css';
 
 const Home = () => {
@@ -327,6 +329,12 @@ const Home = () => {
 
     return (
         <div className="home-page-wrapper">
+            <SEO 
+                title="Luxury Interior Design & Architecture Studio"
+                description="Premium Touch is a premier luxury interior design & decor studio. We craft bespoke residential and commercial spaces with exceptional elegance and modern craftsmanship."
+                canonical="/"
+                jsonLd={[getOrganizationSchema(), getLocalBusinessSchema()]}
+            />
             {/* Immersive Hero Slider */}
             <section className="home-hero-slider">
                 {slides.map((slide, idx) => (

@@ -115,7 +115,22 @@ export const AuthProvider = ({ children }) => {
     };
 
     const hasPermission = (permission) => {
-        return role === 'Super Admin' || permissions.includes(permission);
+        // Super Admin gets unrestricted access to all endpoints & features
+        const isSuper = role === 'Super Admin' || 
+                        (typeof role === 'object' && role?.name === 'Super Admin') || 
+                        (user?.role_name === 'Super Admin') ||
+                        (user?.role?.name === 'Super Admin');
+
+        if (isSuper) return true;
+        if (!permission) return true;
+
+        // Support OR rules separated by '|' (e.g., "settings.view|settings.security")
+        if (permission.includes('|')) {
+            const required = permission.split('|');
+            return required.some(p => (permissions || []).includes(p.trim()));
+        }
+
+        return (permissions || []).includes(permission);
     };
 
     const value = {
