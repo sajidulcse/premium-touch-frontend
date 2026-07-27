@@ -114,6 +114,13 @@ if ($isSocialBot && count($segments) >= 2) {
 
 if ($isSocialBot) {
     header("Content-Type: text/html; charset=UTF-8");
+    $imgType = "image/jpeg";
+    if (preg_match('/\.webp$/i', $imageUrl)) {
+        $imgType = "image/webp";
+    } elseif (preg_match('/\.png$/i', $imageUrl)) {
+        $imgType = "image/png";
+    }
+    $ogType = (count($segments) >= 2) ? "article" : "website";
     ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,14 +129,16 @@ if ($isSocialBot) {
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
     <meta name="description" content="<?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?>">
     <meta property="og:site_name" content="<?= htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8') ?>" />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="<?= $ogType ?>" />
     <meta property="og:title" content="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:description" content="<?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:url" content="<?= htmlspecialchars($fullUrl, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:image" content="<?= htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:image:secure_url" content="<?= htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8') ?>" />
+    <meta property="og:image:type" content="<?= $imgType ?>" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>" />
     <meta name="twitter:description" content="<?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?>" />

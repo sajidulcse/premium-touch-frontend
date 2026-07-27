@@ -356,7 +356,7 @@ const BlogDetail = () => {
                                     <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`} target="_blank" rel="noopener noreferrer" title="Share on Twitter">
                                         <i className="fab fa-twitter"></i>
                                     </a>
-                                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + "\n\n" + shareUrl)}`} target="_blank" rel="noopener noreferrer" title="Share on WhatsApp">
+                                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareUrl + "\n\n" + shareTitle)}`} target="_blank" rel="noopener noreferrer" title="Share on WhatsApp">
                                         <i className="fab fa-whatsapp"></i>
                                     </a>
                                 </div>
