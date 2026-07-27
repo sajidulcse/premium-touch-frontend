@@ -1345,6 +1345,38 @@
         padding: 40px 20px 60px 20px;
     }
 
+    .about-hero {
+        height: auto !important;
+        min-height: unset !important;
+        padding: 60px 20px 40px 20px !important;
+        overflow: visible !important;
+    }
+
+    .about-hero-subtitle {
+        font-size: 11px !important;
+        letter-spacing: 2px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .about-hero-title {
+        font-size: clamp(1.8rem, 6.5vw, 2.5rem) !important;
+        margin-bottom: 14px !important;
+    }
+
+    .about-hero-desc {
+        font-size: 0.95rem !important;
+        margin-bottom: 20px !important;
+        line-height: 1.5 !important;
+    }
+
+    .about-hero-breadcrumb {
+        margin-bottom: 16px !important;
+    }
+
+    .about-hero-btn {
+        margin-top: 15px !important;
+    }
+
     .about-story-section,
     .team-spotlight-section {
         grid-template-columns: 1fr;

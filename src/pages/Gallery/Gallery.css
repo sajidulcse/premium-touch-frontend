@@ -596,8 +596,31 @@
 /* --- Responsive Adjustments --- */
 @media (max-width: 768px) {
     .gl-hero {
-        height: 40vh;
-        min-height: 320px;
+        height: auto !important;
+        min-height: unset !important;
+        padding: 60px 20px 40px 20px !important;
+        overflow: visible !important;
+    }
+
+    .gl-hero-subtitle {
+        font-size: 11px !important;
+        letter-spacing: 2px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .gl-hero-title {
+        font-size: clamp(1.8rem, 6.5vw, 2.5rem) !important;
+        margin-bottom: 14px !important;
+    }
+
+    .gl-hero-desc {
+        font-size: 0.95rem !important;
+        margin-bottom: 24px !important;
+        line-height: 1.5 !important;
+    }
+
+    .gl-hero-btn {
+        margin-top: 10px !important;
     }
 
     .gl-categories-section {

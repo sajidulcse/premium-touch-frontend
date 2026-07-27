@@ -746,8 +746,21 @@
 
 @media (max-width: 768px) {
     .pl-hero {
-        height: 40vh !important;
-        min-height: 320px !important;
+        height: auto !important;
+        min-height: unset !important;
+        padding: 60px 20px 40px 20px !important;
+        overflow: visible !important;
+    }
+
+    .pl-hero-subtitle {
+        font-size: 11px !important;
+        letter-spacing: 2px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .pl-hero-title {
+        font-size: clamp(1.8rem, 6.5vw, 2.5rem) !important;
+        margin-bottom: 14px !important;
     }
 
     .pl-header {
