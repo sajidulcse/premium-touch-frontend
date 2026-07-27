@@ -1,0 +1,14 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Route Social Media Crawlers (Facebook, WhatsApp, Twitter, LinkedIn) to og-share.php for dynamic post title & thumbnail image
+    RewriteCond %{HTTP_USER_AGENT} (facebookexternalhit|facebookcatalog|twitterbot|whatsapp|linkedinbot|telegrambot|slackbot|pinterest) [NC]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ og-share.php [L,QSA]
+
+    # Handle standard SPA Routing for real human browsers
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.html [L]
+</IfModule>
