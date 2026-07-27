@@ -181,12 +181,28 @@ const AppContent = () => {
           <Route path="/about-us" element={<AboutLayout />}>
             <Route index element={<AboutOverview />} />
             <Route path="about-overview" element={<AboutOverview />} />
+            <Route path="overview" element={<AboutOverview />} />
             <Route path="about-our-team" element={
               <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Team...</p></div>}>
                 <AboutTeam />
               </React.Suspense>
             } />
+            <Route path="our-team" element={
+              <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Team...</p></div>}>
+                <AboutTeam />
+              </React.Suspense>
+            } />
+            <Route path="team" element={
+              <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Team...</p></div>}>
+                <AboutTeam />
+              </React.Suspense>
+            } />
             <Route path="about-career" element={
+              <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Careers...</p></div>}>
+                <AboutCareer />
+              </React.Suspense>
+            } />
+            <Route path="career" element={
               <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Careers...</p></div>}>
                 <AboutCareer />
               </React.Suspense>

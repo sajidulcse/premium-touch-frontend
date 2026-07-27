@@ -69,7 +69,10 @@ const AboutLayout = () => {
         ? (subCategories[0]?.slug || 'about-overview') 
         : pathParts[pathParts.length - 1];
 
-    const activeSubCat = subCategories.find(sub => sub.slug === currentActiveSlug);
+    const activeSubCat = subCategories.find(sub => 
+        sub.slug === currentActiveSlug || 
+        sub.slug?.replace(/^about-/, '') === currentActiveSlug?.replace(/^about-/, '')
+    );
 
     // Handle mobile dropdown tab changes
     const handleMobileTabChange = (e) => {
