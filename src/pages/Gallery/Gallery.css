@@ -22,9 +22,8 @@
 /* --- Hero Section --- */
 .gl-hero {
     position: relative;
-    height: 60vh;
-    min-height: 420px;
-    max-height: 520px;
+    height: 80vh;
+    min-height: 550px;
     display: flex;
     align-items: center;
     justify-content: center;
