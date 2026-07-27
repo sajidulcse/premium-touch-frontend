@@ -44,7 +44,8 @@ const ServiceList = () => {
             setLoading(true);
             try {
                 const res = await api.get(`/services?category=${activeFilter}`);
-                setServices(res.data);
+                const data = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : []);
+                setServices(data);
             } catch (error) {
                 console.error("Error fetching services:", error);
             } finally {
@@ -294,7 +295,7 @@ const ServiceList = () => {
                             </div>
                         </div>
                     ) : (
-                        services.map((service) => (
+                        (Array.isArray(services) ? services : []).map((service) => (
                             <Link
                                 to={`/services/view/${service.slug || service.sub_category?.slug || service.id}`}
                                 key={service.id}

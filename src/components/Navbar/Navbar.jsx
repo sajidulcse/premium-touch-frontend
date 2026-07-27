@@ -29,8 +29,11 @@ const Navbar = () => {
   /* -------------------- FETCH CATEGORIES -------------------- */
   useEffect(() => {
     getCategories()
-      .then((data) => setCategories(data))
-      .catch(console.error);
+      .then((data) => setCategories(Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])))
+      .catch((err) => {
+        console.error(err);
+        setCategories([]);
+      });
   }, []);
 
   /* -------------------- FETCH SITE INFO -------------------- */

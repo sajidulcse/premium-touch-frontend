@@ -60,18 +60,12 @@ const getCachedData = async (key, endpoint, sessionKey, isArray = false) => {
     const cached = sessionStorage.getItem(sessionKey);
     if (cached) {
         try {
-            const parsed = JSON.parse(cached);
+            let parsed = JSON.parse(cached);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.data)) {
+                parsed = parsed.data;
+            }
             if (!isArray || Array.isArray(parsed)) {
-                cache[key] = parsed;
-                // Refresh quietly in background
-                api.get(endpoint).then(res => {
-                    const freshData = res.data;
-                    if (!isArray || Array.isArray(freshData)) {
-                        cache[key] = freshData;
-                        sessionStorage.setItem(sessionKey, JSON.stringify(freshData));
-                    }
-                }).catch(err => console.warn(`Silent refresh failed for ${endpoint}:`, err));
-                
+                cache[key] = isArray && !Array.isArray(parsed) ? [] : parsed;
                 return cache[key];
             }
         } catch (e) {
@@ -81,10 +75,13 @@ const getCachedData = async (key, endpoint, sessionKey, isArray = false) => {
 
     try {
         const res = await api.get(endpoint);
-        const freshData = res.data;
+        let freshData = res.data;
+        if (freshData && typeof freshData === 'object' && !Array.isArray(freshData) && Array.isArray(freshData.data)) {
+            freshData = freshData.data;
+        }
         if (!isArray || Array.isArray(freshData)) {
-            cache[key] = freshData;
-            sessionStorage.setItem(sessionKey, JSON.stringify(freshData));
+            cache[key] = isArray && !Array.isArray(freshData) ? [] : freshData;
+            sessionStorage.setItem(sessionKey, JSON.stringify(cache[key]));
             return cache[key];
         }
         return isArray ? [] : freshData;
