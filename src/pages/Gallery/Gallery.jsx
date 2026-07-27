@@ -128,13 +128,13 @@ const Gallery = () => {
                 <div className="gl-hero-bg" style={heroBgStyle}></div>
                 <div className="gl-hero-overlay"></div>
                 <div className="gl-hero-content">
-                    <span className="gl-hero-subtitle">CURATED VISUAL NARRATIVES</span>
-                    <h1 className="gl-hero-title">Where Space <br />Meets Artistry</h1>
+                    <span className="gl-hero-subtitle">CURATED COLLECTIONS</span>
+                    <h1 className="gl-hero-title">Design Gallery</h1>
                     <p className="gl-hero-desc">
-                        Explore our design collections, motion captures, and real-life handover moments that define contemporary living.
+                        Explore our architectural photography, video walkthroughs, and handover snapshots.
                     </p>
                     <a href="#categories" className="gl-hero-btn">
-                        <span>EXPLORE COLLECTIONS</span>
+                        <span>EXPLORE GALLERY</span>
                         <i className="fas fa-chevron-down"></i>
                     </a>
                 </div>

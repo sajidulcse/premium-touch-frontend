@@ -100,7 +100,7 @@ const AboutLayout = () => {
                 <div className="about-hero-bg" style={headerStyle}></div>
                 <div className="about-hero-overlay"></div>
                 <div className="about-hero-content">
-                    <span className="about-hero-subtitle">OUR STORIES</span>
+                    <span className="about-hero-subtitle">OUR STORY</span>
                     <h1 className="about-hero-title">
                         {activeSubCat && activeSubCat.slug !== 'about-overview' && activeSubCat.slug !== 'overview' 
                             ? activeSubCat.name 
@@ -120,7 +120,7 @@ const AboutLayout = () => {
                         )}
                     </div>
                     <p className="about-hero-desc">
-                        Discover the philosophy, creative minds, and career milestones that drive our boutique design studio.
+                        Discover the philosophy and creative minds driving our boutique studio.
                     </p>
                     <a href="#about-content" className="about-hero-btn">
                         <span>EXPLORE ABOUT</span>

@@ -22,8 +22,9 @@
 /* --- Hero Section --- */
 .gl-hero {
     position: relative;
-    height: 80vh;
-    min-height: 550px;
+    height: 60vh;
+    min-height: 420px;
+    max-height: 520px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -596,31 +597,32 @@
 /* --- Responsive Adjustments --- */
 @media (max-width: 768px) {
     .gl-hero {
-        height: auto !important;
-        min-height: unset !important;
-        padding: 60px 20px 40px 20px !important;
-        overflow: visible !important;
+        height: 48vh !important;
+        min-height: 340px !important;
+        max-height: 380px !important;
+        padding: 40px 16px 24px !important;
+        overflow: hidden !important;
     }
 
     .gl-hero-subtitle {
         font-size: 11px !important;
         letter-spacing: 2px !important;
-        margin-bottom: 12px !important;
+        margin-bottom: 10px !important;
     }
 
     .gl-hero-title {
-        font-size: clamp(1.8rem, 6.5vw, 2.5rem) !important;
-        margin-bottom: 14px !important;
+        font-size: clamp(1.8rem, 6vw, 2.4rem) !important;
+        margin-bottom: 10px !important;
     }
 
     .gl-hero-desc {
-        font-size: 0.95rem !important;
-        margin-bottom: 24px !important;
-        line-height: 1.5 !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 16px !important;
+        line-height: 1.4 !important;
     }
 
     .gl-hero-btn {
-        margin-top: 10px !important;
+        margin-top: 5px !important;
     }
 
     .gl-categories-section {
