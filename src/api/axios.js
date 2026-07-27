@@ -17,13 +17,23 @@ export const getStorageUrl = (path) => {
     if (path.startsWith('http')) return path;
     if (path.startsWith('/photo/') || path.startsWith('photo/')) return path;
 
-    const root = BASE_URL.replace(/\/api$/, '');
     let cleanPath = path.replace(/^\//, '');
 
     if (cleanPath.startsWith('public/')) {
         cleanPath = cleanPath.replace(/^public\//, '');
     }
 
+    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1'));
+    
+    if (!isLocalhost && typeof window !== 'undefined') {
+        const domainOrigin = window.location.origin;
+        if (cleanPath.startsWith('uploads/') || cleanPath.startsWith('storage/')) {
+            return `${domainOrigin}/${cleanPath}`;
+        }
+        return `${domainOrigin}/storage/${cleanPath}`;
+    }
+
+    const root = BASE_URL.replace(/\/api$/, '');
     if (cleanPath.startsWith('uploads/') || cleanPath.startsWith('storage/')) {
         return `${root}/${cleanPath}`;
     }

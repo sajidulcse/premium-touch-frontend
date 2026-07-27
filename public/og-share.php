@@ -52,7 +52,7 @@ if ($siteJson) {
                 $imageUrl = $cleanOg;
             } else {
                 $cleanOg = preg_replace('#^(public/|uploads/|storage/|logo/)#', '', $cleanOg);
-                $imageUrl = $domain . '/backend/public/uploads/logo/' . $cleanOg;
+                $imageUrl = $domain . '/uploads/logo/' . $cleanOg;
             }
         }
     }
@@ -96,6 +96,8 @@ if ($isSocialBot && count($segments) >= 2) {
                     $cleanImg = ltrim($imgRelPath, '/');
                     if (strpos($cleanImg, 'http') === 0) {
                         $imageUrl = $cleanImg;
+                    } elseif (strpos($cleanImg, 'uploads/') === 0 || strpos($cleanImg, 'storage/') === 0) {
+                        $imageUrl = $domain . '/' . $cleanImg;
                     } else {
                         $cleanImg = preg_replace('#^(public/|uploads/|storage/)#', '', $cleanImg);
                         $imageUrl = $domain . '/uploads/' . $cleanImg;
