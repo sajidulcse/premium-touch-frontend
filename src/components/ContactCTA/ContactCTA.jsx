@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BASE_URL, getSiteInfo, getCategories } from "../../api/axios";
+import { BASE_URL, getSiteInfo, getCategories, getStorageUrl } from "../../api/axios";
 import "./ContactCTA.css";
 
 

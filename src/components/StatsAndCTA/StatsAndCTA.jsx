@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { BASE_URL, getSiteInfo } from '../../api/axios';
+import { BASE_URL, getSiteInfo, getStorageUrl } from '../../api/axios';
 import './StatsAndCTA.css';
 
 // Helper to extract numbers and prefixes/suffixes (e.g. "250+" -> target: 250, suffix: "+")

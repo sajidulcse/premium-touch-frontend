@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import api, { BASE_URL } from '../../api/axios';
+import api, { BASE_URL, getStorageUrl } from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import './Admin.css';
 
