@@ -1,6 +1,6 @@
 <?php
 // og-share.php - Social Media Open Graph Crawler Meta Generator for Single Page Applications (SPA)
-// Intercepts Facebook, WhatsApp, Twitter, LinkedIn, Telegram, etc. to serve dynamic post title & thumbnail image.
+// Intercepts Facebook, WhatsApp, Twitter, LinkedIn, Telegram, etc. to serve dynamic website/post title & social banner.
 
 $userAgent = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
 $isSocialBot = preg_match('/(facebookexternalhit|facebookcatalog|twitterbot|whatsapp|linkedinbot|telegrambot|slackbot|pinterest|googlebot|bingbot)/i', $userAgent);
@@ -16,15 +16,46 @@ $host = $_SERVER['HTTP_HOST'] ?? 'www.premiumtouchbd.com';
 $domain = $protocol . "://" . $host;
 
 $title = "Premium Touch | Luxury Interior Design & Architecture Studio";
-$description = "Premium Touch is a premier luxury interior design & decor studio in Bangladesh. We craft bespoke residential and commercial spaces.";
+$description = "Premium Touch is a premier luxury interior design & decor studio in Bangladesh. We craft bespoke residential and commercial spaces with exceptional elegance.";
 $imageUrl = $domain . "/photo/hero/hero1.jpeg";
 $fullUrl = $domain . $_SERVER['REQUEST_URI'];
 
+$ctx = stream_context_create([
+    'http' => [
+        'timeout' => 3,
+        'header' => "Accept: application/json\r\nUser-Agent: OG-Share-Bot/1.0\r\n"
+    ],
+    'ssl' => [
+        'verify_peer' => false,
+        'verify_peer_name' => false
+    ]
+]);
+
+// 1. Fetch main site_info for site-wide social banner
+$siteJson = @file_get_contents($domain . "/api/site-info", false, $ctx);
+if ($siteJson) {
+    $siteData = json_decode($siteJson, true);
+    if ($siteData) {
+        if (!empty($siteData['site_name'])) $siteName = $siteData['site_name'];
+        if (!empty($siteData['tagline'])) $title = $siteData['site_name'] . " | " . $siteData['tagline'];
+        if (!empty($siteData['short_description'])) $description = $siteData['short_description'];
+        if (!empty($siteData['og_image'])) {
+            $cleanOg = ltrim($siteData['og_image'], '/');
+            if (strpos($cleanOg, 'http') === 0) {
+                $imageUrl = $cleanOg;
+            } else {
+                $cleanOg = preg_replace('#^(public/|uploads/|storage/|logo/)#', '', $cleanOg);
+                $imageUrl = $domain . '/uploads/logo/' . $cleanOg;
+            }
+        }
+    }
+}
+
+// 2. If social bot & specific item URL, fetch item title & image
 if ($isSocialBot && count($segments) >= 2) {
     $type = strtolower($segments[0]);
     $slug = rawurldecode(end($segments));
 
-    // Determine internal API URL based on request type
     $apiUrl = null;
     if ($type === 'blog' || $type === 'blogs') {
         $apiUrl = $domain . "/api/blogs/" . urlencode($slug);
@@ -35,17 +66,6 @@ if ($isSocialBot && count($segments) >= 2) {
     }
 
     if ($apiUrl) {
-        $ctx = stream_context_create([
-            'http' => [
-                'timeout' => 3,
-                'header' => "Accept: application/json\r\nUser-Agent: OG-Share-Bot/1.0\r\n"
-            ],
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false
-            ]
-        ]);
-        
         $json = @file_get_contents($apiUrl, false, $ctx);
         if ($json) {
             $data = json_decode($json, true);
@@ -77,7 +97,9 @@ if ($isSocialBot && count($segments) >= 2) {
             }
         }
     }
+}
 
+if ($isSocialBot) {
     header("Content-Type: text/html; charset=UTF-8");
     ?>
 <!DOCTYPE html>
@@ -87,7 +109,7 @@ if ($isSocialBot && count($segments) >= 2) {
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
     <meta name="description" content="<?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?>">
     <meta property="og:site_name" content="<?= htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8') ?>" />
-    <meta property="og:type" content="article" />
+    <meta property="og:type" content="website" />
     <meta property="og:title" content="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:description" content="<?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:url" content="<?= htmlspecialchars($fullUrl, ENT_QUOTES, 'UTF-8') ?>" />
