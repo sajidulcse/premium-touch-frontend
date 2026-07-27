@@ -99,7 +99,7 @@ const ServiceDetail = ({ explicitSlug }) => {
                         <div className="sd-brand-header">
                             <span className="sd-brand-logo">
                                 {siteInfo.logo ? (
-                                    <img src={`${BASE_URL.replace('/api', '')}/uploads/logo/${siteInfo.logo}`} alt="Logo" style={{ maxHeight: '40px' }} />
+                                    <img src={getStorageUrl(`uploads/logo/${siteInfo.logo}`)} alt="Logo" style={{ maxHeight: '40px' }} />
                                 ) : 'PT.'}
                             </span>
                             <span className="sd-brand-name">{siteInfo.site_name || 'Premium Touch'}</span>

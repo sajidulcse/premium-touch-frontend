@@ -89,7 +89,7 @@ const AdminLayout = ({ children }) => {
                 <div className="sidebar-logo">
                     {siteInfo.logo ? (
                         <img
-                            src={`${BASE_URL.replace('/api', '')}/uploads/logo/${siteInfo.logo}`}
+                            src={getStorageUrl(`uploads/logo/${siteInfo.logo}`)}
                             alt="Logo"
                             style={{ width: '60px', height: '60px', objectFit: 'contain' }}
                         />

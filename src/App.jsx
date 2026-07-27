@@ -132,10 +132,9 @@ const AppContent = () => {
     import('./api/axios').then(({ getSiteInfo, BASE_URL }) => {
       getSiteInfo().then(data => {
         if (data?.favicon) {
-          const root = BASE_URL.replace('/api', '');
           const faviconUrl = data.favicon.startsWith('http') 
             ? data.favicon 
-            : `${root}/public/uploads/logo/${data.favicon}`;
+            : getStorageUrl(`uploads/logo/${data.favicon}`);
           
           let link = document.querySelector("link[rel~='icon']");
           if (!link) {

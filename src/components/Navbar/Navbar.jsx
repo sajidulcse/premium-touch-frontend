@@ -226,7 +226,7 @@ const Navbar = () => {
           <img
             src={
               siteInfo.logo
-                ? `${BASE_URL.replace('/api', '')}/uploads/logo/${siteInfo.logo}`
+                ? getStorageUrl(`uploads/logo/${siteInfo.logo}`)
                 : '/default-logo.jpg'
             }
             alt="Logo"

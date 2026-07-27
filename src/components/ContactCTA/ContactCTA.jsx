@@ -23,7 +23,7 @@ const ContactCTA = () => {
         {/* 1. Logo + Name + Tagline + Short Description */}
         <div className="cta-section site-info">
           <img
-            src={siteInfo.logo ? `${BASE_URL.replace("/api", "")}/uploads/logo/${siteInfo.logo}` : "/default-logo.jpg"}
+            src={siteInfo.logo ? getStorageUrl(`uploads/logo/${siteInfo.logo}`) : "/default-logo.jpg"}
             alt="Logo"
             className="logo"
           />
