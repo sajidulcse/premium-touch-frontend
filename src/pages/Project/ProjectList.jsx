@@ -255,7 +255,7 @@ const ProjectList = () => {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Project...</div>
+                <div className="loader-text">Revealing Projects...</div>
             </div>
         );
     }
@@ -272,7 +272,7 @@ const ProjectList = () => {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Project...</div>
+                <div className="loader-text">Revealing Projects...</div>
             </div>
         );
     }

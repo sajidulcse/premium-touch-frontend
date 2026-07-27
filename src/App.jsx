@@ -169,9 +169,11 @@ const AppContent = () => {
           <Route path="/portfolio/:parentSlug/:categorySlug" element={<PortfolioList />} />
           <Route path="/portfolio/view/:slug" element={<PortfolioDetail />} />
           <Route path="/portfolio/:parentSlug/:categorySlug/:slug" element={<PortfolioDetail />} />
-          <Route path="/service-detail/:id" element={<ServiceDetail />} />
           <Route path="/services" element={<ServiceList />} />
-          <Route path="/services/:id" element={<ServiceDetail />} />
+          <Route path="/services/:categorySlug" element={<ServiceList />} />
+          <Route path="/services/:parentSlug/:categorySlug" element={<ServiceList />} />
+          <Route path="/services/view/:id" element={<ServiceDetail />} />
+          <Route path="/service-detail/:id" element={<ServiceDetail />} />
            <Route path="/photo-gallery" element={<PhotoGalleryPublic />} />
           <Route path="/video-gallery" element={<VideoGalleryPublic />} />
           <Route path="/handover-snapshot" element={<HandoverSnapshotPublic />} />

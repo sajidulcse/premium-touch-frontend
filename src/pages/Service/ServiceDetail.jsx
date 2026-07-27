@@ -6,8 +6,9 @@ import NotFound from '../NotFound/NotFound';
 import { getServiceSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './ServiceDetail.css';
 
-const ServiceDetail = () => {
+const ServiceDetail = ({ explicitSlug }) => {
     const { id } = useParams();
+    const serviceId = explicitSlug || id;
     const navigate = useNavigate();
     const [service, setService] = useState(null);
     const [siteInfo, setSiteInfo] = useState({});
@@ -17,7 +18,7 @@ const ServiceDetail = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
         fetchServiceData();
-    }, [id]);
+    }, [serviceId]);
 
     const fetchServiceData = async () => {
         setLoading(true);
@@ -33,7 +34,7 @@ const ServiceDetail = () => {
             }
 
             // Fetch service details
-            const serviceRes = await api.get(`/services/${id}`);
+            const serviceRes = await api.get(`/services/${serviceId}`);
             if (serviceRes.data) {
                 const data = serviceRes.data;
                 try {
@@ -60,7 +61,7 @@ const ServiceDetail = () => {
     if (loading) return (
         <div className="loading-state">
             <div className="loader"></div>
-            <div className="loader-text">Loading...</div>
+            <div className="loader-text">Revealing Service...</div>
         </div>
     );
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import api, { getStorageUrl, BASE_URL, getSiteInfo, getCategories } from '../../api/axios';
 import SEO from '../../components/SEO/SEO';
+import ServiceDetail from './ServiceDetail';
 import { getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Service.css'; // Reusing the project list grid styling
 
@@ -117,22 +118,52 @@ const ServiceList = () => {
         ? { backgroundImage: `url(${headerBgUrl})` }
         : {};
 
+    const isCategoryCheck = () => {
+        if (!categorySlug) return true;
+        if (categorySlug === 'services' || categorySlug === 'all') return true;
+
+        const servicesRoot = Array.isArray(categories)
+            ? (categories.find(c => c.slug === 'services') || categories.find(c => c.name?.toLowerCase() === 'services'))
+            : null;
+
+        const searchInCats = (slug, catsList) => {
+            if (!catsList || !Array.isArray(catsList)) return false;
+            for (const c of catsList) {
+                if (c.slug === slug) return true;
+                if (c.children && c.children.length > 0) {
+                    if (searchInCats(slug, c.children)) return true;
+                }
+            }
+            return false;
+        };
+
+        if (servicesRoot && servicesRoot.children) {
+            if (searchInCats(categorySlug, servicesRoot.children)) return true;
+        }
+
+        return searchInCats(categorySlug, categories);
+    };
+
     const showCategoryFilter = isMainServicesPage && displayCategories.length > 0;
 
     if (catLoading) {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Services...</div>
+                <div className="loader-text">Revealing Services...</div>
             </div>
         );
+    }
+
+    if (!catLoading && !isCategoryCheck()) {
+        return <ServiceDetail explicitSlug={categorySlug} />;
     }
 
     if (loading && !isMainServicesPage) {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Services...</div>
+                <div className="loader-text">Revealing Services...</div>
             </div>
         );
     }

@@ -221,7 +221,7 @@ const PortfolioList = () => {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Portfolio...</div>
+                <div className="loader-text">Revealing Portfolio...</div>
             </div>
         );
     }
