@@ -100,7 +100,11 @@ if ($isSocialBot && count($segments) >= 2) {
                         $imageUrl = $domain . '/' . $cleanImg;
                     } else {
                         $cleanImg = preg_replace('#^(public/|uploads/|storage/)#', '', $cleanImg);
-                        $imageUrl = $domain . '/uploads/' . $cleanImg;
+                        if (file_exists(__DIR__ . '/uploads/' . $cleanImg)) {
+                            $imageUrl = $domain . '/uploads/' . $cleanImg;
+                        } else {
+                            $imageUrl = $domain . '/storage/' . $cleanImg;
+                        }
                     }
                 }
             }

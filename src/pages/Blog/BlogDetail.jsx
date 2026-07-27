@@ -257,9 +257,10 @@ const BlogDetail = () => {
     });
 
     const liveCanonicalUrl = `https://www.premiumtouchbd.com/blog/${slug}`;
-    const shareUrl = (typeof window !== 'undefined' && window.location.href && !window.location.href.includes('localhost'))
+    const rawShareUrl = (typeof window !== 'undefined' && window.location.href && !window.location.href.includes('localhost'))
         ? window.location.href
         : liveCanonicalUrl;
+    const shareUrl = decodeURIComponent(rawShareUrl);
     const shareTitle = blog.title;
 
     const blogImg = blog.images?.[0] ? getStorageUrl(blog.images[0].image_path) : 'https://www.premiumtouchbd.com/photo/hero/hero1.jpeg';
@@ -355,7 +356,7 @@ const BlogDetail = () => {
                                     <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`} target="_blank" rel="noopener noreferrer" title="Share on Twitter">
                                         <i className="fab fa-twitter"></i>
                                     </a>
-                                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" title="Share on WhatsApp">
+                                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + "\n\n" + shareUrl)}`} target="_blank" rel="noopener noreferrer" title="Share on WhatsApp">
                                         <i className="fab fa-whatsapp"></i>
                                     </a>
                                 </div>

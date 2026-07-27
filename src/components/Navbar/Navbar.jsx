@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BASE_URL, getCategories, getSiteInfo } from "../../api/axios";
+import { BASE_URL, getCategories, getSiteInfo, getStorageUrl } from "../../api/axios";
 import "./Navbar.css";
 
 const Navbar = () => {
