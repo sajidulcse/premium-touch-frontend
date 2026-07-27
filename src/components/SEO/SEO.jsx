@@ -5,7 +5,7 @@ import { getSiteInfo, BASE_URL } from '../../api/axios';
 const DEFAULT_SITE_TITLE = 'Premium Touch Interior Decor Studio';
 const DEFAULT_DESCRIPTION = 'Premium Touch is a premier luxury interior design & decor studio. We craft bespoke residential and commercial spaces with exceptional elegance, modern craftsmanship, and tailored luxury.';
 const DEFAULT_KEYWORDS = 'interior design studio, luxury interior decor, home renovation, residential interior design, commercial interior decor, architecture and design, Premium Touch';
-const DEFAULT_SITE_URL = typeof window !== 'undefined' ? window.location.origin : 'https://premiumtouchbd.com';
+const DEFAULT_SITE_URL = 'https://www.premiumtouchbd.com';
 const DEFAULT_OG_IMAGE = '/photo/hero/hero1.jpeg';
 
 /**
@@ -28,11 +28,7 @@ const SEO = ({
     if (!ogImage) {
       getSiteInfo().then(data => {
         if (data?.og_image) {
-          const root = BASE_URL.replace('/api', '');
-          const url = data.og_image.startsWith('http') 
-            ? data.og_image 
-            : `${root}/public/uploads/logo/${data.og_image}`;
-          setDynamicOgImage(url);
+          setDynamicOgImage(getStorageUrl(`uploads/logo/${data.og_image}`));
         }
       }).catch(() => {});
     } else {

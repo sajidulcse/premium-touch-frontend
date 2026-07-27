@@ -5,7 +5,7 @@ import "./Footer.css";
 const Footer = () => {
   const quickLinks = [
     { title: "Projects", url: "/projects" },
-    { title: "Portfolio", url: "/portfolios" },
+    { title: "Portfolio", url: "/portfolio" },
     { title: "Services", url: "/services" },
     { title: "Blog", url: "/blogs" },
     { title: "Gallery", url: "/gallery" },

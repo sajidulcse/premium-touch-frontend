@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import SEO from '../../components/SEO/SEO';
+import NotFound from '../NotFound/NotFound';
 import { getCreativeWorkSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Project.css';
 
@@ -87,12 +88,7 @@ const ProjectDetail = ({ explicitSlug }) => {
         </div>
     );
 
-    if (error || !project) return (
-        <div className="error-state" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <h2>{error || "Project Missing"}</h2>
-            <Link to={project?.category ? (project.category.slug === 'projects' ? '/projects' : `/projects/${project.category.slug}`) : '/projects'} className="back-link">Return to Collections</Link>
-        </div>
-    );
+    if (error || !project) return <NotFound />;
 
     const fullHierarchy = [
         project.category?.name,
