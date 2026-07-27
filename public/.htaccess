@@ -7,6 +7,10 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^(.*)$ og-share.php [L,QSA]
 
+    # Allow Laravel API requests to pass through directly without React SPA interception
+    RewriteCond %{REQUEST_URI} ^/api [NC]
+    RewriteRule ^ - [L]
+
     # Handle standard SPA Routing for real human browsers
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
