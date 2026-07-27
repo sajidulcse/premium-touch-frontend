@@ -296,7 +296,7 @@ const ServiceList = () => {
                     ) : (
                         services.map((service) => (
                             <Link
-                                to={`/services/${service.sub_category?.slug || service.id}`}
+                                to={`/services/view/${service.slug || service.sub_category?.slug || service.id}`}
                                 key={service.id}
                                 className="pl-small-card"
                             >

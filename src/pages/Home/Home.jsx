@@ -457,16 +457,16 @@ const Home = () => {
 
                         return (
                             <div key={service.id || index} className="home-service-card">
-                                <Link to={`/services/${serviceSlug}`} className="service-card-image-link">
+                                <Link to={`/services/view/${serviceSlug}`} className="service-card-image-link">
                                     <div className="service-card-image-wrapper">
                                         <img src={imageSrc} alt={serviceName} />
                                     </div>
                                 </Link>
                                 <div className="service-card-text-wrapper">
-                                    <Link to={`/services/${serviceSlug}`} className="service-card-title-link">
+                                    <Link to={`/services/view/${serviceSlug}`} className="service-card-title-link">
                                         <h3>{serviceName}</h3>
                                     </Link>
-                                    <Link to={`/services/${serviceSlug}`} className="service-card-link">
+                                    <Link to={`/services/view/${serviceSlug}`} className="service-card-link">
                                         READ DETAIL <i className="fas fa-chevron-right"></i>
                                     </Link>
                                 </div>

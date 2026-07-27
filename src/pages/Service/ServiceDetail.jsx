@@ -133,7 +133,10 @@ const ServiceDetail = ({ explicitSlug }) => {
                             </a>
                         </div>
 
-                        <button className="sd-primary-cta">
+                        <button 
+                            className="sd-primary-cta"
+                            onClick={() => window.dispatchEvent(new Event('open-consultation'))}
+                        >
                             Book Free Consultation
                         </button>
                     </div>
@@ -214,7 +217,12 @@ const ServiceDetail = ({ explicitSlug }) => {
                                     <a href={`https://wa.me/${cleanPhone}`} target="_blank" rel="noreferrer" className="m-icon-btn whatsapp"><i className="fab fa-whatsapp"></i></a>
                                     <a href={`mailto:${emailAddress}`} className="m-icon-btn"><i className="far fa-envelope"></i></a>
                                 </div>
-                                <button className="sd-m-cta-btn">Free Consultation</button>
+                                <button 
+                                    className="sd-m-cta-btn"
+                                    onClick={() => window.dispatchEvent(new Event('open-consultation'))}
+                                >
+                                    Free Consultation
+                                </button>
                             </div>
                         </div>
 

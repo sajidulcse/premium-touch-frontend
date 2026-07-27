@@ -39,7 +39,7 @@ const ContactCTA = () => {
           <h4>Our Services</h4>
           <ul>
             {services.map(s => (
-              <li key={s.id}><a href={`/services/${s.slug}`}>{s.name}</a></li>
+              <li key={s.id}><a href={`/services/view/${s.slug}`}>{s.name}</a></li>
             ))}
           </ul>
         </div>
