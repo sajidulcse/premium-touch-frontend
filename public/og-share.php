@@ -31,8 +31,15 @@ $ctx = stream_context_create([
     ]
 ]);
 
+$backendApiBase = $domain . "/backend/public/api";
+
 // 1. Fetch main site_info for site-wide social banner
-$siteJson = @file_get_contents($domain . "/api/site-info", false, $ctx);
+$siteJson = @file_get_contents($backendApiBase . "/site-info", false, $ctx);
+if (!$siteJson) {
+    $backendApiBase = $domain . "/api";
+    $siteJson = @file_get_contents($backendApiBase . "/site-info", false, $ctx);
+}
+
 if ($siteJson) {
     $siteData = json_decode($siteJson, true);
     if ($siteData) {
@@ -45,7 +52,7 @@ if ($siteJson) {
                 $imageUrl = $cleanOg;
             } else {
                 $cleanOg = preg_replace('#^(public/|uploads/|storage/|logo/)#', '', $cleanOg);
-                $imageUrl = $domain . '/uploads/logo/' . $cleanOg;
+                $imageUrl = $domain . '/backend/public/uploads/logo/' . $cleanOg;
             }
         }
     }
@@ -58,11 +65,11 @@ if ($isSocialBot && count($segments) >= 2) {
 
     $apiUrl = null;
     if ($type === 'blog' || $type === 'blogs') {
-        $apiUrl = $domain . "/api/blogs/" . urlencode($slug);
+        $apiUrl = $backendApiBase . "/blogs/" . urlencode($slug);
     } elseif ($type === 'projects' || $type === 'project') {
-        $apiUrl = $domain . "/api/projects/" . urlencode($slug);
+        $apiUrl = $backendApiBase . "/projects/" . urlencode($slug);
     } elseif ($type === 'portfolio' || $type === 'portfolios') {
-        $apiUrl = $domain . "/api/portfolios/" . urlencode($slug);
+        $apiUrl = $backendApiBase . "/portfolios/" . urlencode($slug);
     }
 
     if ($apiUrl) {

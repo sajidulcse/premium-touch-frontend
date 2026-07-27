@@ -5,7 +5,7 @@ const getApiBaseUrl = () => {
         return import.meta.env.VITE_API_BASE_URL;
     }
     if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
-        return `${window.location.origin}/api`;
+        return `${window.location.origin}/backend/public/api`;
     }
     return 'http://localhost/premium_touch/premium-touch-backend/api';
 };
@@ -24,18 +24,11 @@ export const getStorageUrl = (path) => {
         cleanPath = cleanPath.replace(/^public\//, '');
     }
 
-    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1'));
-    const prefix = isLocalhost ? '/public/' : '/';
-
-    if (cleanPath.startsWith('uploads/')) {
-        return `${root}${prefix}${cleanPath}`;
+    if (cleanPath.startsWith('uploads/') || cleanPath.startsWith('storage/')) {
+        return `${root}/${cleanPath}`;
     }
 
-    if (cleanPath.startsWith('storage/')) {
-        return `${root}${prefix}${cleanPath}`;
-    }
-
-    return `${root}${prefix}storage/${cleanPath}`;
+    return `${root}/storage/${cleanPath}`;
 };
 
 const api = axios.create({
