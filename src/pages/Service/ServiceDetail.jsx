@@ -60,7 +60,7 @@ const ServiceDetail = () => {
     if (loading) return (
         <div className="loading-state">
             <div className="loader"></div>
-            <div className="loader-text">Loading Services...</div>
+            <div className="loader-text">Loading...</div>
         </div>
     );
 

@@ -84,7 +84,7 @@ const ProjectDetail = ({ explicitSlug }) => {
     if (loading) return (
         <div className="loading-state">
             <div className="loader"></div>
-            <div className="loader-text">Revealing Project...</div>
+            <div className="loader-text">Loading...</div>
         </div>
     );
 
