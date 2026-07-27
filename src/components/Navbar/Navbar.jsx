@@ -141,7 +141,7 @@ const Navbar = () => {
 
               {hasChildren && (
                 <span
-                  className="submenu-mark"
+                  className={`submenu-mark ${isOpen ? "is-open" : ""}`}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -181,7 +181,7 @@ const Navbar = () => {
 
                         {subHasChildren && (
                           <span
-                            className="submenu-mark"
+                            className={`submenu-mark ${subIsOpen ? "is-open" : ""}`}
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
