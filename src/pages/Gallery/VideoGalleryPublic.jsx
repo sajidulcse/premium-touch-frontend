@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api, { BASE_URL, getSiteInfo, getStorageUrl } from '../../api/axios';
 import './VideoGalleryPublic.css';
 
@@ -117,8 +118,15 @@ const VideoGalleryPublic = () => {
                 <div className="vg-hero-content">
                     <span className="vg-hero-subtitle">MOTION CAPTURES</span>
                     <h1 className="vg-hero-title">Video Gallery</h1>
+                    <div className="gallery-hero-breadcrumb">
+                        <Link to="/">Home</Link>
+                        <span className="bc-sep">/</span>
+                        <Link to="/gallery">Gallery</Link>
+                        <span className="bc-sep">/</span>
+                        <span className="current-page">Video Gallery</span>
+                    </div>
                     <p className="vg-hero-desc">
-                        Bespoke walkthroughs, design details, and cinematic tours of premium residential and commercial spaces.
+                        Cinematic walkthroughs and design tours of luxury residential and commercial spaces.
                     </p>
                     <a href="#videos" className="vg-hero-btn">
                         <span>EXPLORE SHOWCASES</span>

@@ -188,7 +188,7 @@
     transition: transform 0.3s;
 }
 
-.info-item.clickable:hover {
+.info-item:hover {
     transform: translateX(5px);
 }
 
@@ -207,16 +207,10 @@
     border: 1px solid #eaeaea;
 }
 
-.info-item.clickable:hover .info-icon {
+.info-item:hover .info-icon {
     background-color: #1a1a1a;
     color: #ffffff;
     border-color: #1a1a1a;
-}
-
-.info-item.whatsapp:hover .info-icon {
-    background-color: #25D366;
-    color: #ffffff;
-    border-color: #25D366;
 }
 
 .info-content h3 {

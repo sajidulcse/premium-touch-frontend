@@ -51,11 +51,13 @@ const PortfolioDetail = ({ explicitSlug }) => {
         setViewerOpen(true);
         setZoom(1);
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('lightbox-open');
     };
 
     const closeViewer = () => {
         setViewerOpen(false);
         document.body.style.overflow = 'auto';
+        document.body.classList.remove('lightbox-open');
     };
 
     const nextImage = useCallback(() => {

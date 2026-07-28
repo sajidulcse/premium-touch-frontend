@@ -18,6 +18,18 @@ const Navbar = () => {
     setOpenMenus({});
   }, [location]);
 
+  // Toggle mobile-menu-open class on body to hide floating message/FAB icon when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.classList.add('mobile-menu-open');
+    } else {
+      document.body.classList.remove('mobile-menu-open');
+    }
+    return () => {
+      document.body.classList.remove('mobile-menu-open');
+    };
+  }, [menuOpen]);
+
   /* -------------------- RESPONSIVE -------------------- */
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
