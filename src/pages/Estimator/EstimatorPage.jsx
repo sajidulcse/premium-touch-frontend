@@ -11,7 +11,10 @@ import './EstimatorPage.css';
 // Validation Schema using Zod
 const leadSchema = z.object({
     name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-    phone: z.string().min(10, { message: "Please enter a valid phone number (at least 10 digits)" }),
+    phone: z.string()
+        .min(10, { message: "Phone number must be exactly 10 digits" })
+        .max(10, { message: "Phone number cannot exceed 10 digits" })
+        .regex(/^1[3-9]\d{8}$/, { message: "Enter a valid 10-digit BD number without leading 0 (e.g. 1712345678)" }),
     email: z.string().email({ message: "Please enter a valid email address" }),
     location: z.string().min(2, { message: "City or Area location is required" }),
     country_code: z.string().optional()
@@ -614,11 +617,23 @@ const EstimatorWizard = () => {
                                                 <input
                                                     type="tel"
                                                     id="phone"
-                                                    {...register('phone')}
+                                                    {...register('phone', {
+                                                        onChange: (e) => {
+                                                            let val = e.target.value.replace(/\D/g, '');
+                                                            if (val.startsWith('0')) {
+                                                                val = val.substring(1);
+                                                            }
+                                                            if (val.length > 10) {
+                                                                val = val.slice(0, 10);
+                                                            }
+                                                            e.target.value = val;
+                                                        }
+                                                    })}
+                                                    maxLength={10}
                                                     className={`form-input nqg_phone_numbr ${errors.phone ? 'is-invalid' : ''}`}
                                                     placeholder=" "
                                                 />
-                                                <label htmlFor="phone">Phone number</label>
+                                                <label htmlFor="phone">Phone number (e.g. 1712345678)</label>
                                                 {errors.phone && <span className="error-message">{errors.phone.message}</span>}
                                             </div>
                                         </div>

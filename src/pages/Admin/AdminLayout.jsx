@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import api, { BASE_URL } from '../../api/axios';
+import api, { BASE_URL, getStorageUrl } from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import './Admin.css';
 
@@ -89,7 +89,7 @@ const AdminLayout = ({ children }) => {
                 <div className="sidebar-logo">
                     {siteInfo.logo ? (
                         <img
-                            src={`${BASE_URL.replace('/api', '')}/uploads/logo/${siteInfo.logo}`}
+                            src={getStorageUrl(`uploads/logo/${siteInfo.logo}`)}
                             alt="Logo"
                             style={{ width: '60px', height: '60px', objectFit: 'contain' }}
                         />

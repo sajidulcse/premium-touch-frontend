@@ -129,13 +129,12 @@ const AppContent = () => {
 
   // Dynamically update site favicon if configured in Site Settings
   useEffect(() => {
-    import('./api/axios').then(({ getSiteInfo, BASE_URL }) => {
+    import('./api/axios').then(({ getSiteInfo, getStorageUrl }) => {
       getSiteInfo().then(data => {
         if (data?.favicon) {
-          const root = BASE_URL.replace('/api', '');
           const faviconUrl = data.favicon.startsWith('http') 
             ? data.favicon 
-            : `${root}/public/uploads/logo/${data.favicon}`;
+            : getStorageUrl(`uploads/logo/${data.favicon}`);
           
           let link = document.querySelector("link[rel~='icon']");
           if (!link) {
@@ -144,6 +143,14 @@ const AppContent = () => {
             document.getElementsByTagName('head')[0].appendChild(link);
           }
           link.href = faviconUrl;
+
+          let shortcutLink = document.querySelector("link[rel='shortcut icon']");
+          if (!shortcutLink) {
+            shortcutLink = document.createElement('link');
+            shortcutLink.rel = 'shortcut icon';
+            document.getElementsByTagName('head')[0].appendChild(shortcutLink);
+          }
+          shortcutLink.href = faviconUrl;
         }
       }).catch(() => {});
     });
@@ -169,9 +176,11 @@ const AppContent = () => {
           <Route path="/portfolio/:parentSlug/:categorySlug" element={<PortfolioList />} />
           <Route path="/portfolio/view/:slug" element={<PortfolioDetail />} />
           <Route path="/portfolio/:parentSlug/:categorySlug/:slug" element={<PortfolioDetail />} />
-          <Route path="/service-detail/:id" element={<ServiceDetail />} />
           <Route path="/services" element={<ServiceList />} />
-          <Route path="/services/:id" element={<ServiceDetail />} />
+          <Route path="/services/:categorySlug" element={<ServiceList />} />
+          <Route path="/services/:parentSlug/:categorySlug" element={<ServiceList />} />
+          <Route path="/services/view/:id" element={<ServiceDetail />} />
+          <Route path="/service-detail/:id" element={<ServiceDetail />} />
            <Route path="/photo-gallery" element={<PhotoGalleryPublic />} />
           <Route path="/video-gallery" element={<VideoGalleryPublic />} />
           <Route path="/handover-snapshot" element={<HandoverSnapshotPublic />} />
@@ -181,12 +190,28 @@ const AppContent = () => {
           <Route path="/about-us" element={<AboutLayout />}>
             <Route index element={<AboutOverview />} />
             <Route path="about-overview" element={<AboutOverview />} />
+            <Route path="overview" element={<AboutOverview />} />
             <Route path="about-our-team" element={
               <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Team...</p></div>}>
                 <AboutTeam />
               </React.Suspense>
             } />
+            <Route path="our-team" element={
+              <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Team...</p></div>}>
+                <AboutTeam />
+              </React.Suspense>
+            } />
+            <Route path="team" element={
+              <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Team...</p></div>}>
+                <AboutTeam />
+              </React.Suspense>
+            } />
             <Route path="about-career" element={
+              <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Careers...</p></div>}>
+                <AboutCareer />
+              </React.Suspense>
+            } />
+            <Route path="career" element={
               <React.Suspense fallback={<div className="about-loading-wrapper"><div className="about-loader"></div><p>Loading Careers...</p></div>}>
                 <AboutCareer />
               </React.Suspense>

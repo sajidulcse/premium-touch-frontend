@@ -309,23 +309,36 @@ body {
 }
 
 
+/* Tap highlight & outline reset for clean mobile UI */
+a, button, div, span, img, .submenu-mark, .hamburger, .logo-link, .menu-item-row {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none;
+  outline: none !important;
+}
+
 /* -------------------- Responsive adjustments -------------------- */
 @media screen and (max-width: 1024px) {
   .logo-title {
     gap: 10px;
+    padding: 2px 4px;
+  }
+
+  .logo-link {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .logo {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
   }
 
   .site-text h3 {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
   .tagline {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 }
 
@@ -333,6 +346,10 @@ body {
 @media (max-width: 1024px) {
   .hamburger {
     display: flex;
+    padding: 6px;
+    border-radius: 4px;
+    -webkit-tap-highlight-color: transparent !important;
+    user-select: none;
   }
 
   .nav-wrapper {
@@ -340,11 +357,17 @@ body {
     flex-direction: column;
     width: 100%;
     background-color: #eae8e4; /* Light mobile menu background */
-    position: absolute;
-    top: 75px; /* Adjusted for logo-title height */
+    position: fixed;
+    top: 75px; /* Clearance below header */
     left: 0;
-    z-index: 999;
+    right: 0;
+    max-height: calc(100vh - 75px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    z-index: 9999;
     border-bottom: 1px solid #dbd7cf;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    padding-bottom: 40px;
   }
 
   .nav-wrapper.active {
@@ -371,19 +394,33 @@ body {
     border-top: 1px solid #dbd7cf; /* Warm sand border for separation */
   }
 
+  .nav-menu-mobile .menu-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
   /* Level 1 links */
   .nav-menu-mobile li a {
     text-decoration: none;
-    padding: 12px 20px;
+    padding: 12px 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-color: #eae8e4; /* Level 1 background */
     color: #1a1a1a; /* Level 1 text */
-    transition: background 0.3s, color 0.3s;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.2s, color 0.2s;
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
   }
 
-  .nav-menu-mobile li a:hover {
+  .nav-menu-mobile li a:hover,
+  .nav-menu-mobile li a:active {
     background-color: #dfdbd5; /* Soft hover background */
     color: #E85D25; /* Text on hover */
   }
@@ -395,16 +432,19 @@ body {
 
   .mobile-sub-list li a {
     text-decoration: none;
-    padding: 12px 40px; /* Indent Level 2 */
+    padding: 11px 18px 11px 36px; /* Indent Level 2 */
     background-color: #dfdbd5; /* Level 2 background */
     color: #1a1a1a;
+    font-weight: 500;
+    font-size: 0.9rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: background 0.3s, color 0.3s;
+    transition: background 0.2s, color 0.2s;
   }
 
-  .mobile-sub-list li a:hover {
+  .mobile-sub-list li a:hover,
+  .mobile-sub-list li a:active {
     background-color: #d2cdc5; /* Hover */
     color: #E85D25;
   }
@@ -412,19 +452,22 @@ body {
   /* Level 3 links */
   .mobile-child-list li a {
     text-decoration: none;
-    padding: 12px 60px; /* Indent Level 3 */
+    padding: 10px 18px 10px 54px; /* Indent Level 3 */
     background-color: #d2cdc5; /* Level 3 background */
-    color: #1a1a1a;
+    color: #262626;
+    font-size: 0.85rem;
+    font-weight: 400;
     display: block;
-    transition: background 0.3s, color 0.3s;
+    transition: background 0.2s, color 0.2s;
   }
 
-  .mobile-child-list li a:hover {
+  .mobile-child-list li a:hover,
+  .mobile-child-list li a:active {
     background-color: #c5bfb6; /* Hover */
     color: #E85D25;
   }
 
-  /* Submenu indicator (▲ / ▼ outline buttons) */
+  /* Submenu indicator (Circular arrow toggle button) */
   .submenu-mark {
     display: inline-flex;
     align-items: center;
@@ -432,21 +475,39 @@ body {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    border: 1px solid #cbd5e1;
-    background-color: #f8fafc;
-    color: #475569;
-    font-size: 10px;
+    border: 1px solid #c5bfb6;
+    background-color: #f1efe9;
+    color: #1a1a1a !important;
+    font-size: 11px;
     transition: all 0.2s ease;
     margin-left: 10px;
-    margin-right: 5px;
+    margin-right: 14px;
     cursor: pointer;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
   }
 
+  .submenu-mark i {
+    color: #1a1a1a !important;
+    font-size: 11px;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  /* Active / Open state for Category & Subcategory arrows */
+  .submenu-mark.is-open,
   .submenu-mark:hover,
   .submenu-mark:active {
-    background-color: #E85D25;
-    border-color: #E85D25;
-    color: #ffffff;
+    background-color: #E85D25 !important;
+    border-color: #E85D25 !important;
+    color: #ffffff !important;
+  }
+
+  .submenu-mark.is-open i,
+  .submenu-mark:hover i,
+  .submenu-mark:active i {
+    color: #ffffff !important;
   }
 
   /* Hide the desktop mega-dropdown on mobile */

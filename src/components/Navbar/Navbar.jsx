@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BASE_URL, getCategories, getSiteInfo } from "../../api/axios";
+import { BASE_URL, getCategories, getSiteInfo, getStorageUrl } from "../../api/axios";
 import "./Navbar.css";
 
 const Navbar = () => {
@@ -18,6 +18,18 @@ const Navbar = () => {
     setOpenMenus({});
   }, [location]);
 
+  // Toggle mobile-menu-open class on body to hide floating message/FAB icon when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.classList.add('mobile-menu-open');
+    } else {
+      document.body.classList.remove('mobile-menu-open');
+    }
+    return () => {
+      document.body.classList.remove('mobile-menu-open');
+    };
+  }, [menuOpen]);
+
   /* -------------------- RESPONSIVE -------------------- */
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 1024);
@@ -29,8 +41,11 @@ const Navbar = () => {
   /* -------------------- FETCH CATEGORIES -------------------- */
   useEffect(() => {
     getCategories()
-      .then((data) => setCategories(data))
-      .catch(console.error);
+      .then((data) => setCategories(Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])))
+      .catch((err) => {
+        console.error(err);
+        setCategories([]);
+      });
   }, []);
 
   /* -------------------- FETCH SITE INFO -------------------- */
@@ -141,7 +156,7 @@ const Navbar = () => {
 
               {hasChildren && (
                 <span
-                  className="submenu-mark"
+                  className={`submenu-mark ${isOpen ? "is-open" : ""}`}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -181,7 +196,7 @@ const Navbar = () => {
 
                         {subHasChildren && (
                           <span
-                            className="submenu-mark"
+                            className={`submenu-mark ${subIsOpen ? "is-open" : ""}`}
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -223,7 +238,7 @@ const Navbar = () => {
           <img
             src={
               siteInfo.logo
-                ? `${BASE_URL.replace('/api', '')}/uploads/logo/${siteInfo.logo}`
+                ? getStorageUrl(`uploads/logo/${siteInfo.logo}`)
                 : '/default-logo.jpg'
             }
             alt="Logo"

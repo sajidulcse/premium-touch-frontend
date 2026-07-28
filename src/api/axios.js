@@ -1,28 +1,44 @@
 import axios from 'axios';
 
-export const BASE_URL = 'http://localhost/premium_touch/premium-touch-backend/api';
+const getApiBaseUrl = () => {
+    if (import.meta.env.VITE_API_BASE_URL) {
+        return import.meta.env.VITE_API_BASE_URL;
+    }
+    if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+        return `${window.location.origin}/backend/public/api`;
+    }
+    return 'http://localhost/premium_touch/premium-touch-backend/api';
+};
+
+export const BASE_URL = getApiBaseUrl();
 
 export const getStorageUrl = (path) => {
     if (!path) return '';
     if (path.startsWith('http')) return path;
     if (path.startsWith('/photo/') || path.startsWith('photo/')) return path;
 
-    const root = BASE_URL.replace(/\/api$/, '');
     let cleanPath = path.replace(/^\//, '');
 
     if (cleanPath.startsWith('public/')) {
         cleanPath = cleanPath.replace(/^public\//, '');
     }
 
-    if (cleanPath.startsWith('uploads/')) {
-        return `${root}/public/${cleanPath}`;
+    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1'));
+    
+    if (!isLocalhost && typeof window !== 'undefined') {
+        const domainOrigin = window.location.origin;
+        if (cleanPath.startsWith('uploads/') || cleanPath.startsWith('storage/')) {
+            return `${domainOrigin}/${cleanPath}`;
+        }
+        return `${domainOrigin}/storage/${cleanPath}`;
     }
 
-    if (cleanPath.startsWith('storage/')) {
-        return `${root}/public/${cleanPath}`;
+    const root = BASE_URL.replace(/\/api$/, '');
+    if (cleanPath.startsWith('uploads/') || cleanPath.startsWith('storage/')) {
+        return `${root}/${cleanPath}`;
     }
 
-    return `${root}/public/storage/${cleanPath}`;
+    return `${root}/storage/${cleanPath}`;
 };
 
 const api = axios.create({
@@ -41,31 +57,46 @@ let cache = {
     footer: null
 };
 
-const getCachedData = async (key, endpoint, sessionKey) => {
-    if (cache[key]) return cache[key];
+const getCachedData = async (key, endpoint, sessionKey, isArray = false) => {
+    if (cache[key] && (!isArray || Array.isArray(cache[key]))) return cache[key];
 
     const cached = sessionStorage.getItem(sessionKey);
     if (cached) {
-        cache[key] = JSON.parse(cached);
-        // Refresh quietly in background
-        api.get(endpoint).then(res => {
-            cache[key] = res.data;
-            sessionStorage.setItem(sessionKey, JSON.stringify(res.data));
-        }).catch(err => console.warn(`Silent refresh failed for ${endpoint}:`, err));
-        
-        return cache[key];
+        try {
+            let parsed = JSON.parse(cached);
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.data)) {
+                parsed = parsed.data;
+            }
+            if (!isArray || Array.isArray(parsed)) {
+                cache[key] = isArray && !Array.isArray(parsed) ? [] : parsed;
+                return cache[key];
+            }
+        } catch (e) {
+            sessionStorage.removeItem(sessionKey);
+        }
     }
 
-    const res = await api.get(endpoint);
-    cache[key] = res.data;
-    sessionStorage.setItem(sessionKey, JSON.stringify(res.data));
-    return cache[key];
+    try {
+        const res = await api.get(endpoint);
+        let freshData = res.data;
+        if (freshData && typeof freshData === 'object' && !Array.isArray(freshData) && Array.isArray(freshData.data)) {
+            freshData = freshData.data;
+        }
+        if (!isArray || Array.isArray(freshData)) {
+            cache[key] = isArray && !Array.isArray(freshData) ? [] : freshData;
+            sessionStorage.setItem(sessionKey, JSON.stringify(cache[key]));
+            return cache[key];
+        }
+        return isArray ? [] : freshData;
+    } catch (err) {
+        return isArray ? [] : {};
+    }
 };
 
-export const getSiteInfo = () => getCachedData('siteInfo', '/site-info', 'premium_touch_site_info');
-export const getCategories = () => getCachedData('categories', '/categories', 'premium_touch_categories');
-export const getServices = () => getCachedData('services', '/services', 'premium_touch_services');
-export const getFooter = () => getCachedData('footer', '/footer', 'premium_touch_footer');
+export const getSiteInfo = () => getCachedData('siteInfo', '/site-info', 'premium_touch_site_info', false);
+export const getCategories = () => getCachedData('categories', '/categories', 'premium_touch_categories', true);
+export const getServices = () => getCachedData('services', '/services', 'premium_touch_services', true);
+export const getFooter = () => getCachedData('footer', '/footer', 'premium_touch_footer', true);
 
 // Clear cache when settings are saved in admin panel (or globally)
 export const clearClientCache = () => {

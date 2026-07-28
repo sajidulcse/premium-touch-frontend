@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
 import './PhotoGalleryPublic.css';
 
@@ -22,7 +23,12 @@ const ProgressiveImage = ({ src, alt, className }) => {
         <img
             src={currentSrc}
             alt={alt}
-            className={`${className} progressive-img ${isLoaded ? 'loaded' : 'loading'}`}
+            className={`${className} ${isLoaded ? 'loaded' : 'loading'}`}
+            style={{
+                transition: 'filter 0.5s ease, opacity 0.5s ease',
+                filter: isLoaded ? 'none' : 'blur(10px)',
+                opacity: isLoaded ? 1 : 0.6
+            }}
             loading="lazy"
         />
     );
@@ -80,21 +86,47 @@ const PhotoGalleryPublic = () => {
         fetchGallery();
     }, []);
 
+    const [zoom, setZoom] = useState(1);
+
     // Lightbox navigation
-    const openLightbox = (index) => setLightboxIndex(index);
-    const closeLightbox = () => setLightboxIndex(null);
+    const openLightbox = (index) => {
+        setLightboxIndex(index);
+        setZoom(1);
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('lightbox-open');
+    };
+    const closeLightbox = () => {
+        setLightboxIndex(null);
+        setZoom(1);
+        document.body.style.overflow = 'auto';
+        document.body.classList.remove('lightbox-open');
+    };
+
+    const handleZoom = (type) => {
+        setZoom(prev => type === 'in' ? Math.min(prev + 0.5, 3) : Math.max(prev - 0.5, 1));
+    };
+
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    };
 
     const showNext = useCallback(() => {
-        if (lightboxIndex !== null) {
+        if (images.length > 0) {
             setLightboxIndex((prev) => (prev + 1) % images.length);
+            setZoom(1);
         }
-    }, [lightboxIndex, images.length]);
+    }, [images.length]);
 
     const showPrev = useCallback(() => {
-        if (lightboxIndex !== null) {
+        if (images.length > 0) {
             setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+            setZoom(1);
         }
-    }, [lightboxIndex, images.length]);
+    }, [images.length]);
 
     // Handle arrow keys & esc key
     useEffect(() => {
@@ -111,14 +143,10 @@ const PhotoGalleryPublic = () => {
 
     const getHeaderBgUrl = () => {
         if (settings?.header_bg) {
-            const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${settings.header_bg}`;
+            return getStorageUrl(`uploads/header/${settings.header_bg}`);
         }
-        return null;
+        return '/assets/images/header-bg.jpg';
     };
-
-    const headerBgUrl = getHeaderBgUrl();
-    const headerBgStyle = headerBgUrl ? { backgroundImage: `url(${headerBgUrl})` } : {};
 
     if (catLoading) {
         return (
@@ -133,13 +161,18 @@ const PhotoGalleryPublic = () => {
         <div className="pg-public-wrapper">
             {/* Hero Section */}
             <section className="pg-hero">
-                <div className="pg-hero-bg" style={headerBgStyle}></div>
+                <div className="pg-hero-bg" style={{ backgroundImage: `url(${getHeaderBgUrl()})` }}></div>
                 <div className="pg-hero-overlay"></div>
                 <div className="pg-hero-content">
                     <span className="pg-hero-subtitle">OUR CREATIONS</span>
                     <h1 className="pg-hero-title">Photo Gallery</h1>
+                    <div className="gallery-hero-breadcrumb">
+                        <Link to="/">Home</Link>
+                        <span className="bc-sep">/</span>
+                        <span className="current-page">Photo Gallery</span>
+                    </div>
                     <p className="pg-hero-desc">
-                        Explore high-resolution captures of premium architectural masterpieces and bespoke interior layouts crafted by our studio.
+                        Immerse in our curated collection of architectural precision and bespoke interior artistry.
                     </p>
                     <a href="#photos" className="pg-hero-btn">
                         <span>EXPLORE PHOTOGRAPHY</span>
@@ -151,14 +184,19 @@ const PhotoGalleryPublic = () => {
             <div id="photos" className="gallery-container">
                 {/* Image Cards Grid */}
                 {loading ? (
-                    <div className="pg-loading-state" style={{ height: '300px', gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                        <div className="pg-loader"></div>
-                        <div className="pg-loader-text" style={{ marginTop: '15px', color: '#666', fontSize: '14px' }}>Loading Photo Gallery...</div>
+                    <div className="gallery-card-skeleton-grid">
+                        {[1, 2, 3, 4, 5, 6].map((n) => (
+                            <div key={n} className="gallery-card-skeleton">
+                                <div className="skeleton-img"></div>
+                                <div className="skeleton-text-1"></div>
+                                <div className="skeleton-text-2"></div>
+                            </div>
+                        ))}
                     </div>
                 ) : images.length === 0 ? (
-                            <div className="gallery-empty-state" style={{
+                            <div style={{
                                 textAlign: 'center',
-                                padding: '80px 24px',
+                                padding: '60px 24px',
                                 background: '#ffffff',
                                 borderRadius: '24px',
                                 border: '1px dashed #e2e8f0',
@@ -210,56 +248,38 @@ const PhotoGalleryPublic = () => {
                         )}
             </div>
 
-            {/* Lightbox Modal */}
-            {lightboxIndex !== null && (
-                <div
-                    className="lightbox-backdrop"
-                    onClick={closeLightbox}
-                >
-                    <div
-                        className="lightbox-content"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button
-                            className="lightbox-close"
-                            onClick={closeLightbox}
-                            aria-label="Close lightbox"
-                        >
-                            &times;
+            {/* Professional Image Viewer (Lightbox) */}
+            {lightboxIndex !== null && images.length > 0 && (
+                <div className="pd-viewer-overlay">
+                    <div className="viewer-counter">
+                        {lightboxIndex + 1} / {images.length}
+                    </div>
+
+                    <div className="viewer-actions-top">
+                        <button onClick={() => handleZoom('in')} title="Zoom In"><i className="fas fa-search-plus"></i></button>
+                        <button onClick={() => handleZoom('out')} title="Zoom Out"><i className="fas fa-search-minus"></i></button>
+                        <button onClick={toggleFullScreen} title="Full Screen"><i className="fas fa-expand"></i></button>
+                        <button onClick={closeLightbox} className="close-btn" title="Close"><i className="fas fa-times"></i></button>
+                    </div>
+
+                    {images.length > 1 && (
+                        <button className="nav-arrow prev" onClick={showPrev} title="Previous">
+                            <i className="fas fa-chevron-left"></i>
                         </button>
+                    )}
+                    {images.length > 1 && (
+                        <button className="nav-arrow next" onClick={showNext} title="Next">
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
+                    )}
 
-                        {images.length > 1 && (
-                            <button
-                                className="lightbox-arrow prev"
-                                onClick={showPrev}
-                                aria-label="Previous image"
-                            >
-                                <i className="fas fa-chevron-left"></i>
-                            </button>
-                        )}
-
-                        <div className="lightbox-image-wrapper">
+                    <div className="viewer-stage" onClick={(e) => e.target === e.currentTarget && closeLightbox()}>
+                        <div className="viewer-img-container" style={{ transform: `scale(${zoom})` }}>
                             <img
                                 src={getStorageUrl(images[lightboxIndex].path)}
                                 alt={images[lightboxIndex].projectName}
-                                className="lightbox-img"
                             />
                         </div>
-
-                        <div className="lightbox-details">
-                                <h3>{images[lightboxIndex].projectName}</h3>
-                                <span>{images[lightboxIndex].categoryName}</span>
-                            </div>
-
-                        {images.length > 1 && (
-                            <button
-                                className="lightbox-arrow next"
-                                onClick={showNext}
-                                aria-label="Next image"
-                            >
-                                <i className="fas fa-chevron-right"></i>
-                            </button>
-                        )}
                     </div>
                 </div>
             )}

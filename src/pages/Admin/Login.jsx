@@ -292,8 +292,8 @@ const Login = () => {
                             </div>
                         )}
                         {success && (
-                            <div className="login-success-alert" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #34d399', borderLeft: '4px solid #10b981', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <i className="fas fa-check-circle" style={{ color: '#10b981' }}></i>
+                            <div className="login-success-alert">
+                                <i className="fas fa-check-circle"></i>
                                 <span>{success}</span>
                             </div>
                         )}

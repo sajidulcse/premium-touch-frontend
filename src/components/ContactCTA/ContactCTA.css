@@ -157,10 +157,12 @@ html, body {
   padding: 2px 0;
   color: var(--color-secondary-text);
   font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .cta-section.services li a:hover {
   color: var(--color-primary);
+  transform: translateX(6px);
   padding-left: 5px;
 }
 
@@ -186,9 +188,9 @@ html, body {
 }
 
 .social-icons a:hover {
-  background-color: var(--color-primary);
+  background-color: #1a1a1a;
   color: #ffffff;
-  border-color: var(--color-primary);
+  border-color: #1a1a1a;
   transform: translateY(-3px);
 }
 

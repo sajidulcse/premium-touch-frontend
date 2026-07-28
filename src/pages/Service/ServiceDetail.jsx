@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
 import SEO from '../../components/SEO/SEO';
+import NotFound from '../NotFound/NotFound';
 import { getServiceSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './ServiceDetail.css';
 
-const ServiceDetail = () => {
+const ServiceDetail = ({ explicitSlug }) => {
     const { id } = useParams();
+    const serviceId = explicitSlug || id;
     const navigate = useNavigate();
     const [service, setService] = useState(null);
     const [siteInfo, setSiteInfo] = useState({});
@@ -16,7 +18,7 @@ const ServiceDetail = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
         fetchServiceData();
-    }, [id]);
+    }, [serviceId]);
 
     const fetchServiceData = async () => {
         setLoading(true);
@@ -32,7 +34,7 @@ const ServiceDetail = () => {
             }
 
             // Fetch service details
-            const serviceRes = await api.get(`/services/${id}`);
+            const serviceRes = await api.get(`/services/${serviceId}`);
             if (serviceRes.data) {
                 const data = serviceRes.data;
                 try {
@@ -59,54 +61,11 @@ const ServiceDetail = () => {
     if (loading) return (
         <div className="loading-state">
             <div className="loader"></div>
-            <div className="loader-text">Loading Services...</div>
+            <div className="loader-text">Revealing Service...</div>
         </div>
     );
 
-    if (!service) {
-        return (
-            <div className="sd-page-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', padding: '40px 20px' }}>
-                <div style={{ 
-                    textAlign: 'center', 
-                    padding: '60px 40px', 
-                    background: '#ffffff', 
-                    borderRadius: '8px', 
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
-                    maxWidth: '500px', 
-                    width: '100%'
-                }}>
-                    <div style={{ fontSize: '48px', color: '#c5a880', marginBottom: '20px' }}>
-                        <i className="fas fa-drafting-compass"></i>
-                    </div>
-                    <h2 style={{ fontFamily: '"Playfair Display", serif', fontSize: '28px', color: '#1a1a1a', marginBottom: '15px' }}>No Services Found</h2>
-                    <p style={{ fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '30px' }}>
-                        This service page currently has no published content. Please check back later or explore our other services.
-                    </p>
-                    <button 
-                        onClick={() => navigate('/services')} 
-                        style={{
-                            background: '#E85D25',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '14px 28px',
-                            borderRadius: '4px',
-                            fontSize: '13px',
-                            fontFamily: 'inherit',
-                            fontWeight: '600',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            cursor: 'pointer',
-                            transition: 'background 0.3s ease'
-                        }}
-                        onMouseEnter={(e) => e.target.style.background = '#d1501c'}
-                        onMouseLeave={(e) => e.target.style.background = '#E85D25'}
-                    >
-                        Explore All Services
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    if (!service) return <NotFound />;
 
     const phoneNumber = siteInfo.phone || '+1234567890';
     const cleanPhone = phoneNumber.replace(/[^0-9+]/g, '');
@@ -140,7 +99,7 @@ const ServiceDetail = () => {
                         <div className="sd-brand-header">
                             <span className="sd-brand-logo">
                                 {siteInfo.logo ? (
-                                    <img src={`${BASE_URL.replace('/api', '')}/uploads/logo/${siteInfo.logo}`} alt="Logo" style={{ maxHeight: '40px' }} />
+                                    <img src={getStorageUrl(`uploads/logo/${siteInfo.logo}`)} alt="Logo" style={{ maxHeight: '40px' }} />
                                 ) : 'PT.'}
                             </span>
                             <span className="sd-brand-name">{siteInfo.site_name || 'Premium Touch'}</span>
@@ -174,7 +133,10 @@ const ServiceDetail = () => {
                             </a>
                         </div>
 
-                        <button className="sd-primary-cta">
+                        <button 
+                            className="sd-primary-cta"
+                            onClick={() => window.dispatchEvent(new Event('open-consultation'))}
+                        >
                             Book Free Consultation
                         </button>
                     </div>
@@ -255,7 +217,12 @@ const ServiceDetail = () => {
                                     <a href={`https://wa.me/${cleanPhone}`} target="_blank" rel="noreferrer" className="m-icon-btn whatsapp"><i className="fab fa-whatsapp"></i></a>
                                     <a href={`mailto:${emailAddress}`} className="m-icon-btn"><i className="far fa-envelope"></i></a>
                                 </div>
-                                <button className="sd-m-cta-btn">Free Consultation</button>
+                                <button 
+                                    className="sd-m-cta-btn"
+                                    onClick={() => window.dispatchEvent(new Event('open-consultation'))}
+                                >
+                                    Free Consultation
+                                </button>
                             </div>
                         </div>
 

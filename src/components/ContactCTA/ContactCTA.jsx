@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { BASE_URL, getSiteInfo, getCategories } from "../../api/axios";
+import { Link } from "react-router-dom";
+import { BASE_URL, getSiteInfo, getCategories, getStorageUrl } from "../../api/axios";
 import "./ContactCTA.css";
 
 
@@ -23,7 +24,7 @@ const ContactCTA = () => {
         {/* 1. Logo + Name + Tagline + Short Description */}
         <div className="cta-section site-info">
           <img
-            src={siteInfo.logo ? `${BASE_URL.replace("/api", "")}/uploads/logo/${siteInfo.logo}` : "/default-logo.jpg"}
+            src={siteInfo.logo ? getStorageUrl(`uploads/logo/${siteInfo.logo}`) : "/default-logo.jpg"}
             alt="Logo"
             className="logo"
           />
@@ -39,7 +40,7 @@ const ContactCTA = () => {
           <h4>Our Services</h4>
           <ul>
             {services.map(s => (
-              <li key={s.id}><a href={`/services/${s.slug}`}>{s.name}</a></li>
+              <li key={s.id}><Link to={`/services/${s.slug}`}>{s.name}</Link></li>
             ))}
           </ul>
         </div>

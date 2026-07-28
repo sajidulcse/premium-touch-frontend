@@ -11,8 +11,8 @@
 /* --- HERO SECTION --- */
 .contact-hero {
     position: relative;
-    height: 45vh;
-    min-height: 300px;
+    height: 80vh;
+    min-height: 550px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -188,7 +188,7 @@
     transition: transform 0.3s;
 }
 
-.info-item.clickable:hover {
+.info-item:hover {
     transform: translateX(5px);
 }
 
@@ -207,16 +207,10 @@
     border: 1px solid #eaeaea;
 }
 
-.info-item.clickable:hover .info-icon {
+.info-item:hover .info-icon {
     background-color: #1a1a1a;
     color: #ffffff;
     border-color: #1a1a1a;
-}
-
-.info-item.whatsapp:hover .info-icon {
-    background-color: #25D366;
-    color: #ffffff;
-    border-color: #25D366;
 }
 
 .info-content h3 {
@@ -587,6 +581,25 @@
 }
 
 @media screen and (max-width: 768px) {
+    .contact-hero {
+        height: 48vh !important;
+        min-height: 340px !important;
+        max-height: 380px !important;
+        padding: 40px 16px 24px !important;
+        overflow: hidden !important;
+    }
+
+    .contact-subtitle {
+        font-size: 11px !important;
+        letter-spacing: 2px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .contact-title {
+        font-size: clamp(1.8rem, 6vw, 2.4rem) !important;
+        margin-bottom: 10px !important;
+    }
+
     .form-card {
         padding: 18px 14px;
         border-radius: 8px;

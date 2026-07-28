@@ -1,4 +1,14 @@
 /* Contact Floating Action Button (FAB) */
+body.lightbox-open .contact-fab-container,
+body.lightbox-open .estimator-floating-btn,
+body.lightbox-open [class*="estimator-fab"],
+body.lightbox-open [class*="floating"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 .contact-fab-container {
     position: fixed;
     right: 30px;

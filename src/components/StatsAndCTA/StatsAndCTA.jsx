@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { BASE_URL, getSiteInfo } from '../../api/axios';
+import { BASE_URL, getSiteInfo, getStorageUrl } from '../../api/axios';
 import './StatsAndCTA.css';
 
 // Helper to extract numbers and prefixes/suffixes (e.g. "250+" -> target: 250, suffix: "+")
@@ -105,8 +105,7 @@ const StatsAndCTA = () => {
 
     const getCtaBgUrl = () => {
         if (settings?.cta_bg) {
-            const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/cta/${settings.cta_bg}`;
+            return getStorageUrl(`uploads/cta/${settings.cta_bg}`);
         }
         return 'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1920&q=80';
     };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { BASE_URL, getCategories, getSiteInfo } from '../../api/axios';
+import { BASE_URL, getCategories, getSiteInfo, getStorageUrl } from '../../api/axios';
 import './AboutUs.css';
 
 const AboutLayout = () => {
@@ -55,8 +55,7 @@ const AboutLayout = () => {
 
     const getHeaderBgUrl = () => {
         if (settings?.header_bg) {
-            const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${settings.header_bg}`;
+            return getStorageUrl(`uploads/header/${settings.header_bg}`);
         }
         return null;
     };
@@ -70,7 +69,10 @@ const AboutLayout = () => {
         ? (subCategories[0]?.slug || 'about-overview') 
         : pathParts[pathParts.length - 1];
 
-    const activeSubCat = subCategories.find(sub => sub.slug === currentActiveSlug);
+    const activeSubCat = subCategories.find(sub => 
+        sub.slug === currentActiveSlug || 
+        sub.slug?.replace(/^about-/, '') === currentActiveSlug?.replace(/^about-/, '')
+    );
 
     // Handle mobile dropdown tab changes
     const handleMobileTabChange = (e) => {
@@ -98,7 +100,7 @@ const AboutLayout = () => {
                 <div className="about-hero-bg" style={headerStyle}></div>
                 <div className="about-hero-overlay"></div>
                 <div className="about-hero-content">
-                    <span className="about-hero-subtitle">OUR STORIES</span>
+                    <span className="about-hero-subtitle">OUR STORY</span>
                     <h1 className="about-hero-title">
                         {activeSubCat && activeSubCat.slug !== 'about-overview' && activeSubCat.slug !== 'overview' 
                             ? activeSubCat.name 
@@ -118,7 +120,7 @@ const AboutLayout = () => {
                         )}
                     </div>
                     <p className="about-hero-desc">
-                        Discover the philosophy, creative minds, and career milestones that drive our boutique design studio.
+                        Discover the philosophy and creative minds driving our boutique studio.
                     </p>
                     <a href="#about-content" className="about-hero-btn">
                         <span>EXPLORE ABOUT</span>

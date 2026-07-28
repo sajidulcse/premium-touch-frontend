@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api, { BASE_URL, clearClientCache } from '../../api/axios';
+import api, { BASE_URL, clearClientCache, getStorageUrl } from '../../api/axios';
 import './Admin.css';
 import { useToast } from '../../context/ToastContext';
 
@@ -19,6 +19,7 @@ const SettingsManager = () => {
         linkedin_page_url: '',
         logo: '',
         favicon: '',
+        og_image: '',
         header_bg: '',
         cta_bg: '',
         stat_1_num: '',
@@ -34,22 +35,19 @@ const SettingsManager = () => {
     const [logoPreview, setLogoPreview] = useState(null);
     const [favicon, setFavicon] = useState(null);
     const [faviconPreview, setFaviconPreview] = useState(null);
+    const [ogImage, setOgImage] = useState(null);
+    const [ogImagePreview, setOgImagePreview] = useState(null);
     const [headerBg, setHeaderBg] = useState(null);
     const [headerPreview, setHeaderPreview] = useState(null);
     const [ctaBg, setCtaBg] = useState(null);
     const [ctaBgPreview, setCtaBgPreview] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // Dynamic root for uploads (matches Navbar.jsx logic)
+    // Dynamic root for uploads (matches axios.js getStorageUrl logic)
     const getUploadUrl = (type, filename) => {
         if (!filename) return null;
-        const root = BASE_URL.replace('/api', '');
-
-        // We try to be robust: check if it's already a full URL or starts with /
         if (filename.startsWith('http') || filename.startsWith('data:')) return filename;
-
-        // Return path based on standard Laravel public uploads
-        return `${root}/public/uploads/${type}/${filename}`;
+        return getStorageUrl(`uploads/${type}/${filename}`);
     };
 
     useEffect(() => {
@@ -67,6 +65,9 @@ const SettingsManager = () => {
             }
             if (data.favicon) {
                 setFaviconPreview(getUploadUrl('logo', data.favicon));
+            }
+            if (data.og_image) {
+                setOgImagePreview(getUploadUrl('logo', data.og_image));
             }
             if (data.header_bg) {
                 setHeaderPreview(getUploadUrl('header', data.header_bg));
@@ -95,6 +96,14 @@ const SettingsManager = () => {
         }
     };
 
+    const handleOgImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setOgImage(file);
+            setOgImagePreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleHeaderChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -118,13 +127,14 @@ const SettingsManager = () => {
 
         // Only append text settings
         Object.keys(settings).forEach(key => {
-            if (key !== 'logo' && key !== 'favicon' && key !== 'header_bg' && key !== 'cta_bg' && key !== 'updated_at' && key !== 'created_at' && key !== 'id') {
+            if (key !== 'logo' && key !== 'favicon' && key !== 'og_image' && key !== 'header_bg' && key !== 'cta_bg' && key !== 'updated_at' && key !== 'created_at' && key !== 'id') {
                 data.append(key, settings[key] || '');
             }
         });
 
         if (logo) data.append('logo', logo);
         if (favicon) data.append('favicon', favicon);
+        if (ogImage) data.append('og_image', ogImage);
         if (headerBg) data.append('header_bg', headerBg);
         if (ctaBg) data.append('cta_bg', ctaBg);
 
@@ -135,6 +145,7 @@ const SettingsManager = () => {
             // Clear local file state after success but keep previews until refresh
             setLogo(null);
             setFavicon(null);
+            setOgImage(null);
             setHeaderBg(null);
             setCtaBg(null);
             fetchSettings();
@@ -228,6 +239,24 @@ const SettingsManager = () => {
                             </div>
                         </div>
 
+                        <div className="form-group" style={{ marginTop: '20px' }}>
+                            <label>Social Sharing Banner (Open Graph / OG Image)</label>
+                            <div className="header-edit-preview">
+                                <div className="preview-box" style={{ width: '100%', height: '140px', background: '#f1f5f9', borderRadius: '8px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                                    {ogImagePreview ? (
+                                        <img src={ogImagePreview} alt="OG Banner Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                                            <i className="fas fa-share-alt" style={{ fontSize: '24px' }}></i>
+                                            <p style={{ fontSize: '12px', marginTop: '5px' }}>No Social Banner Uploaded</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <input type="file" onChange={handleOgImageChange} className="admin-input" accept="image/*" />
+                                <small style={{ color: '#64748b', display: 'block', marginTop: '5px' }}>Landscape banner (1200x630px) shown when sharing link on Facebook/WhatsApp/LinkedIn.</small>
+                            </div>
+                        </div>
+
                         <div className="form-group" style={{ marginTop: '30px' }}>
                             <label>All Page Header Background</label>
                             <div className="header-edit-preview">
@@ -292,6 +321,16 @@ const SettingsManager = () => {
                                 className="admin-input"
                                 value={settings.address}
                                 onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Office Hours</label>
+                            <input
+                                type="text"
+                                className="admin-input"
+                                placeholder="Sunday – Thursday: 10:00 AM – 4:00 PM"
+                                value={settings.office_hours || ''}
+                                onChange={(e) => setSettings({ ...settings, office_hours: e.target.value })}
                             />
                         </div>
 

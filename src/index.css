@@ -12,8 +12,71 @@
     margin-bottom: 0;
 }
 
-/* Hide floating action buttons/widgets when lightbox is open */
+/* Hide floating action buttons/widgets when lightbox or mobile menu is open */
 body.lightbox-open .estimator-fab,
-body.lightbox-open .contact-fab-container {
+body.lightbox-open .contact-fab-container,
+body.mobile-menu-open .contact-fab-container,
+body.mobile-menu-open .estimator-floating-btn,
+body.mobile-menu-open [class*="estimator-fab"],
+body.mobile-menu-open [class*="floating"] {
     display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+
+/* Lightbox Navigation Arrow - Strictly Static & Clickable (No Movement on Hover) */
+.nav-arrow,
+button.nav-arrow {
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 34px !important;
+    cursor: pointer !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    z-index: 1000001 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: color 0.15s ease !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-radius: 0 !important;
+}
+
+.nav-arrow:hover,
+button.nav-arrow:hover,
+.nav-arrow:focus,
+button.nav-arrow:focus {
+    background: none !important;
+    border: none !important;
+    color: #ffffff !important;
+    transform: translateY(-50%) !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    opacity: 1 !important;
+}
+
+.nav-arrow:active,
+button.nav-arrow:active {
+    transform: translateY(-50%) !important;
+    opacity: 0.6 !important;
+}
+
+.nav-arrow.prev,
+button.nav-arrow.prev {
+    left: 20px !important;
+    right: auto !important;
+}
+
+.nav-arrow.next,
+button.nav-arrow.next {
+    right: 20px !important;
+    left: auto !important;
 }

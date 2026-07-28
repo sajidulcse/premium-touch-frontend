@@ -148,10 +148,9 @@ const PortfolioList = () => {
 
     const getHeaderBgUrl = () => {
         if (settings?.header_bg) {
-            const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${settings.header_bg}`;
+            return getStorageUrl(`uploads/header/${settings.header_bg}`);
         }
-        return null;
+        return '/photo/hero/hero1.jpeg';
     };
 
     const headerBgUrl = getHeaderBgUrl();
@@ -222,7 +221,7 @@ const PortfolioList = () => {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Portfolio...</div>
+                <div className="loader-text">Revealing Portfolio...</div>
             </div>
         );
     }

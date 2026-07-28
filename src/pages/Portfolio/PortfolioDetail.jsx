@@ -3,6 +3,7 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import LazyImage from '../../components/LazyImage/LazyImage';
 import SEO from '../../components/SEO/SEO';
+import NotFound from '../NotFound/NotFound';
 import { getCreativeWorkSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Portfolio.css';
 
@@ -50,11 +51,13 @@ const PortfolioDetail = ({ explicitSlug }) => {
         setViewerOpen(true);
         setZoom(1);
         document.body.style.overflow = 'hidden';
+        document.body.classList.add('lightbox-open');
     };
 
     const closeViewer = () => {
         setViewerOpen(false);
         document.body.style.overflow = 'auto';
+        document.body.classList.remove('lightbox-open');
     };
 
     const nextImage = useCallback(() => {
@@ -99,12 +102,7 @@ const PortfolioDetail = ({ explicitSlug }) => {
         </div>
     );
 
-    if (error || !project) return (
-        <div className="error-state" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <h2>{error || "Portfolio Item Missing"}</h2>
-            <Link to={project?.category ? (project.category.slug === 'portfolio' ? '/portfolio' : `/portfolio/category/${project.category.slug}`) : '/portfolio'} className="back-link">Return to Collections</Link>
-        </div>
-    );
+    if (error || !project) return <NotFound />;
 
     const fullHierarchy = [
         project.category?.name,
@@ -277,7 +275,6 @@ const PortfolioDetail = ({ explicitSlug }) => {
                         <button onClick={() => handleZoom('in')} title="Zoom In"><i className="fas fa-search-plus"></i></button>
                         <button onClick={() => handleZoom('out')} title="Zoom Out"><i className="fas fa-search-minus"></i></button>
                         <button onClick={toggleFullScreen} title="Full Screen"><i className="fas fa-expand"></i></button>
-                        <button onClick={() => {/* Share logic */ }} title="Share"><i className="fas fa-share-alt"></i></button>
                         <button onClick={closeViewer} className="close-btn" title="Close"><i className="fas fa-times"></i></button>
                     </div>
 

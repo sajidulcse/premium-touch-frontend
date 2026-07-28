@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import api, { getStorageUrl, BASE_URL, getSiteInfo } from '../../api/axios';
 import './HandoverSnapshotPublic.css';
 
@@ -64,19 +65,45 @@ const HandoverSnapshotPublic = () => {
         fetchSnapshots();
     }, []);
 
+    const [zoom, setZoom] = useState(1);
+
     // Lightbox navigation
-    const openLightbox = (index) => setLightboxIndex(index);
-    const closeLightbox = () => setLightboxIndex(null);
+    const openLightbox = (index) => {
+        setLightboxIndex(index);
+        setZoom(1);
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('lightbox-open');
+    };
+    const closeLightbox = () => {
+        setLightboxIndex(null);
+        setZoom(1);
+        document.body.style.overflow = 'auto';
+        document.body.classList.remove('lightbox-open');
+    };
+
+    const handleZoom = (type) => {
+        setZoom(prev => type === 'in' ? Math.min(prev + 0.5, 3) : Math.max(prev - 0.5, 1));
+    };
+
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    };
 
     const showNext = useCallback(() => {
         if (lightboxIndex !== null) {
             setLightboxIndex((prev) => (prev + 1) % snapshots.length);
+            setZoom(1);
         }
     }, [lightboxIndex, snapshots.length]);
 
     const showPrev = useCallback(() => {
         if (lightboxIndex !== null) {
             setLightboxIndex((prev) => (prev - 1 + snapshots.length) % snapshots.length);
+            setZoom(1);
         }
     }, [lightboxIndex, snapshots.length]);
 
@@ -95,20 +122,17 @@ const HandoverSnapshotPublic = () => {
 
     const getHeaderBgUrl = () => {
         if (settings?.header_bg) {
-            const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${settings.header_bg}`;
+            return getStorageUrl(`uploads/header/${settings.header_bg}`);
         }
         return null;
     };
 
-    const headerBgUrl = getHeaderBgUrl();
-    const headerBgStyle = headerBgUrl ? { backgroundImage: `url(${headerBgUrl})` } : {};
-
-    if (catLoading) {
+    if (loading) {
         return (
-            <div className="hs-loading-state">
-                <div className="hs-loader"></div>
-                <div className="hs-loader-text">Loading Handover Snapshots...</div>
+            <div className="handover-snapshot-page">
+                <div style={{ height: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <p style={{ color: '#666' }}>Loading Handover Snapshots...</p>
+                </div>
             </div>
         );
     }
@@ -117,13 +141,18 @@ const HandoverSnapshotPublic = () => {
         <div className="handover-page-wrapper">
             {/* Hero Section */}
             <section className="hs-hero">
-                <div className="hs-hero-bg" style={headerBgStyle}></div>
+                <div className="hs-hero-bg" style={{ backgroundImage: `url(${getHeaderBgUrl() || '/assets/images/header-bg.jpg'})` }}></div>
                 <div className="hs-hero-overlay"></div>
                 <div className="hs-hero-content">
                     <span className="hs-hero-subtitle">MILESTONES & CELEBRATIONS</span>
                     <h1 className="hs-hero-title">Handover Snapshots</h1>
+                    <div className="gallery-hero-breadcrumb">
+                        <Link to="/">Home</Link>
+                        <span className="bc-sep">/</span>
+                        <span className="current-page">Handover Snapshots</span>
+                    </div>
                     <p className="hs-hero-desc">
-                        Moments of milestone completions and keys handover ceremonies, celebrating client satisfaction and space transformations.
+                        Moments of pride and perfection as we deliver completed architectural & interior dreams.
                     </p>
                     <a href="#snapshots" className="hs-hero-btn">
                         <span>EXPLORE MILESTONES</span>
@@ -132,23 +161,17 @@ const HandoverSnapshotPublic = () => {
                 </div>
             </section>
 
+            {/* Snapshots Grid */}
             <div id="snapshots" className="handover-container">
-                {loading ? (
-                    <div className="hs-loading-state" style={{ height: '300px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                        <div className="hs-loader"></div>
-                        <div className="hs-loader-text" style={{ marginTop: '15px', color: '#666', fontSize: '14px' }}>Loading Handover Snapshots...</div>
-                    </div>
-                ) : snapshots.length === 0 ? (
-                    <div className="handover-empty-state" style={{
+                {snapshots.length === 0 ? (
+                    <div style={{
                         textAlign: 'center',
-                        padding: '80px 24px',
+                        padding: '60px 24px',
                         background: '#ffffff',
                         borderRadius: '24px',
                         border: '1px dashed #e2e8f0',
                         maxWidth: '500px',
                         margin: '40px auto 0 auto',
-                        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.01)',
-                        animation: 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
                     }}>
                         <div style={{
                             width: '72px',
@@ -161,36 +184,37 @@ const HandoverSnapshotPublic = () => {
                             margin: '0 auto 24px auto',
                             color: '#94a3b8'
                         }}>
-                            <i className="fas fa-camera" style={{ fontSize: '2rem' }}></i>
+                            <i className="fas fa-handshake" style={{ fontSize: '2rem' }}></i>
                         </div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#0f172a', margin: '0 0 8px 0' }}>No Handover Snapshots</h3>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#0f172a', margin: '0 0 8px 0' }}>No Handover Snapshots Yet</h3>
                         <p style={{ fontSize: '0.95rem', color: '#64748b', margin: 0, lineHeight: '1.5' }}>
-                            We haven't uploaded handover ceremony photos yet. Please check back soon to celebrate with our satisfied clients!
+                            We are currently compiling our milestone moment captures. Please check back soon for updates on our recent property handovers.
                         </p>
                     </div>
                 ) : (
                     <div className="handover-grid">
-                        {snapshots.map((snap, index) => (
+                        {snapshots.map((item, index) => (
                             <div
-                                key={snap.id}
+                                key={item.id}
                                 className="handover-card"
                                 onClick={() => openLightbox(index)}
                             >
                                 <div className="handover-img-wrapper">
                                     <ProgressiveImage
-                                        src={getStorageUrl(snap.image_path)}
-                                        alt={snap.title}
+                                        src={getStorageUrl(item.image_path)}
+                                        alt={item.title}
+                                        className="handover-img"
                                     />
                                 </div>
                                 <div className="handover-card-content">
-                                    {snap.project_name && <span className="handover-card-tag">{snap.project_name}</span>}
-                                    <h4 className="handover-card-title">{snap.title}</h4>
+                                    {item.project_name && <span className="handover-card-tag">{item.project_name}</span>}
+                                    <h4 className="handover-card-title">{item.title}</h4>
                                     <div className="handover-card-meta">
                                         <span className="handover-card-client">
-                                            Client: <strong>{snap.client || 'N/A'}</strong>
+                                            Client: <strong>{item.client || 'N/A'}</strong>
                                         </span>
                                         <span className="handover-card-date">
-                                            {snap.date ? new Date(snap.date).toLocaleDateString('en-US', {
+                                            {item.date ? new Date(item.date).toLocaleDateString('en-US', {
                                                 year: 'numeric',
                                                 month: 'long'
                                             }) : ''}
@@ -203,69 +227,38 @@ const HandoverSnapshotPublic = () => {
                 )}
             </div>
 
-            {/* Lightbox Modal */}
-            {lightboxIndex !== null && (
-                <div
-                    className="handover-lightbox-backdrop"
-                    onClick={closeLightbox}
-                >
-                    <div
-                        className="handover-lightbox-content"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button
-                            className="handover-lightbox-close"
-                            onClick={closeLightbox}
-                            aria-label="Close lightbox"
-                        >
-                            &times;
+            {/* Professional Image Viewer (Lightbox) */}
+            {lightboxIndex !== null && snapshots.length > 0 && (
+                <div className="pd-viewer-overlay">
+                    <div className="viewer-counter">
+                        {lightboxIndex + 1} / {snapshots.length}
+                    </div>
+
+                    <div className="viewer-actions-top">
+                        <button onClick={() => handleZoom('in')} title="Zoom In"><i className="fas fa-search-plus"></i></button>
+                        <button onClick={() => handleZoom('out')} title="Zoom Out"><i className="fas fa-search-minus"></i></button>
+                        <button onClick={toggleFullScreen} title="Full Screen"><i className="fas fa-expand"></i></button>
+                        <button onClick={closeLightbox} className="close-btn" title="Close"><i className="fas fa-times"></i></button>
+                    </div>
+
+                    {snapshots.length > 1 && (
+                        <button className="nav-arrow prev" onClick={showPrev} title="Previous">
+                            <i className="fas fa-chevron-left"></i>
                         </button>
+                    )}
+                    {snapshots.length > 1 && (
+                        <button className="nav-arrow next" onClick={showNext} title="Next">
+                            <i className="fas fa-chevron-right"></i>
+                        </button>
+                    )}
 
-                        {snapshots.length > 1 && (
-                            <button
-                                className="handover-lightbox-arrow prev"
-                                onClick={showPrev}
-                                aria-label="Previous image"
-                            >
-                                <i className="fas fa-chevron-left"></i>
-                            </button>
-                        )}
-
-                        <div className="handover-lightbox-image-wrapper">
+                    <div className="viewer-stage" onClick={(e) => e.target === e.currentTarget && closeLightbox()}>
+                        <div className="viewer-img-container" style={{ transform: `scale(${zoom})` }}>
                             <img
                                 src={getStorageUrl(snapshots[lightboxIndex].image_path)}
                                 alt={snapshots[lightboxIndex].title}
-                                className="handover-lightbox-img"
                             />
                         </div>
-
-                        <div className="handover-lightbox-details">
-                            <h3>{snapshots[lightboxIndex].title}</h3>
-                            {snapshots[lightboxIndex].project_name && <p>Project: {snapshots[lightboxIndex].project_name}</p>}
-                            {snapshots[lightboxIndex].client && (
-                                <p>Client: {snapshots[lightboxIndex].client}</p>
-                            )}
-                            {snapshots[lightboxIndex].date && (
-                                <span>
-                                    Handover Date:{' '}
-                                    {new Date(snapshots[lightboxIndex].date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </span>
-                            )}
-                        </div>
-
-                        {snapshots.length > 1 && (
-                            <button
-                                className="handover-lightbox-arrow next"
-                                onClick={showNext}
-                                aria-label="Next image"
-                            >
-                                <i className="fas fa-chevron-right"></i>
-                            </button>
-                        )}
                     </div>
                 </div>
             )}

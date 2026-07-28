@@ -201,8 +201,7 @@ const ProjectList = () => {
 
     const getHeaderBgUrl = () => {
         if (settings?.header_bg) {
-            const root = BASE_URL.replace(/\/api$/, '');
-            return `${root}/public/uploads/header/${settings.header_bg}`;
+            return getStorageUrl(`uploads/header/${settings.header_bg}`);
         }
         return null;
     };
@@ -256,7 +255,7 @@ const ProjectList = () => {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Project...</div>
+                <div className="loader-text">Revealing Projects...</div>
             </div>
         );
     }
@@ -273,7 +272,7 @@ const ProjectList = () => {
         return (
             <div className="loading-state">
                 <div className="loader"></div>
-                <div className="loader-text">Loading Project...</div>
+                <div className="loader-text">Revealing Projects...</div>
             </div>
         );
     }
@@ -295,6 +294,7 @@ const ProjectList = () => {
                 <div className="pl-hero-bg" style={headerStyle}></div>
                 <div className="pl-hero-overlay"></div>
                 <div className="pl-hero-content">
+                    <span className="pl-hero-subtitle">OUR PROJECTS</span>
                     <h1 className="pl-hero-title">{pageTitle}</h1>
                     <div className="pl-hero-breadcrumb">
                         <Link to="/">Home</Link>

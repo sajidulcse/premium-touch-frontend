@@ -113,14 +113,16 @@ const Home = () => {
                     getServices()
                 ]);
                 setSettings(settingsData);
-                setServices(servicesData.slice(0, 3)); // show top 3 services
+                const safeServices = Array.isArray(servicesData) ? servicesData : (Array.isArray(servicesData?.data) ? servicesData.data : []);
+                setServices(safeServices.slice(0, 3));
             } catch (err) {
                 console.error("Error loading home page settings/services:", err);
             }
 
             try {
                 const projectsRes = await api.get('/portfolios?category=all&area=all');
-                setFeaturedProjects(projectsRes.data.slice(0, 3)); // show top 3 projects
+                const safeProjects = Array.isArray(projectsRes.data) ? projectsRes.data : (Array.isArray(projectsRes.data?.data) ? projectsRes.data.data : []);
+                setFeaturedProjects(safeProjects.slice(0, 3));
             } catch (err) {
                 console.error("Error loading featured projects:", err);
             }
@@ -133,21 +135,21 @@ const Home = () => {
                     api.get('/client-reviews')
                 ]);
 
-                if (slidesRes.data && slidesRes.data.length > 0) {
+                if (slidesRes.data && Array.isArray(slidesRes.data) && slidesRes.data.length > 0) {
                     setSlides(slidesRes.data);
                 }
                 if (identityRes.data) {
                     setIdentity(identityRes.data);
                 }
-                if (processRes.data && processRes.data.length > 0) {
-                    const sorted = processRes.data.sort((a, b) => {
-                        const numA = a.stepNumber || a.step_number || '';
-                        const numB = b.stepNumber || b.step_number || '';
+                if (processRes.data && Array.isArray(processRes.data) && processRes.data.length > 0) {
+                    const sorted = [...processRes.data].sort((a, b) => {
+                        const numA = String(a.stepNumber || a.step_number || '');
+                        const numB = String(b.stepNumber || b.step_number || '');
                         return numA.localeCompare(numB);
                     });
                     setProcessSteps(sorted);
                 }
-                if (reviewsRes.data && reviewsRes.data.length > 0) {
+                if (reviewsRes.data && Array.isArray(reviewsRes.data) && reviewsRes.data.length > 0) {
                     setTestimonials(reviewsRes.data);
                 }
             } catch (err) {
@@ -457,16 +459,16 @@ const Home = () => {
 
                         return (
                             <div key={service.id || index} className="home-service-card">
-                                <Link to={`/services/${serviceSlug}`} className="service-card-image-link">
+                                <Link to={`/services/view/${serviceSlug}`} className="service-card-image-link">
                                     <div className="service-card-image-wrapper">
                                         <img src={imageSrc} alt={serviceName} />
                                     </div>
                                 </Link>
                                 <div className="service-card-text-wrapper">
-                                    <Link to={`/services/${serviceSlug}`} className="service-card-title-link">
+                                    <Link to={`/services/view/${serviceSlug}`} className="service-card-title-link">
                                         <h3>{serviceName}</h3>
                                     </Link>
-                                    <Link to={`/services/${serviceSlug}`} className="service-card-link">
+                                    <Link to={`/services/view/${serviceSlug}`} className="service-card-link">
                                         READ DETAIL <i className="fas fa-chevron-right"></i>
                                     </Link>
                                 </div>

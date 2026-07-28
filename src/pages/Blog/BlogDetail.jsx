@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { getStorageUrl } from '../../api/axios';
 import SEO from '../../components/SEO/SEO';
+import NotFound from '../NotFound/NotFound';
 import { getBlogPostingSchema, getBreadcrumbSchema } from '../../utils/seoSchemas';
 import './Blog.css';
 
@@ -247,21 +248,7 @@ const BlogDetail = () => {
         </div>
     );
 
-    if (!blog) return (
-        <div className="not-found-screen">
-            <div className="not-found-content">
-                <div className="error-icon">
-                    <i className="fas fa-feather-alt fa-flip-horizontal"></i>
-                    <div className="icon-pulse"></div>
-                </div>
-                <h1>Story Missing From Archives</h1>
-                <p>We couldn't find the narrative you're looking for. It may have been relocated or removed from our collection.</p>
-                <Link to="/blogs" className="return-btn">
-                    <i className="fas fa-arrow-left"></i> Back to Journal
-                </Link>
-            </div>
-        </div>
-    );
+    if (!blog) return <NotFound />;
 
     const formattedDate = new Date(blog.created_at).toLocaleDateString('en-US', {
         month: 'long',
@@ -269,10 +256,14 @@ const BlogDetail = () => {
         year: 'numeric'
     });
 
-    const shareUrl = window.location.href;
+    const liveCanonicalUrl = `https://www.premiumtouchbd.com/blog/${slug}`;
+    const rawShareUrl = (typeof window !== 'undefined' && window.location.href && !window.location.href.includes('localhost'))
+        ? window.location.href
+        : liveCanonicalUrl;
+    const shareUrl = decodeURIComponent(rawShareUrl);
     const shareTitle = blog.title;
 
-    const blogImg = blog.images?.[0] ? getStorageUrl(blog.images[0].image_path) : '/photo/hero/hero1.jpeg';
+    const blogImg = blog.images?.[0] ? getStorageUrl(blog.images[0].image_path) : 'https://www.premiumtouchbd.com/photo/hero/hero1.jpeg';
     const blogExcerpt = blog.content ? blog.content.replace(/<[^>]*>?/gm, '').substring(0, 155) : blog.title;
 
     return (
@@ -365,7 +356,7 @@ const BlogDetail = () => {
                                     <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`} target="_blank" rel="noopener noreferrer" title="Share on Twitter">
                                         <i className="fab fa-twitter"></i>
                                     </a>
-                                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareTitle + ' ' + shareUrl)}`} target="_blank" rel="noopener noreferrer" title="Share on WhatsApp">
+                                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(shareUrl + "\n\n" + shareTitle)}`} target="_blank" rel="noopener noreferrer" title="Share on WhatsApp">
                                         <i className="fab fa-whatsapp"></i>
                                     </a>
                                 </div>
