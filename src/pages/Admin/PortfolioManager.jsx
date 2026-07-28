@@ -39,7 +39,7 @@ const PortfolioManager = () => {
         if (!deleteTargetId) return;
         try {
             await api.delete(`/portfolios/${deleteTargetId}`);
-            toast.success('Portfolio archived successfully.');
+            toast.success('Portfolio item archived successfully.');
             fetchPortfolios();
         } catch (err) {
             toast.error('Failed to delete portfolio.');
@@ -52,11 +52,11 @@ const PortfolioManager = () => {
         <div className="admin-page-container">
             <div className="admin-page-header">
                 <div>
-                    <h1>Portfolio Management</h1>
-                    <p>Showcase your finest architectural and interior masterpieces.</p>
+                    <h1>Portfolio Showcase</h1>
+                    <p>Manage your gallery of luxury interior and architectural designs.</p>
                 </div>
                 <button className="admin-btn-primary" onClick={() => navigate('/admin/portfolios/new')}>
-                    <i className="fas fa-plus"></i> New Portfolio
+                    <i className="fas fa-plus"></i> New Showcase
                 </button>
             </div>
 
@@ -65,16 +65,19 @@ const PortfolioManager = () => {
                     <thead>
                         <tr>
                             <th>Preview</th>
-                            <th>Portfolio Details</th>
+                            <th>Portfolio Title</th>
+                            <th>Category</th>
+                            <th>Sub Category</th>
+                            <th>Child Category</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading && portfolios.length === 0 ? (
-                            <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px' }}>Analyzing portfolio...</td></tr>
+                            <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>Analyzing portfolio...</td></tr>
                         ) : portfolios.length === 0 ? (
-                            <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px' }}>No portfolios found. Add your first showcase!</td></tr>
+                            <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>No portfolios found. Add your first showcase!</td></tr>
                         ) : (
                             portfolios.map(portfolio => (
                                 <tr key={portfolio.id}>
@@ -91,10 +94,10 @@ const PortfolioManager = () => {
                                         <Link to={`/admin/portfolios/edit/${portfolio.id}`} className="table-title-link">
                                             <strong>{portfolio.title}</strong>
                                         </Link>
-                                        <div className="table-small-info">
-                                            {portfolio.category?.name || 'Interior Design'}
-                                        </div>
                                     </td>
+                                    <td>{portfolio.category?.name || '-'}</td>
+                                    <td>{portfolio.subCategory?.name || portfolio.sub_category?.name || '-'}</td>
+                                    <td>{portfolio.childCategory?.name || portfolio.child_category?.name || '-'}</td>
                                     <td>
                                         <span className={`status-badge ${portfolio.status}`}>
                                             {portfolio.status}

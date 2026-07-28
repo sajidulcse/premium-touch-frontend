@@ -65,18 +65,20 @@ const ProjectManager = () => {
                     <thead>
                         <tr>
                             <th>Preview</th>
-                            <th>Project Details</th>
+                            <th>Project Title</th>
+                            <th>Category</th>
+                            <th>Sub Category</th>
+                            <th>Child Category</th>
                             <th>Location</th>
-                            <th>Client</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading && projects.length === 0 ? (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>Analyzing portfolio...</td></tr>
+                            <tr><td colSpan="8" style={{ textAlign: 'center', padding: '40px' }}>Analyzing portfolio...</td></tr>
                         ) : projects.length === 0 ? (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px' }}>No projects found. Add your first showcase!</td></tr>
+                            <tr><td colSpan="8" style={{ textAlign: 'center', padding: '40px' }}>No projects found. Add your first showcase!</td></tr>
                         ) : (
                             projects.map(project => (
                                 <tr key={project.id}>
@@ -93,12 +95,11 @@ const ProjectManager = () => {
                                         <Link to={`/admin/projects/edit/${project.slug || project.id}`} className="table-title-link">
                                             <strong>{project.title}</strong>
                                         </Link>
-                                        <div className="table-small-info">
-                                            {project.category?.name || 'Interior Design'}
-                                        </div>
                                     </td>
+                                    <td>{project.category?.name || '-'}</td>
+                                    <td>{project.subCategory?.name || project.sub_category?.name || '-'}</td>
+                                    <td>{project.childCategory?.name || project.child_category?.name || '-'}</td>
                                     <td>{project.location || '-'}</td>
-                                    <td>{project.client_name || '-'}</td>
                                     <td>
                                         <span className={`status-badge ${project.status}`}>
                                             {project.status}

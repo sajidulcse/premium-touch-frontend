@@ -276,7 +276,6 @@ const ProjectDetail = ({ explicitSlug }) => {
                         <button onClick={() => handleZoom('in')} title="Zoom In"><i className="fas fa-search-plus"></i></button>
                         <button onClick={() => handleZoom('out')} title="Zoom Out"><i className="fas fa-search-minus"></i></button>
                         <button onClick={toggleFullScreen} title="Full Screen"><i className="fas fa-expand"></i></button>
-                        <button onClick={() => {/* Share logic */ }} title="Share"><i className="fas fa-share-alt"></i></button>
                         <button onClick={closeViewer} className="close-btn" title="Close"><i className="fas fa-times"></i></button>
                     </div>
 

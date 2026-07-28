@@ -357,12 +357,17 @@ a, button, div, span, img, .submenu-mark, .hamburger, .logo-link, .menu-item-row
     flex-direction: column;
     width: 100%;
     background-color: #eae8e4; /* Light mobile menu background */
-    position: absolute;
-    top: 68px; /* Adjusted for logo-title height */
+    position: fixed;
+    top: 75px; /* Clearance below header */
     left: 0;
-    z-index: 999;
+    right: 0;
+    max-height: calc(100vh - 75px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    z-index: 9999;
     border-bottom: 1px solid #dbd7cf;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    padding-bottom: 40px;
   }
 
   .nav-wrapper.active {

@@ -323,6 +323,16 @@ const SettingsManager = () => {
                                 onChange={(e) => setSettings({ ...settings, address: e.target.value })}
                             />
                         </div>
+                        <div className="form-group">
+                            <label>Office Hours</label>
+                            <input
+                                type="text"
+                                className="admin-input"
+                                placeholder="Sunday – Thursday: 10:00 AM – 4:00 PM"
+                                value={settings.office_hours || ''}
+                                onChange={(e) => setSettings({ ...settings, office_hours: e.target.value })}
+                            />
+                        </div>
 
                         <div className="form-group" style={{ marginTop: '20px', padding: '15px', background: '#f8fafc', borderRadius: '12px' }}>
                             <label style={{ color: '#0f172a', fontWeight: 'bold' }}>Facebook Page Plugin URL</label>

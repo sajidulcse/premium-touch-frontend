@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { BASE_URL, getSiteInfo, getCategories, getStorageUrl } from "../../api/axios";
 import "./ContactCTA.css";
 
@@ -39,7 +40,7 @@ const ContactCTA = () => {
           <h4>Our Services</h4>
           <ul>
             {services.map(s => (
-              <li key={s.id}><a href={`/services/view/${s.slug}`}>{s.name}</a></li>
+              <li key={s.id}><Link to={`/services/${s.slug}`}>{s.name}</Link></li>
             ))}
           </ul>
         </div>

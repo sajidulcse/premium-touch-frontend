@@ -272,13 +272,18 @@ const Contact = () => {
                         </div>
 
                         <div className="contact-details-list">
-                            <div className="info-item">
+                            <a
+                                href={siteInfo.map_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(studioAddress)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="info-item clickable"
+                            >
                                 <div className="info-icon"><i className="fas fa-map-marker-alt"></i></div>
                                 <div className="info-content">
                                     <h3>Office Address</h3>
                                     <p>{studioAddress}</p>
                                 </div>
-                            </div>
+                            </a>
 
                             <a href={`tel:${cleanPhone}`} className="info-item clickable">
                                 <div className="info-icon"><i className="fas fa-phone-alt"></i></div>
@@ -308,7 +313,7 @@ const Contact = () => {
                                 <div className="info-icon"><i className="far fa-clock"></i></div>
                                 <div className="info-content">
                                     <h3>Office Hours</h3>
-                                    <p>Saturday – Thursday: 10:00 AM – 8:00 PM</p>
+                                    <p>{siteInfo.office_hours || "Sunday – Thursday: 10:00 AM – 4:00 PM"}</p>
                                 </div>
                             </div>
                         </div>
@@ -404,31 +409,6 @@ const Contact = () => {
                 </div>
             </div>
 
-            {/* Monochrome Map Placement */}
-            {siteInfo.map_embed_url && (
-                <div className="contact-map-section">
-                    <div 
-                        className="map-overlay" 
-                        onClick={() => siteInfo.map_url && window.open(siteInfo.map_url, "_blank")}
-                        style={{ cursor: siteInfo.map_url ? 'pointer' : 'default' }}
-                    >
-                        <div className="map-label">
-                            <i className="fas fa-compass"></i>
-                            <span>DHAKA OFFICE</span>
-                        </div>
-                    </div>
-                    {/* Dynamic Google Map Embed */}
-                    <iframe 
-                        title="Studio Map"
-                        src={siteInfo.map_embed_url}
-                        width="100%" 
-                        height="300" 
-                        style={{ border: 0 }} 
-                        allowFullScreen="" 
-                        loading="lazy"
-                    ></iframe>
-                </div>
-            )}
         </div>
     );
 };

@@ -128,6 +128,7 @@ if ($isSocialBot) {
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
     <meta name="description" content="<?= htmlspecialchars($description, ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="fb:app_id" content="966242223397117" />
     <meta property="og:site_name" content="<?= htmlspecialchars($siteName, ENT_QUOTES, 'UTF-8') ?>" />
     <meta property="og:type" content="<?= $ogType ?>" />
     <meta property="og:title" content="<?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>" />

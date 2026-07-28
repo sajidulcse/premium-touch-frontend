@@ -129,7 +129,7 @@ const AppContent = () => {
 
   // Dynamically update site favicon if configured in Site Settings
   useEffect(() => {
-    import('./api/axios').then(({ getSiteInfo, BASE_URL }) => {
+    import('./api/axios').then(({ getSiteInfo, getStorageUrl }) => {
       getSiteInfo().then(data => {
         if (data?.favicon) {
           const faviconUrl = data.favicon.startsWith('http') 
@@ -143,6 +143,14 @@ const AppContent = () => {
             document.getElementsByTagName('head')[0].appendChild(link);
           }
           link.href = faviconUrl;
+
+          let shortcutLink = document.querySelector("link[rel='shortcut icon']");
+          if (!shortcutLink) {
+            shortcutLink = document.createElement('link');
+            shortcutLink.rel = 'shortcut icon';
+            document.getElementsByTagName('head')[0].appendChild(shortcutLink);
+          }
+          shortcutLink.href = faviconUrl;
         }
       }).catch(() => {});
     });
